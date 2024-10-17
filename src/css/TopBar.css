@@ -1,0 +1,48 @@
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+}
+
+.user-details {
+  text-align: right;
+  margin-right: 15px;
+}
+
+.user-details h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.user-details p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
