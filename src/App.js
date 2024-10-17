@@ -6,6 +6,8 @@ import Multi from './pages/Multi';
 import Add from './pages/Add';
 // import Register from
 
+// Hi from json-yun
+
 function App() {
   // 여기서는 간단한 예시로 로그인 상태를 항상 false로 가정합니다.
   // 실제 애플리케이션에서는 상태 관리 라이브러리나 컨텍스트를 사용하여 관리해야 합니다.
