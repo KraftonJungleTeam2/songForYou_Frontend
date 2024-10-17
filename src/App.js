@@ -7,6 +7,7 @@ import Add from './pages/Add';
 // import Register from
 
 // Hi from json-yun
+// hihi
 
 function App() {
   // 여기서는 간단한 예시로 로그인 상태를 항상 false로 가정합니다.
