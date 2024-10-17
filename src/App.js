@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Single from './pages/Single';
 import Multi from './pages/Multi';
 import Add from './pages/Add';
-// import Register from
+import Register from './pages/Register';
 
 function App() {
   // 여기서는 간단한 예시로 로그인 상태를 항상 false로 가정합니다.
@@ -17,7 +17,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/register" element={<Register/>}/> */}
+          <Route path="/register" element={<Register/>}/>
           <Route 
             path="/single" 
             element={isLoggedIn ? <Single /> : <Navigate to="/login" replace />} 

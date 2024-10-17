@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import '../css/Single.css';
 import Sidebar from '../components/SideBar';
 import SongListArea from '../components/SongListArea';
