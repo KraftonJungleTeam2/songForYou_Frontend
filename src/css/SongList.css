@@ -1,0 +1,96 @@
+.song-list {
+    padding: 0;
+    border-top: none; /* 상단 테두리 제거 */
+    border-radius: 0 0 8px 8px; /* 하단만 둥글게 */
+    max-height: calc(100vh - 150px); /* 뷰포트 높이에서 상단 영역 높이를 뺀 값 */
+    overflow-y: auto;
+    background-color: #ffffff;
+}
+
+.song-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.song-item:last-child {
+    border-bottom: none;
+}
+
+.song-item:hover {
+    background-color: #f8f9fa;
+}
+
+.song-icon {
+    margin-right: 15px;
+    font-size: 24px;
+    color: #007bff;
+}
+
+.song-info {
+    flex-grow: 1;
+}
+
+.song-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.song-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.timestamp {
+    font-size: 12px;
+    color: #adb5bd;
+}
+
+.play-button {
+    font-size: 24px;
+    color: #28a745;
+}
+
+/* 추가 배너 스타일 */
+.add-song-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px; /* 충분한 공간 확보 */
+    border: 2px dashed #aaa; /* 점선 테두리 */
+    border-radius: 8px; /* 둥근 모서리 */
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-song-banner:hover {
+    background-color: #f1f3f5; /* 배너 hover 시 배경색 */
+}
+
+.add-song-icon {
+    font-size: 50px;
+    color: #007bff; /* + 아이콘 색상 */
+}
+
+.add-song-text {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.add-song-text h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #343a40; /* 헤더 색상 */
+}
+
+.add-song-text p {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #6c757d; /* 설명 텍스트 색상 */
+}

@@ -1,0 +1,20 @@
+.single-page {
+  display: flex;
+}
+
+.main-content {
+  flex-grow: 1;
+  margin-left: 200px; /* Sidebar의 너비 */
+}
+
+.content-area {
+  display: flex;
+}
+
+.song-list-area {
+  flex-grow: 1;
+}
+
+.preview-area {
+  width: 300px; /* 또는 원하는 너비 */
+}
