@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Single from './pages/Single';
 import Multi from './pages/Multi';
 import Add from './pages/Add';
-// import Register from
+import Register from './pages/Register';
 
 // Hi from json-yun
 // hihi
@@ -20,7 +20,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/register" element={<Register/>}/> */}
+          <Route path="/register" element={<Register/>}/>
           <Route 
             path="/single" 
             element={isLoggedIn ? <Single /> : <Navigate to="/login" replace />} 
