@@ -13,38 +13,45 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email, password: password }),
-      });
-    
-      if (response.ok) {
+      const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+  
+      if (response.status === 200) {
         // JWT를 헤더에서 추출
-        const jwtToken = response.headers.get('Authorization').split(' ')[1]; // 'Bearer '를 제거하고 토큰만 가져옴
+        const jwtToken = response.headers['authorization']?.split(' ')[1]; // 'Bearer '를 제거하고 토큰만 가져옴
         
-        // 사용자 정보를 JSON으로 파싱
-        const userData = await response.json();
+        // 사용자 정보는 response.data에 있습니다
+        const userData = response.data;
     
         // JWT를 세션 스토리지에 저장
-        sessionStorage.setItem('userToken', jwtToken);
+        if (jwtToken) {
+          sessionStorage.setItem('userToken', jwtToken);
+        }
         
         // 사용자 정보를 별도로 저장할 수 있음 (선택 사항)
         sessionStorage.setItem('userData', JSON.stringify(userData));
     
         setError('');
         navigate('/single');
-      } else if (response.status === 401) {
-        setError('비밀번호가 유효하지 않습니다.');
-      } else if (response.status === 404) {
-        setError('이메일이 유효하지 않습니다.');
       } else {
         setError('로그인에 실패하였습니다.');
       }
     } catch (err) {
-      setError('서버와의 통신에 문제가 발생했습니다.');
+      if (err.response) {
+        // 서버가 2xx 범위를 벗어나는 상태 코드로 응답한 경우
+        if (err.response.status === 401) {
+          setError('비밀번호가 유효하지 않습니다.');
+        } else if (err.response.status === 404) {
+          setError('이메일이 유효하지 않습니다.');
+        } else {
+          setError('로그인에 실패하였습니다.');
+        }
+      } else if (err.request) {
+        // 요청이 이루어졌으나 응답을 받지 못한 경우
+        setError('서버로부터 응답을 받지 못했습니다.');
+      } else {
+        // 요청을 설정하는 중에 문제가 발생한 경우
+        setError('요청 설정 중 오류가 발생했습니다.');
+      }
     }
   };
 
