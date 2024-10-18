@@ -10,6 +10,8 @@ export const usePitchDetection = () => {
   const [graphData, setGraphData] = useState([]);
   const [startTime, setStartTime] = useState(Date.now());
 
+  // const [refer, setRefer] = useState([]);
+
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
@@ -68,20 +70,24 @@ export const usePitchDetection = () => {
                 setPitch(correctedPitch);
                 setClarity(clarityResult);
                 setGraphData(prevData => [...prevData, { time: currentTime, pitch: correctedPitch }].slice(-graphMaxDatapoint));
+                // setRefer(prevData => [...prevData, { time: currentTime, pitch: correctedPitch/2 }].slice(-graphMaxDatapoint));
               } else {
                 setPitch(0);
                 setClarity(0);
                 setGraphData(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
+                // setRefer(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
               }
             } else {
               setPitch(0);
               setClarity(0);
               setGraphData(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
+              // setRefer(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
             }
           } else {
             setPitch(0);
             setClarity(0);
             setGraphData(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
+            // setRefer(prevData => [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint));
           }
 
         //   requestAnimationFrame(updatePitch);  // 다음 프레임 요청
@@ -106,5 +112,5 @@ export const usePitchDetection = () => {
     setupAudio();
   }, []);
 
-  return { pitch, clarity, decibel, graphData };
+  return { pitch, clarity, decibel, graphData};
 };
