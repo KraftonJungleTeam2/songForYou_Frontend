@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Single from './pages/Single';
 import Multi from './pages/Multi';
-import Add from './pages/Add';
+import Setting from './pages/Setting';
 import Register from './pages/Register';
 
 // 토큰 유효성 확인 함수
@@ -31,8 +31,8 @@ function App() {
             element={isLoggedIn ? <Multi /> : <Navigate to="/login" replace />}
           />
           <Route
-            path="/add"
-            element={isLoggedIn ? <Add /> : <Navigate to="/login" replace />}
+            path="/setting"
+            element={isLoggedIn ? <Setting /> : <Navigate to="/login" replace />}
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
