@@ -5,6 +5,7 @@ import Single from './pages/Single';
 import Multi from './pages/Multi';
 import Setting from './pages/Setting';
 import Register from './pages/Register';
+import Play from './pages/Play'; // 곡 페이지 컴포넌트
 
 // 토큰 유효성 확인 함수
 const isUserLoggedIn = () => {
@@ -33,6 +34,10 @@ function App() {
           <Route
             path="/setting"
             element={isLoggedIn ? <Setting /> : <Navigate to="/login" replace />}
+          />
+            <Route
+            path="/play/:id"
+            element={isLoggedIn ? <Play /> : <Navigate to="/login" replace />}
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
