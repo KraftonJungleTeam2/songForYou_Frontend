@@ -3,10 +3,9 @@ import SongList from './SongList';
 import '../css/SongListArea.css';
 import SongUploadPopup from './SongUploadPopup';
 
-function SongListArea({ onSongSelect }) {
+function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
   const [viewType, setViewType] = useState('private');
   const [searchTerm, setSearchTerm] = useState('');
-  const [hasSongs, setHasSongs] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
   const handleTabClick = (view) => {
@@ -15,10 +14,6 @@ function SongListArea({ onSongSelect }) {
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-  };
-
-  const handleSongDataStatus = (status) => {
-    setHasSongs(status);
   };
 
   const handleOpenPopup = () => {
@@ -30,9 +25,8 @@ function SongListArea({ onSongSelect }) {
   };
 
   const handleFileUpload = (file) => {
-    // 여기에 파일 업로드 로직을 구현합니다.
+    // 파일 업로드 로직 구현
     console.log('File uploaded:', file.name);
-    // 예를 들어, API 호출을 통해 서버에 파일을 업로드할 수 있습니다.
   };
 
   return (
@@ -67,8 +61,8 @@ function SongListArea({ onSongSelect }) {
         viewType={viewType} 
         searchTerm={searchTerm} 
         onSongSelect={onSongSelect} 
-        onSongDataStatus={handleSongDataStatus}
-        onOpenPopup={handleOpenPopup} // 팝업 열기 함수 전달
+        songs={viewType === 'public' ? publicSongs : privateSongs}
+        onOpenPopup={handleOpenPopup}
       />
       {isPopupOpen && (
         <SongUploadPopup
