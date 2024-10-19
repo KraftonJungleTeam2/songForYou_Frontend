@@ -15,30 +15,6 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData }) => {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, dimensions.width, dimensions.height);
 
-    // Draw vertical blue line
-    ctx.beginPath();
-    ctx.strokeStyle = '#0000FF';
-    ctx.lineWidth = 2;
-    ctx.moveTo(graphWidth, 20);
-    ctx.lineTo(graphWidth, dimensions.height - 20);
-    ctx.stroke();
-
-    // Draw horizontal lines and labels
-    cFrequencies.forEach((freq, index) => {
-      const y = logScale(freq, dimensions, cFrequencies);
-
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.moveTo(0, y);
-      ctx.lineTo(dimensions.width, y);
-      ctx.stroke();
-
-      ctx.fillStyle = 'white';
-      ctx.font = '10px Arial';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 1}`, 15, y);
-    });
-
     // Function to draw pitch data
     const drawPitchData = (data, color, startpoint) => {
 
@@ -63,11 +39,37 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData }) => {
     };
 
     // Draw reference pitch graph
+    drawPitchData(realtimeData, '#FFA500', graphWidth);  // Green color for realtime data
+    
     drawPitchData(referenceData, '#00FF00', dimensions.width);  // Orange color for reference data
 
     // Draw realtime pitch graph
-    drawPitchData(realtimeData, '#FFA500', graphWidth);  // Green color for realtime data
 
+    // Draw vertical blue line
+    ctx.beginPath();
+    ctx.strokeStyle = '#0000FF';
+    ctx.lineWidth = 5;
+    ctx.moveTo(graphWidth, 20);
+    ctx.lineTo(graphWidth, dimensions.height - 20);
+    ctx.stroke();
+
+    // Draw horizontal lines and labels
+    cFrequencies.forEach((freq, index) => {
+      const y = logScale(freq, dimensions, cFrequencies);
+
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.moveTo(0, y);
+      ctx.lineTo(dimensions.width, y);
+      ctx.stroke();
+
+      ctx.fillStyle = 'white';
+      ctx.font = '10px Arial';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`C${index + 1}`, 15, y);
+
+    });
   }, [dimensions, referenceData, realtimeData]);
 
   return (
