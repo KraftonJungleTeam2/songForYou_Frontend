@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { getNote } from '../utils/NoteUtils';
 import PitchGraph from '../components/PitchGraph';
+import AudioPlayer from '../components/AudioPlayer';
 
 function linearInterpolation(a, b, t) {
   return a + (b - a) * t;
@@ -39,7 +39,6 @@ function updateReferData(prevData, currentTime, delayDuration = 4, dataDuration 
 }
 
 const Play = () => {
-  // const { id } = useParams();
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const containerRef = useRef(null);
 
@@ -119,6 +118,8 @@ const Play = () => {
             </div>
           </div>
         </div>
+        {/* 오디오 플레이어 컴포넌트 */}
+        <AudioPlayer isPlaying={isPlaying} audioUrl="http://localhost:5000/music" />
       </div>
     </div>
   );
