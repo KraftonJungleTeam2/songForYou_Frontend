@@ -1,42 +1,69 @@
 .song-upload-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .popup-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-  }
-  
-  .popup-content h3 {
-    margin-bottom: 15px;
-  }
-  
-  .popup-content input {
-    margin-bottom: 15px;
-  }
-  
-  .popup-content button {
-    margin-right: 10px;
-    padding: 10px 15px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .popup-content button:last-child {
-    background-color: #ccc;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.popup-content h3 {
+  margin-bottom: 15px;
+}
+
+.drop-zone {
+  border: 2px dashed #007bff;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.drop-zone.dragging {
+  background-color: #e6f2ff;
+}
+
+.youtube-link-input {
+  margin-bottom: 15px;
+  margin-right: 20px;
+}
+
+.youtube-link-input input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.popup-content button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-content button:last-child {
+  background-color: #ccc;
+}
+
+.popup-content button:hover {
+  opacity: 0.8;
+}
