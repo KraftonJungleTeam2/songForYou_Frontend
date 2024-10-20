@@ -9,56 +9,49 @@ function linearInterpolation(a, b, t) {
   return a + (b - a) * t;
 }
 
-function generatePitchData(
-  currentTime,
+function generateEntirePitchData(
+  totalDuration,
+  interval = 25,
   delayDuration = 4,
-  dataDuration = 10,
-  interval = 25
+  dataDuration = 10
 ) {
-  const delaySamples = Math.floor((delayDuration * 1000) / interval);
+  const totalSamples = Math.ceil((totalDuration * 1000) / interval);
+  const pitchDataArray = [];
 
   const frequencies = [
     32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093.0, 4186.01,
   ];
 
-  if (currentTime < delaySamples) {
-    return { time: currentTime * interval, pitch: null };
-  } else {
-    const t = ((currentTime - delaySamples) * interval) / (dataDuration * 1000);
+  for (let i = 0; i < totalSamples; i++) {
+    const currentTime = i * interval; // 밀리초 단위
 
-    const octaveIndex = Math.floor(t * 7);
-    const octaveFraction = (t * 7) % 1;
+    let pitchData;
+    if (currentTime < delayDuration * 1000) {
+      pitchData = { time: currentTime, pitch: null };
+    } else {
+      const t = (currentTime - delayDuration * 1000) / (dataDuration * 1000);
 
-    const lowerFreq = frequencies[octaveIndex];
-    const upperFreq = frequencies[Math.min(octaveIndex + 1, 7)];
-    const interpolatedFreq = linearInterpolation(
-      lowerFreq,
-      upperFreq,
-      octaveFraction
-    );
+      const octaveIndex = Math.floor(t * 7);
+      const octaveFraction = (t * 7) % 1;
 
-    const smoothness = Math.sin(t * Math.PI * 2) * 0.1;
-    const pitch = interpolatedFreq * (1 + smoothness);
+      const lowerFreq = frequencies[octaveIndex];
+      const upperFreq = frequencies[Math.min(octaveIndex + 1, 7)];
+      const interpolatedFreq = linearInterpolation(
+        lowerFreq,
+        upperFreq,
+        octaveFraction
+      );
 
-    return { time: currentTime * interval, pitch };
+      const smoothness = Math.sin(t * Math.PI * 2) * 0.1;
+      const pitch = interpolatedFreq * (1 + smoothness);
+
+      pitchData = { time: currentTime, pitch };
+    }
+
+    pitchDataArray.push(pitchData);
   }
-}
 
-function updateReferData(
-  prevData,
-  currentTime,
-  delayDuration = 4,
-  dataDuration = 10,
-  interval = 25
-) {
-  if (!Array.isArray(prevData)) prevData = [];
-  const newPitchData = generatePitchData(
-    currentTime,
-    delayDuration,
-    dataDuration,
-    interval
-  );
-  return [...prevData, newPitchData].slice(-300);
+  return pitchDataArray;
 }
 
 const Play = () => {
@@ -77,13 +70,13 @@ const Play = () => {
 
   const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying);
 
+  const [entireReferData, setEntireReferData] = useState([]);
   const [refer, setRefer] = useState([]);
-  const [currentTime, setCurrentTime] = useState(0);
 
   // Playback position and duration
-  const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치
+  const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (초 단위)
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
-  const [duration, setDuration] = useState(0); // in seconds
+  const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
 
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
@@ -109,23 +102,48 @@ const Play = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 오디오가 로드되고 duration이 결정되면 전체 refer 데이터를 생성
   useEffect(() => {
-    let intervalId;
+    if (duration > 0) {
+      const totalDuration = duration; // 초 단위
+      const interval = 25; // 밀리초 단위
 
-    if (isPlaying) {
-      intervalId = setInterval(() => {
-        setRefer((prev) => updateReferData(prev, currentTime));
-        setCurrentTime((prev) => prev + 1);
-
-        if (currentTime * 25 >= 30000) {
-          // 30 seconds limit
-          clearInterval(intervalId);
-        }
-      }, 25); // 간격을 50ms로 늘려 CPU 부하 감소
+      const precomputedReferData = generateEntirePitchData(totalDuration, interval);
+      setEntireReferData(precomputedReferData);
     }
+  }, [duration]);
 
-    return () => clearInterval(intervalId);
-  }, [isPlaying, currentTime]);
+  // playbackPosition에 따라 refer 데이터 업데이트
+  useEffect(() => {
+    const interval = 25; // 밀리초 단위
+    const windowSize = 300; // 표시할 데이터 포인트 수 (7.5초)
+
+    // playbackPosition을 밀리초로 변환
+    const currentTimeMs = playbackPosition * 1000;
+
+    // 시작 및 종료 시간 계산
+    const windowEndTime = currentTimeMs;
+    const windowStartTime = currentTimeMs - (windowSize - 1) * interval;
+
+    // windowStartTime이 음수가 되지 않도록 처리
+    const actualWindowStartTime = Math.max(0, windowStartTime);
+
+    // 전체 refer 데이터에서 해당 구간 추출
+    const startIndex = Math.floor(actualWindowStartTime / interval);
+    const endIndex = Math.floor(windowEndTime / interval);
+
+    // 구간 데이터 추출
+    const windowData = entireReferData.slice(startIndex, endIndex + 1);
+
+    // 데이터 길이가 windowSize보다 작으면 앞쪽에 null로 패딩
+    const dataLength = windowData.length;
+    if (dataLength < windowSize) {
+      const padding = Array(windowSize - dataLength).fill({ pitch: null });
+      setRefer([...padding, ...windowData]);
+    } else {
+      setRefer(windowData);
+    }
+  }, [playbackPosition, entireReferData]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
