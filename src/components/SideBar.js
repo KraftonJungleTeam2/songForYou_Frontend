@@ -10,7 +10,6 @@ function Sidebar() {
       <nav className="sidebar-nav">
         <button onClick={() => navigate('/single')}>Single</button>
         <button onClick={() => navigate('/multi')}>Multi</button>
-        <button onClick={() => navigate('/add')}>Add</button>
       </nav>
     </div>
   );
