@@ -1,52 +1,169 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-const AudioPlayer = ({ isPlaying, audioUrl }) => {
-  const [audioBuffer, setAudioBuffer] = useState(null);
+const AudioPlayer = ({
+  isPlaying,
+  setIsPlaying,
+  userSeekPosition,
+  audioUrl,
+  setAudioLoaded,
+  setDuration,
+  onPlaybackPositionChange,
+}) => {
   const audioContextRef = useRef(null);
-  const sourceNodeRef = useRef(null);
+  const audioBufferRef = useRef(null);
+  const sourceRef = useRef(null);
+  const startTimeRef = useRef(0);
+  const playbackPositionRef = useRef(0);
+  const animationFrameIdRef = useRef(null);
 
-  // 오디오 데이터를 받아오는 함수
-  const fetchAudioData = async () => {
-    try {
-      const response = await fetch(audioUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      setAudioBuffer(audioBuffer);
-    } catch (error) {
-      console.error('Error fetching audio data:', error);
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAudio = async () => {
+      try {
+        const response = await fetch(audioUrl);
+        const arrayBuffer = await response.arrayBuffer();
+
+        if (!isMounted) return;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = audioContext;
+
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        audioBufferRef.current = audioBuffer;
+
+        setDuration(audioBuffer.duration);
+        setAudioLoaded(true);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+      }
+    };
+
+    fetchAudio();
+
+    return () => {
+      isMounted = false;
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, [audioUrl, setDuration, setAudioLoaded]);
+
+  const playAudio = (offset) => {
+    if (!audioBufferRef.current || !audioContextRef.current) return;
+
+    const audioContext = audioContextRef.current;
+
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+    }
+
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBufferRef.current;
+    source.connect(audioContext.destination);
+    sourceRef.current = source;
+
+    startTimeRef.current = audioContext.currentTime - offset;
+
+    source.start(0, offset);
+
+    source.onended = () => {
+      setIsPlaying(false);
+      playbackPositionRef.current = 0;
+      sourceRef.current = null;
+      cancelAnimationFrame(animationFrameIdRef.current);
+    };
+  };
+
+  const pauseAudio = () => {
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current = null;
+      const audioContext = audioContextRef.current;
+      const elapsedTime = audioContext.currentTime - startTimeRef.current;
+      playbackPositionRef.current = elapsedTime;
     }
   };
 
-  // 사용자가 재생을 클릭한 후에 AudioContext를 생성
+  const updatePosition = () => {
+    if (isPlaying && audioContextRef.current) {
+      const audioContext = audioContextRef.current;
+      const currentTime = audioContext.currentTime;
+      const elapsedTime = currentTime - startTimeRef.current;
+      playbackPositionRef.current = elapsedTime;
+
+      if (playbackPositionRef.current >= audioBufferRef.current.duration) {
+        setIsPlaying(false);
+        playbackPositionRef.current = 0;
+        sourceRef.current = null;
+        cancelAnimationFrame(animationFrameIdRef.current);
+        return;
+      }
+
+      // 재생 위치를 부모 컴포넌트에 전달
+      if (onPlaybackPositionChange) {
+        onPlaybackPositionChange(playbackPositionRef.current);
+      }
+
+      animationFrameIdRef.current = requestAnimationFrame(updatePosition);
+    }
+  };
+
   useEffect(() => {
-    if (isPlaying && !audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      fetchAudioData();
+    if (!audioBufferRef.current || !audioContextRef.current) return;
+
+    const resumeAudioContext = async () => {
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+    };
+
+    if (isPlaying) {
+      resumeAudioContext().then(() => {
+        const offset = playbackPositionRef.current;
+        playAudio(offset);
+        animationFrameIdRef.current = requestAnimationFrame(updatePosition);
+      });
+    } else {
+      pauseAudio();
+      cancelAnimationFrame(animationFrameIdRef.current);
     }
 
     return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
+      if (sourceRef.current) {
+        sourceRef.current.stop();
+        sourceRef.current = null;
       }
+      cancelAnimationFrame(animationFrameIdRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
-  // isPlaying 상태에 따라 오디오 재생 또는 일시정지
+  // 사용자가 시크 바를 조작하여 재생 위치를 변경할 때 처리
   useEffect(() => {
-    if (isPlaying && audioBuffer && audioContextRef.current) {
-      const sourceNode = audioContextRef.current.createBufferSource();
-      sourceNode.buffer = audioBuffer;
-      sourceNode.connect(audioContextRef.current.destination);
-      sourceNode.start();
-      sourceNodeRef.current = sourceNode;
-    } else if (!isPlaying && sourceNodeRef.current) {
-      sourceNodeRef.current.stop();
-      sourceNodeRef.current = null;
-    }
-  }, [isPlaying, audioBuffer]);
+    if (!audioBufferRef.current || !audioContextRef.current) return;
 
-  return null; // UI 요소를 반환하지 않고 오디오만 재생
+    // 내부 재생 위치 업데이트
+    playbackPositionRef.current = userSeekPosition;
+
+    if (isPlaying) {
+      // 재생 중이면 현재 재생을 멈추고 새로운 위치에서 다시 재생
+      pauseAudio();
+      cancelAnimationFrame(animationFrameIdRef.current);
+
+      const offset = playbackPositionRef.current;
+      playAudio(offset);
+      animationFrameIdRef.current = requestAnimationFrame(updatePosition);
+    } else {
+      // 재생 중이 아니면 다음 재생 시 새로운 위치에서 시작
+      if (onPlaybackPositionChange) {
+        onPlaybackPositionChange(playbackPositionRef.current);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userSeekPosition]);
+
+  return null; // UI 요소 없음
 };
 
 export default AudioPlayer;
