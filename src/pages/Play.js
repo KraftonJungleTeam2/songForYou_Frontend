@@ -72,6 +72,7 @@ const Play = () => {
 
   const [entireReferData, setEntireReferData] = useState([]);
   const [refer, setRefer] = useState([]);
+  const [dataPointCount, setDataPointCount] = useState(200); // 속도에 따른 dataPointCount
 
   // Playback position and duration
   const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (초 단위)
@@ -82,6 +83,11 @@ const Play = () => {
     const newPosition = parseFloat(e.target.value);
     setUserSeekPosition(newPosition);
     setPlaybackPosition(newPosition); // 시크 바 업데이트
+  };
+
+  const handleSpeedChange = (e) => {
+    const newSpeed = parseInt(e.target.value);
+    setDataPointCount(newSpeed);
   };
 
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -187,6 +193,19 @@ const Play = () => {
             <div>
               {Math.floor(playbackPosition)} / {Math.floor(duration)} 초
             </div>
+            <div>
+              <label>속도 조절:</label>
+              <input
+                type="range"
+                min="50"
+                max="300"
+                step="1"
+                value={dataPointCount}
+                onChange={handleSpeedChange}
+                className="w-full range-slider"
+              />
+              <div>속도: {dataPointCount}</div>
+            </div>
             {!audioLoaded && <p>오디오 로딩 중...</p>}
           </div>
           {/* Pitch Graph */}
@@ -196,6 +215,7 @@ const Play = () => {
                 dimensions={dimensions}
                 referenceData={refer}
                 realtimeData={graphData}
+                dataPointCount={dataPointCount}
               />
             </div>
           </div>

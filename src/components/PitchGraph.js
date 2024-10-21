@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { getCFrequencies, logScale } from '../utils/GraphUtils';
 
-const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 10 }) => {
+const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 200 }) => {
   const backgroundCanvasRef = useRef(null);
   const dataCanvasRef = useRef(null);
   const cFrequencies = getCFrequencies();
