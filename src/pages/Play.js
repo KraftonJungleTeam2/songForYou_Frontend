@@ -68,11 +68,11 @@ const Play = () => {
     }
   };
 
-  const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying);
+  const [dataPointCount, setDataPointCount] = useState(200); // 속도에 따른 dataPointCount
+  const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
 
   const [entireReferData, setEntireReferData] = useState([]);
   const [refer, setRefer] = useState([]);
-  const [dataPointCount, setDataPointCount] = useState(200); // 속도에 따른 dataPointCount
 
   // Playback position and duration
   const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (초 단위)
@@ -122,7 +122,7 @@ const Play = () => {
   // playbackPosition에 따라 refer 데이터 업데이트
   useEffect(() => {
     const interval = 25; // 밀리초 단위
-    const windowSize = 300; // 표시할 데이터 포인트 수 (7.5초)
+    const windowSize = dataPointCount * 3; // 표시할 데이터 포인트 수 (dataPointCount의 3배)
 
     // playbackPosition을 밀리초로 변환
     const currentTimeMs = playbackPosition * 1000;
@@ -149,7 +149,7 @@ const Play = () => {
     } else {
       setRefer(windowData);
     }
-  }, [playbackPosition, entireReferData]);
+  }, [playbackPosition, entireReferData, dataPointCount]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
@@ -197,14 +197,14 @@ const Play = () => {
               <label>속도 조절:</label>
               <input
                 type="range"
-                min="50"
+                min="25"
                 max="300"
                 step="1"
                 value={dataPointCount}
                 onChange={handleSpeedChange}
                 className="w-full range-slider"
               />
-              <div>속도: {dataPointCount}</div>
+              <div>렌더링 사이즈: {dataPointCount}</div>
             </div>
             {!audioLoaded && <p>오디오 로딩 중...</p>}
           </div>
