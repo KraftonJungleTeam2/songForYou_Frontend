@@ -6,51 +6,6 @@ import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 
 
-// function generateEntirePitchData(
-//   totalDuration,
-//   interval = 25,
-//   delayDuration = 4,
-//   dataDuration = 10
-// ) {
-//   const totalSamples = Math.ceil((totalDuration * 1000) / interval);
-//   const pitchDataArray = [];
-
-//   const frequencies = [
-//     32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093.0, 4186.01,
-//   ];
-
-//   for (let i = 0; i < totalSamples; i++) {
-//     const currentTime = i * interval; // 밀리초 단위
-
-//     let pitchData;
-//     if (currentTime < delayDuration * 1000) {
-//       pitchData = { time: currentTime, pitch: null };
-//     } else {
-//       const t = (currentTime - delayDuration * 1000) / (dataDuration * 1000);
-
-//       const octaveIndex = Math.floor(t * 7);
-//       const octaveFraction = (t * 7) % 1;
-
-//       const lowerFreq = frequencies[octaveIndex];
-//       const upperFreq = frequencies[Math.min(octaveIndex + 1, 7)];
-//       const interpolatedFreq = linearInterpolation(
-//         lowerFreq,
-//         upperFreq,
-//         octaveFraction
-//       );
-
-//       const smoothness = Math.sin(t * Math.PI * 2) * 0.1;
-//       const pitch = interpolatedFreq * (1 + smoothness);
-
-//       pitchData = { time: currentTime, pitch };
-//     }
-
-//     pitchDataArray.push(pitchData);
-//   }
-
-//   return pitchDataArray;
-// }
-
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
   for (let i = 0; i < dataArray.length; i++) {
