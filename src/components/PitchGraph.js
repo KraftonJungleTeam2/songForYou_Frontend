@@ -1,8 +1,7 @@
-// PitchGraph.js
 import React, { useEffect, useRef } from 'react';
 import { getCFrequencies, logScale } from '../utils/GraphUtils';
 
-const PitchGraph = ({ dimensions, referenceData, realtimeData }) => {
+const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 10 }) => {
   const backgroundCanvasRef = useRef(null);
   const dataCanvasRef = useRef(null);
   const cFrequencies = getCFrequencies();
@@ -54,8 +53,8 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData }) => {
         const prevPoint = data[index - 1];
         if (prevPoint.pitch === null) return;
 
-        const x1 = startpoint - (data.length - index + 1) * (graphWidth / 100);
-        const x2 = startpoint - (data.length - index) * (graphWidth / 100);
+        const x1 = startpoint - (data.length - index + 1) * (graphWidth / dataPointCount);
+        const x2 = startpoint - (data.length - index) * (graphWidth / dataPointCount);
         const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
         const y2 = logScale(point.pitch, dimensions, cFrequencies);
 
@@ -71,14 +70,13 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData }) => {
       ctx.moveTo(graphWidth, 20);
       ctx.lineTo(graphWidth, dimensions.height - 20);
       ctx.stroke();
-
     };
 
     // Draw reference pitch graph
     drawPitchData(realtimeData, '#FFA500', graphWidth);  // Orange color for reference data
     // Draw realtime pitch graph
     drawPitchData(referenceData, '#00FF00', dimensions.width);  // Green color for realtime data
-  }, [dimensions, referenceData, realtimeData, cFrequencies]);
+  }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount]);
 
   return (
     <>
