@@ -15,7 +15,7 @@ function Single() {
 
   const fetchSongLists = async () => {
     try {
-      const token = sessionStorage.getItem('jwt');
+      const token = sessionStorage.getItem('userToken');
       if (!token) {
         console.error('No JWT token found');
         return;
@@ -24,9 +24,9 @@ function Single() {
       const response = await fetch('http://api/song-lists', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -45,17 +45,13 @@ function Single() {
   };
 
   return (
-    <div className="single-page">
+    <div className='single-page'>
       <Sidebar />
-      <div className="main-content">
+      <div className='main-content'>
         <TopBar />
-        <div className="content-area">
-          <SongListArea 
-            onSongSelect={handleSongSelect} 
-            publicSongs={songLists.public}
-            privateSongs={songLists.private}
-          />
-          <div className="preview-area">
+        <div className='content-area'>
+          <SongListArea onSongSelect={handleSongSelect} publicSongs={songLists.public} privateSongs={songLists.private} />
+          <div className='preview-area'>
             <Preview selectedSong={selectedSong} />
           </div>
         </div>
