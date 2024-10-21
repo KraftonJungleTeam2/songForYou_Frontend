@@ -18,6 +18,8 @@ function CheckLoggedIn({ element }) {
   return isLoggedIn ? <Navigate to='/single' replace /> : element;
 }
 
+const isLoggedIn = true;
+
 function App() {
   return (
     <AuthProvider>
@@ -26,9 +28,13 @@ function App() {
           <Routes>
             <Route path='/login' element={<CheckLoggedIn element={<Login />} />} />
             <Route path='/register' element={<CheckLoggedIn element={<Register />} />} />
-            <Route path='/single' element={<ProtectedRoute element={<Single />} />} />
+            <Route path='/single' element={<CheckLoggedIn element={<Single />} />} />
             <Route path='/multi' element={<ProtectedRoute element={<Multi />} />} />
             <Route path='/setting' element={<ProtectedRoute element={<Setting />} />} />
+            <Route
+            path="/play/:id"
+            element={isLoggedIn ? <Play /> : <Navigate to="/login" replace />}
+          />
             <Route path='/' element={<Navigate to='/login' replace />} />
           </Routes>
         </div>
