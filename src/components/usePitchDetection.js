@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (isPlaying = true) => {
+export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -17,7 +17,6 @@ export const usePitchDetection = (isPlaying = true) => {
   const isPlayingRef = useRef(isPlaying);
 
   const MAX_ALLOWED_OCTAVE_DIFFERENCE = Infinity;
-  const graphMaxDatapoint = 100;
 
   useEffect(() => {
     pitchRef.current = pitch;
@@ -140,7 +139,7 @@ export const usePitchDetection = (isPlaying = true) => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isPlaying, startTime]);
+  }, [isPlaying, startTime, graphMaxDatapoint]);
 
   return { pitch, clarity, decibel, graphData };
 };
