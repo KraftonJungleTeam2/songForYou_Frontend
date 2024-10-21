@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Login.css';
@@ -8,29 +9,29 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { setIsLoggedIn } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
-  
+      const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
+
       if (response.status === 200) {
         // JWT를 헤더에서 추출
+
         const jwtToken = response.headers['authorization']?.split(' ')[1]; // 'Bearer '를 제거하고 토큰만 가져옴
-        
+
         // 사용자 정보는 response.data에 있습니다
         const userData = response.data;
-    
+
         // JWT를 세션 스토리지에 저장
         if (jwtToken) {
           sessionStorage.setItem('userToken', jwtToken);
         }
-        
-        // 사용자 정보를 별도로 저장할 수 있음 (선택 사항)
-        sessionStorage.setItem('userData', JSON.stringify(userData));
-    
+
         setError('');
+        setIsLoggedIn(true);
         navigate('/single');
       } else {
         setError('로그인에 실패하였습니다.');
@@ -56,23 +57,13 @@ function Login() {
   };
 
   return (
-    <div className="background-container">
-      <div className="login-container">
+    <div className='background-container'>
+      <div className='login-container'>
         <h2>Login</h2>
         <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit">Login</button>
+          <input type='email' placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button type='submit'>Login</button>
         </form>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button onClick={() => navigate('/register')}>Register</button>
