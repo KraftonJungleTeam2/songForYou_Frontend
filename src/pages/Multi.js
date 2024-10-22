@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import TopBar from '../components/TopBar';
+import Sidebar from '../components/SideBar';
 function Multi() {
   return (
-    <div>
-      <h2>Multi Page</h2>
-      <p>This is the multi page content.</p>
+    <div className='single-page'>
+      <Sidebar />
+      <div className='main-content'>
+        <TopBar />
+        <div className='content-area'>
+          <form></form>
+        </div>
+      </div>
     </div>
   );
 }
