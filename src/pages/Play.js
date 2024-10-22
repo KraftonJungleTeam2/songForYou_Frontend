@@ -7,9 +7,26 @@ import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
 import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 
+
+function doubleDataFrequency(dataArray) {
+  const doubledData = [];
+  let referdelay = 175;
+  let appendnullnum = referdelay / 25;
+  for (let j = 0; j < appendnullnum; j++){
+    doubledData.push(null);
+  }
+
+  for (let i = 0; i < dataArray.length; i++) {
+    doubledData.push(dataArray[i]);  // 첫 번째 복사
+    doubledData.push(dataArray[i]);  // 두 번째 복사
+  }
+  return doubledData;
+}
+
+
 const Play = () => {
-  const { songId } = useParams(); // URL에서 songId 추출
-  console.log(songId);
+  const { id: songId } = useParams(); // URL에서 songId 추출
+  console.log('songId:', songId);
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const containerRef = useRef(null);
 
@@ -75,77 +92,53 @@ const Play = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`); // 서버에 songId로 요청
-        const contentType = response.headers.get('Content-Type');
-        const boundary = contentType.split('boundary=')[1];
+        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`);
+        const result = await response.json();
 
-        const arrayBuffer = await response.arrayBuffer();
+        if (result.success) {
+          const data = result.data;
 
-        // multipart/form-data 파싱
-        const formData = parseMultipart(arrayBuffer, boundary);
+          // mr_data (Blob 데이터)
+          const mrBufferData = data.mr_data.data; // Buffer 데이터 배열
+          const mrBlob = new Blob([new Uint8Array(mrBufferData)], { type: 'audio/mp3' });
+          setMrDataBlob(mrBlob);
+          setAudioLoaded(true);
 
-        // mr_data (Blob 데이터)
-        const mrBlob = new Blob([formData.mr_data], { type: 'audio/mp3' });
-        setMrDataBlob(mrBlob);
-        setAudioLoaded(true);
+          // pitch 데이터가 포함되어 있는지 확인
+          if (data.pitch) {
+            const pitchArray = doubleDataFrequency(data.pitch);
+            setEntireReferData(
+              pitchArray.map((pitch, index) => ({
+                time: index * 25, // 25ms 단위로 시간 계산
+                pitch,
+              }))
+            );
+            setPitchLoaded(true);
+          } else {
+            // pitch 데이터가 없는 경우에도 로드 완료로 표시
+            setPitchLoaded(true);
+          }
 
-        // pitch (주파수 배열)
-        const pitchArray = JSON.parse(formData.pitch);
-        setEntireReferData(
-          pitchArray.map((pitch, index) => ({
-            time: index * 25, // 25ms 단위로 시간 계산
-            pitch,
-          }))
-        );
-        setPitchLoaded(true);
-
-        // lyrics (가사 데이터)
-        const lyricsJson = JSON.parse(formData.lyrics);
-        setLyricsData(lyricsJson);
-        setLyricsLoaded(true);
+          // lyrics (가사 데이터)
+          const lyricsData = data.lyrics;
+          setLyricsData(lyricsData);
+          setLyricsLoaded(true);
+        } else {
+          console.error('Error: Server responded with success: false');
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
-    fetchData();
+    if (songId) {
+      fetchData();
+    }
   }, [songId]);
-
-  // multipart/form-data 파싱 함수
-  function parseMultipart(buffer, boundary) {
-    const data = {};
-    const decoder = new TextDecoder('utf-8');
-    const text = decoder.decode(buffer);
-    const parts = text.split(`--${boundary}`);
-
-    parts.forEach((part) => {
-      if (part.includes('Content-Disposition')) {
-        const [header, body] = part.split('\r\n\r\n');
-        const nameMatch = header.match(/name="(.+?)"/);
-        if (nameMatch) {
-          const name = nameMatch[1];
-          const contentTypeMatch = header.match(/Content-Type: (.+)/);
-          const contentType = contentTypeMatch ? contentTypeMatch[1] : null;
-
-          if (contentType && contentType.startsWith('application/json')) {
-            data[name] = body.trim();
-          } else if (contentType && contentType.startsWith('audio/')) {
-            // 바이너리 데이터는 별도로 처리해야 하지만, 여기서는 단순화하여 문자열로 저장
-            const binaryData = new Uint8Array(buffer.slice(text.indexOf(body)));
-            data[name] = binaryData;
-          } else {
-            data[name] = body.trim();
-          }
-        }
-      }
-    });
-
-    return data;
-  }
 
   // playbackPosition에 따라 refer 데이터 업데이트
   useEffect(() => {
-    if (dimensions.width > 0 && pitchLoaded) {
+    if (dimensions.width > 0 && pitchLoaded && entireReferData.length > 0) {
       const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
       const interval = 25; // 밀리초 단위
       const windowSize = dataPointCount * 3; // 데이터 포인트 수
@@ -170,11 +163,11 @@ const Play = () => {
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
     if (lyricsData) {
-      const { start, end, lyrics } = lyricsData;
+      const { start, end, text } = lyricsData;
 
       for (let i = 0; i < start.length; i++) {
         if (playbackPosition >= start[i] && playbackPosition <= end[i]) {
-          setCurrentLyric(lyrics[i]);
+          setCurrentLyric(text[i]);
           break;
         }
       }
