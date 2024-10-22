@@ -1,5 +1,5 @@
 export const getCFrequencies = () => {
-    const octaves = Array.from({ length: 6 }, (_, i) => i + 1);
+    const octaves = Array.from({ length: 6 }, (_, i) => i);
     return octaves.map(octave => 65.40639 * Math.pow(2, octave));
   };
   
