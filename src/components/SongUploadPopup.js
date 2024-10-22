@@ -48,31 +48,33 @@ function SongUploadPopup({ onClose, onFileUpload }) {
     setYoutubeLink(e.target.value);
   };
 
+  // 곡 업로드 부분 API
   const handleUpload = async () => {
     if (file) {
       onFileUpload(file);
       onClose();
     } else if (youtubeLink) {
       try {
-        // 서버 주소를 http://localhost:5000으로 변경
-        const response = await fetch('http://localhost:5000/extract-audio', {
+        console.log('Sending request to server');
+        // 서버에 요청 POST
+        const response = await fetch('url 보내는 API 경로', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: youtubeLink })
         });
-        
+
+        console.log('Response received:', response);
+
         if (response.ok) {
-          const blob = await response.blob();
-          // blob을 File 객체로 변환
-          const fileName = `youtube_audio_${Date.now()}.mp3`;
-          const audioFile = new File([blob], fileName, { type: 'audio/mpeg' });
-          
-          // 변환된 오디오 파일을 onFileUpload 함수로 전달
-          onFileUpload(audioFile);
+          const data = await response.json(); // JSON 응답을 파싱
+          console.log('Server response:', data); // 서버 응답 확인
+
           alert('유튜브 오디오가 성공적으로 추출되었습니다.');
           onClose();
         } else {
-          throw new Error('Failed to extract audio');
+          const errorData = await response.json(); // 오류 메시지 파싱
+          console.error('Server error response:', errorData); // 서버 오류 응답 확인
+          throw new Error(errorData.error || 'Failed to extract audio');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -120,7 +122,7 @@ function SongUploadPopup({ onClose, onFileUpload }) {
         <button onClick={onClose}>취소</button>
       </div>
     </div>
-  );
+  ); 
 }
 
 export default SongUploadPopup;
