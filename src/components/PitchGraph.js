@@ -15,7 +15,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     const ctx = canvas.getContext('2d');
 
     // 배경 캔버스 초기화
-    ctx.fillStyle = 'rgba(0, 0, 0)'; // 반투명 검정 배경
+    ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // 반투명 검정 배경
     ctx.fillRect(0, 0, dimensions.width, dimensions.height);
 
     // 수평선과 레이블 그리기
