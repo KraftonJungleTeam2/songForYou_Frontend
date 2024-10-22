@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../css/Single.css';
 import Sidebar from '../components/SideBar';
 import SongListArea from '../components/SongListArea';
@@ -6,7 +7,7 @@ import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 
 function Single() {
-  const [selectedSong, setSelectedSong] = useState(null);
+  const [selectedSong, setSelectedSong] = useState({ title: 'fuck', description: 'fuck' });
   const [songLists, setSongLists] = useState({ public: [], private: [] });
 
   useEffect(() => {
@@ -21,20 +22,30 @@ function Single() {
         return;
       }
 
-      const response = await fetch('http://api/song-lists', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const publicResponse = await axios.post(
+        'http://localhost:5000/api/songs/getList',
+        { isPublic: true, offset: 0 }, // body 부분
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const privateResponse = await axios.post(
+        'http://localhost:5000/api/songs/getList',
+        { isPublic: false, offset: 0 }, // body 부분
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      setSongLists({
+        public: publicResponse.data,
+        private: privateResponse.data,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch song lists');
-      }
-
-      const data = await response.json();
-      setSongLists(data);
     } catch (error) {
       console.error('Error fetching song lists:', error);
     }
