@@ -29,6 +29,7 @@ function App() {
             <Route path='/single' element={<ProtectedRoute element={<Single />} />} />
             <Route path='/multi' element={<ProtectedRoute element={<Multi />} />} />
             <Route path='/setting' element={<ProtectedRoute element={<Setting />} />} />
+            <Route path="/play/:id"  element={<Play />} />
             <Route path='/' element={<Navigate to='/login' replace />} />
           </Routes>
         </div>
