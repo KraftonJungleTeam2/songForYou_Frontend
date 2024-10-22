@@ -7,7 +7,7 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
   const [viewType, setViewType] = useState('private');
   const [searchTerm, setSearchTerm] = useState('');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
+  
   const handleTabClick = (view) => {
     setViewType(view);
   };
