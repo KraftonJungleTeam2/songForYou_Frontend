@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { getCFrequencies, logScale } from '../utils/GraphUtils';
+import backgroundImage from './background.webp';
 
 const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 200, currentTimeMs }) => {
   const backgroundCanvasRef = useRef(null);
@@ -14,9 +15,25 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     const canvas = backgroundCanvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    // 배경 캔버스 초기화
-    ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // 반투명 검정 배경
-    ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+    const image = new Image();
+    image.src = backgroundImage; // 이미지 경로 설정
+    
+      // 블러 필터 설정
+      ctx.filter = 'blur(10px)'; // 10px 정도의 블러 효과
+      const imgWidth = image.width;
+      const imgHeight = image.height;
+
+      // 이미지 그리기 (이미지를 흐리게 적용)
+      ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
+    
+      // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
+      ctx.filter = 'none';
+      
+      // 추가적인 그리기 작업을 수행할 수 있습니다
+      // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
+    
 
     // 수평선과 레이블 그리기
     cFrequencies.forEach((freq, index) => {
@@ -32,7 +49,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
       ctx.fillStyle = 'white';
       ctx.font = '10px Arial';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 1}`, 15, y);
+      ctx.fillText(`C${index + 2}`, 15, y);
     });
   }, [dimensions, cFrequencies]);
 
@@ -102,15 +119,21 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     // 1/3 지점에 파란색 수직선 그리기
     const drawBlueLine = () => {
       ctx.beginPath();
-      ctx.strokeStyle = '#0000FF';
-      ctx.lineWidth = 5;
-      ctx.moveTo(graphWidth / 3, 20);
-      ctx.lineTo(graphWidth / 3, dimensions.height - 20);
+      ctx.strokeStyle = '#EEEEEE';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = 'rgba(255, 170, 150, 0.8)'; // 글로우 색상
+      ctx.shadowBlur = 10;                // 글로우 강도 (블러 크기)
+      ctx.moveTo(graphWidth / 3, 0);
+      ctx.lineTo(graphWidth / 3, dimensions.height - 0);
       ctx.stroke();
+
+      // shadow 설정 초기화
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
     };
 
     // 참조 피치 그래프 그리기
-    drawPitchData(referenceData, '#00FF00', graphWidth, true, currentTimeMs);  // 녹색
+    drawPitchData(referenceData, '#EEEEEE77', graphWidth, true, currentTimeMs);  // 녹색
     // 실시간 피치 그래프 그리기
     drawPitchData(realtimeData, '#FFA500', graphWidth/3);  // 주황색
 
