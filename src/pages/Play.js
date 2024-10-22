@@ -1,11 +1,11 @@
-// Play.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { getNote } from '../utils/NoteUtils';
 import PitchGraph from '../components/PitchGraph';
 import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
+import '../css/karaoke-lyrics.css';
+import lyricsData from '../lyrics.json'; // JSON 파일 불러오기
 
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
@@ -30,7 +30,7 @@ const Play = () => {
     }
   };
 
-  const [dataPointCount, setDataPointCount] = useState(200); // 속도에 따른 dataPointCount
+  const [dataPointCount, setDataPointCount] = useState(200);
   const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
 
   const [entireReferData, setEntireReferData] = useState([]);
@@ -40,6 +40,7 @@ const Play = () => {
   const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (초 단위)
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
   const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
+  const [currentLyric, setCurrentLyric] = useState(''); // 현재 재생 중인 가사 상태
 
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
@@ -130,7 +131,7 @@ const Play = () => {
 
   // playbackPosition에 따라 refer 데이터 업데이트
   useEffect(() => {
-    if (dimensions.width > 0) {  // dimensions.width가 0 이상일 때만 실행
+    if (dimensions.width > 0) {
       const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
       const interval = 25; // 밀리초 단위
       const windowSize = dataPointCount * 3; // 데이터 포인트 수
@@ -138,15 +139,12 @@ const Play = () => {
       const pixelsPerMillisecond = graphWidth / totalTimeWindowMs;
       const currentTimeMs = playbackPosition * 1000;
 
-      // 윈도우의 시작 및 종료 시간을 계산
       const windowStartTime = currentTimeMs - (graphWidth / 3) / pixelsPerMillisecond;
       const windowEndTime = currentTimeMs + (2 * graphWidth / 3) / pixelsPerMillisecond;
 
-      // 시간을 경계 내로 맞춤
       const actualWindowStartTime = Math.max(0, windowStartTime);
       const actualWindowEndTime = Math.min(duration * 1000, windowEndTime);
 
-      // 해당 시간 구간의 데이터 추출
       const windowData = entireReferData.filter(
         (point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime
       );
@@ -154,6 +152,18 @@ const Play = () => {
       setRefer(windowData);
     }
   }, [playbackPosition, entireReferData, dataPointCount, dimensions.width]);
+
+  // 재생 위치에 따라 가사 업데이트
+  useEffect(() => {
+    const { start, end, lyrics } = lyricsData;
+
+    for (let i = 0; i < start.length; i++) {
+      if (playbackPosition >= start[i] && playbackPosition <= end[i]) {
+        setCurrentLyric(lyrics[i]);
+        break;
+      }
+    }
+  }, [playbackPosition]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
@@ -195,7 +205,7 @@ const Play = () => {
               disabled={!audioLoaded}
             />
             <div>
-              {Math.floor(playbackPosition)} / {Math.floor(duration)} 초
+              {playbackPosition.toFixed(2)} / {Math.floor(duration)} 초
             </div>
             <div>
               <label>속도 조절:</label>
@@ -214,15 +224,20 @@ const Play = () => {
           </div>
           {/* Pitch Graph */}
           <div className="p-4">
-            <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <div className="border border-gray-300 rounded-lg overflow-hidden" style={{ width: '100%', height: '500px' }}>
               <PitchGraph
                 dimensions={dimensions}
                 referenceData={refer}
                 realtimeData={graphData}
                 dataPointCount={dataPointCount}
-                currentTimeMs={playbackPosition * 1000} // currentTimeMs 전달
+                currentTimeMs={playbackPosition * 1000}
+                
               />
             </div>
+          </div>
+          {/* 현재 재생 중인 가사 출력 */}
+          <div className="karaoke-lyrics-container">
+            <p className="karaoke-lyrics">{currentLyric}</p>
           </div>
         </div>
         {/* 오디오 플레이어 컴포넌트 */}

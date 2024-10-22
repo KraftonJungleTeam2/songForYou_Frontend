@@ -15,7 +15,7 @@ const AudioPlayer = ({
   const startTimeRef = useRef(0);
   const playbackPositionRef = useRef(0);
   const animationFrameIdRef = useRef(null);
-
+  
   useEffect(() => {
     let isMounted = true;
 
@@ -55,7 +55,7 @@ const AudioPlayer = ({
     const audioContext = audioContextRef.current;
 
     if (sourceRef.current) {
-      sourceRef.current.stop();
+      // sourceRef.current.stop();
     }
 
     const source = audioContext.createBufferSource();
@@ -142,18 +142,21 @@ const AudioPlayer = ({
   // 사용자가 시크 바를 조작하여 재생 위치를 변경할 때 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
-
+  
     // 내부 재생 위치 업데이트
     playbackPositionRef.current = userSeekPosition;
-
+  
     if (isPlaying) {
       // 재생 중이면 현재 재생을 멈추고 새로운 위치에서 다시 재생
       pauseAudio();
       cancelAnimationFrame(animationFrameIdRef.current);
-
-      const offset = playbackPositionRef.current;
-      playAudio(offset);
-      animationFrameIdRef.current = requestAnimationFrame(updatePosition);
+  
+      // 재생 상태를 유지하지만 바로 재생은 하지 않음 (사용자가 재생 버튼을 눌러야 함)
+      if (onPlaybackPositionChange) {
+        onPlaybackPositionChange(playbackPositionRef.current);
+      }
+  
+      // animationFrameId는 멈추고 나서 나중에 재생될 때 새로 업데이트되도록 함
     } else {
       // 재생 중이 아니면 다음 재생 시 새로운 위치에서 시작
       if (onPlaybackPositionChange) {
@@ -162,6 +165,7 @@ const AudioPlayer = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSeekPosition]);
+  
 
   return null; // UI 요소 없음
 };
