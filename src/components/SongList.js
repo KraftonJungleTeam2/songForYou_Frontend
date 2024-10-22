@@ -2,24 +2,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongList.css';
 
-function SongList({ viewType, onSongSelect, searchTerm, songs, onOpenPopup }) {
+function SongList({ viewType, onSongSelect, searchTerm, songs }) {
   const navigate = useNavigate();
   const handlePlay = (e, songId) => {
     e.stopPropagation();
-    
+
     navigate(`/play/${songId}`);
-  
   };
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  const handleAddSongClick = () => {
-    onOpenPopup();
-  };
 
   return (
     <div className='song-list'>
       {filteredSongs.length === 0 ? (
-        <div className='add-song-banner' onClick={handleAddSongClick}>
+        <div
+          className='add-song-banner'
+          onClick={() => {
+            navigate('/add');
+          }}>
           <div className='add-song-icon'>+</div>
           <div className='add-song-text'>
             <h4>곡을 추가하세요</h4>
