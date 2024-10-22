@@ -5,6 +5,7 @@ import Single from './pages/Single';
 import Multi from './pages/Multi';
 import Setting from './pages/Setting';
 import Register from './pages/Register';
+import Add from './pages/Add';
 import Play from './pages/Play'; // 곡 페이지 컴포넌트
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -29,7 +30,8 @@ function App() {
             <Route path='/single' element={<ProtectedRoute element={<Single />} />} />
             <Route path='/multi' element={<ProtectedRoute element={<Multi />} />} />
             <Route path='/setting' element={<ProtectedRoute element={<Setting />} />} />
-            <Route path="/play/:id"  element={<Play />} />
+            <Route path='/play/:id' element={<Play />} />
+            <Route path='/add' element={<Add />} />
             <Route path='/' element={<Navigate to='/login' replace />} />
           </Routes>
         </div>
