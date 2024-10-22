@@ -7,13 +7,13 @@ import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 
 function Single() {
-  const [selectedSong, setSelectedSong] = useState({ title: 'fuck', description: 'fuck' });
+  const [selectedSong, setSelectedSong] = useState(null);
   const [songLists, setSongLists] = useState({ public: [], private: [] });
 
   useEffect(() => {
     fetchSongLists();
   }, []);
-
+  
   const fetchSongLists = async () => {
     try {
       const token = sessionStorage.getItem('userToken');
