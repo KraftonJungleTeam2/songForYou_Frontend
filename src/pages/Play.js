@@ -6,7 +6,8 @@ import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
 import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
-
+import TopBar from '../components/TopBar';
+import Sidebar from '../components/SideBar';
 
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
@@ -26,7 +27,6 @@ function doubleDataFrequency(dataArray) {
 
 const Play = () => {
   const { id: songId } = useParams(); // URL에서 songId 추출
-  console.log('songId:', songId);
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const containerRef = useRef(null);
 
@@ -89,43 +89,112 @@ const Play = () => {
   }, []);
 
   // 서버에서 데이터 로딩
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`);
+  //       const result = await response.json();
+
+  //       if (result.success) {
+  //         const data = result.data;
+
+  //         // mr_data (Blob 데이터)
+  //         const mrBufferData = data.mr_data.data; // Buffer 데이터 배열
+  //         const mrBlob = new Blob([new Uint8Array(mrBufferData)], { type: 'audio/mp3' });
+  //         setMrDataBlob(mrBlob);
+  //         setAudioLoaded(true);
+
+  //         // pitch 데이터가 포함되어 있는지 확인
+  //         if (data.pitch) {
+  //           const pitchArray = doubleDataFrequency(data.pitch);
+  //           setEntireReferData(
+  //             pitchArray.map((pitch, index) => ({
+  //               time: index * 25, // 25ms 단위로 시간 계산
+  //               pitch,
+  //             }))
+  //           );
+  //           setPitchLoaded(true);
+  //         } else {
+  //           // pitch 데이터가 없는 경우에도 로드 완료로 표시
+  //           setPitchLoaded(true);
+  //         }
+
+  //         // lyrics (가사 데이터)
+  //         const lyricsData = data.lyrics;
+  //         setLyricsData(lyricsData);
+  //         setLyricsLoaded(true);
+  //       } else {
+  //         console.error('Error: Server responded with success: false');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
+
+  //   if (songId) {
+  //     fetchData();
+  //   }
+  // }, [songId]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`);
-        const result = await response.json();
+        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`, {
+          method: 'GET',
+        });
 
-        if (result.success) {
-          const data = result.data;
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-          // mr_data (Blob 데이터)
-          const mrBufferData = data.mr_data.data; // Buffer 데이터 배열
-          const mrBlob = new Blob([new Uint8Array(mrBufferData)], { type: 'audio/mp3' });
-          setMrDataBlob(mrBlob);
+        const formData = await response.formData();
+        console.log('FormData:', formData); // 디버깅용 로그
+
+        // 파일 데이터 처리 ('file' 필드명 확인)
+        const fileBlob = formData.get('file'); // 서버 응답 필드명: 'file'
+        if (fileBlob instanceof Blob) {
+          setMrDataBlob(fileBlob);
           setAudioLoaded(true);
+        } else {
+          console.error('Error: file not found or invalid in the response');
+        }
 
-          // pitch 데이터가 포함되어 있는지 확인
-          if (data.pitch) {
-            const pitchArray = doubleDataFrequency(data.pitch);
+        // pitch 데이터 처리 ('pitch' 필드명 확인)
+        const pitchJson = formData.get('pitch');
+        if (typeof pitchJson === 'string') {
+          try {
+            const pitchArray = JSON.parse(pitchJson);
+            const processedPitchArray = doubleDataFrequency(pitchArray);
             setEntireReferData(
-              pitchArray.map((pitch, index) => ({
+              processedPitchArray.map((pitch, index) => ({
                 time: index * 25, // 25ms 단위로 시간 계산
                 pitch,
               }))
             );
             setPitchLoaded(true);
-          } else {
-            // pitch 데이터가 없는 경우에도 로드 완료로 표시
-            setPitchLoaded(true);
+          } catch (parseError) {
+            console.error('Error parsing pitch data:', parseError);
           }
-
-          // lyrics (가사 데이터)
-          const lyricsData = data.lyrics;
-          setLyricsData(lyricsData);
-          setLyricsLoaded(true);
         } else {
-          console.error('Error: Server responded with success: false');
+          console.warn('Warning: pitch data not found or invalid in the response');
+          setPitchLoaded(true); // pitch 데이터가 없어도 로드 완료로 표시
         }
+
+        // lyrics 데이터 처리 ('lyrics' 필드명 확인)
+        const lyricsJson = formData.get('lyrics');
+        if (typeof lyricsJson === 'string') {
+          try {
+            const lyrics = JSON.parse(lyricsJson);
+            setLyricsData(lyrics);
+            setLyricsLoaded(true);
+          } catch (parseError) {
+            console.error('Error parsing lyrics data:', parseError);
+          }
+        } else {
+          console.warn('Warning: lyrics data not found or invalid in the response');
+          setLyricsLoaded(true); // lyrics 데이터가 없어도 로드 완료로 표시
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -175,91 +244,75 @@ const Play = () => {
   }, [playbackPosition, lyricsData]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div
-        className="w-full max-w-7xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
-        ref={containerRef}
-      >
-        <h1 className="text-2xl font-bold mb-4 text-center p-4">
-          Pitch Detector
-        </h1>
-        <div className="flex flex-col">
-          <div className="p-4 bg-gray-50 flex justify-around items-center">
-            <p className="text-lg">
-              <span className="font-semibold">Pitch:</span>{' '}
-              {pitch ? `${pitch.toFixed(2)} Hz (${getNote(pitch)})` : 'N/A'}
-            </p>
-            <p className="text-lg">
-              <span className="font-semibold">Clarity:</span>{' '}
-              {clarity ? `${(clarity * 100).toFixed(2)}%` : 'N/A'}
-            </p>
-            <p className="text-lg">
-              <span className="font-semibold">Decibel:</span>{' '}
-              {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
-            </p>
-          </div>
-          {/* 오디오 플레이어 컨트롤 */}
-          <div className="p-4 border border-gray-300 rounded-lg overflow-hidden" style={{ width: '1000px' }}>
-            <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
-              {isPlaying ? '일시정지' : '재생'}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max={duration}
-              step="0.01"
-              value={playbackPosition}
-              onChange={handlePlaybackPositionChange}
-              className="w-full range-slider"
-              disabled={!dataLoaded}
-            />
-            <div>
-              {playbackPosition.toFixed(2)} / {Math.floor(duration)} 초
-            </div>
-            <div>
-              <label>속도 조절:</label>
-              <input
-                type="range"
-                min="25"
-                max="300"
-                step="1"
-                value={dataPointCount}
-                onChange={handleSpeedChange}
-                className="w-full range-slider"
-              />
-              <div>렌더링 사이즈: {dataPointCount}</div>
-            </div>
-            {!dataLoaded && <p>데이터 로딩 중...</p>}
-          </div>
+    
+    <div className='single-page'>
+      <Sidebar />
+      <div className='main-content'>
+        <TopBar />
+        <div className='content-area' Style="flex flex-col" ref={containerRef}>
           {/* Pitch Graph */}
-          <div className="p-4">
-            <div className="border border-gray-300 rounded-lg overflow-hidden" style={{ width: '100%', height: '500px' }}>
-              <PitchGraph
-                dimensions={dimensions}
-                referenceData={refer}
-                realtimeData={graphData}
-                dataPointCount={dataPointCount}
-                currentTimeMs={playbackPosition * 1000}
-              />
-            </div>
-          </div>
-          {/* 현재 재생 중인 가사 출력 */}
-          <div className="karaoke-lyrics-container">
-            <p className="karaoke-lyrics">{currentLyric}</p>
-          </div>
-        </div>
-        {/* 오디오 플레이어 컴포넌트 */}
-        <AudioPlayer
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          userSeekPosition={userSeekPosition}
-          setDuration={setDuration}
-          audioBlob={mrDataBlob} // 수정된 부분: audioUrl 대신 audioBlob 전달
-          setAudioLoaded={setAudioLoaded}
-          onPlaybackPositionChange={setPlaybackPosition}
+      <div style={{ width: '100%', height: '500px' }}>
+        <PitchGraph
+          dimensions={dimensions}
+          referenceData={refer}
+          realtimeData={graphData}
+          dataPointCount={dataPointCount}
+          currentTimeMs={playbackPosition * 1000}
         />
       </div>
+  
+      {/* 현재 재생 중인 가사 출력 */}
+      <p className="karaoke-lyrics">{currentLyric}</p>
+  
+      {/* 오디오 플레이어 컨트롤 */}
+      <div style={{ width: '1000px' }}>
+        <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
+          {isPlaying ? '일시정지' : '재생'}
+        </button>
+        <input
+          type="range"
+          min="0"
+          max={duration}
+          step="0.01"
+          value={playbackPosition}
+          onChange={handlePlaybackPositionChange}
+          className="w-full range-slider"
+          disabled={!dataLoaded}
+        />
+        <div>{playbackPosition.toFixed(2)} / {Math.floor(duration)} 초</div>
+  
+        <div>
+          <label>속도 조절:</label>
+          <input
+            type="range"
+            min="25"
+            max="300"
+            step="1"
+            value={dataPointCount}
+            onChange={handleSpeedChange}
+            className="w-full range-slider"
+          />
+          <div>렌더링 사이즈: {dataPointCount}</div>
+        </div>
+        {!dataLoaded && <p>데이터 로딩 중...</p>}
+      </div>
+
+
+      {/* 오디오 플레이어 컴포넌트 */}
+    <AudioPlayer
+      isPlaying={isPlaying}
+      setIsPlaying={setIsPlaying}
+      userSeekPosition={userSeekPosition}
+      setDuration={setDuration}
+      audioBlob={mrDataBlob}
+      setAudioLoaded={setAudioLoaded}
+      onPlaybackPositionChange={setPlaybackPosition}
+    />
+        </div>
+      </div>
     </div>
+
+  
   );
 };
 
