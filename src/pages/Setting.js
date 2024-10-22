@@ -65,7 +65,6 @@ function Setting() {
       });
 
       alert('User information updated successfully');
-      navigate('/');
     } catch (error) {
       console.error('Error updating user information:', error);
       alert('Failed to update user information');
