@@ -12,29 +12,30 @@ function Setting() {
   });
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = sessionStorage.getItem('userToken');
-
-        const response = await axios.get('http://localhost:5000/api/users/info', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // 응답에서 사용자 데이터를 가져와 상태를 업데이트
-        console.log('response.data', response.data);
-        setUserData(response.data);
-        console.log('userData', userData);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        // 에러 처리 로직 추가
-      }
-    };
-
     fetchUserData();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const token = sessionStorage.getItem('userToken');
+
+      const response = await axios.get('http://localhost:5000/api/users/info', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // 응답에서 사용자 데이터를 가져와 상태를 업데이트
+      console.log('response.data', response.data);
+      setUserData(response.data);
+      console.log('userData', userData);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      // 에러 처리 로직 추가
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
