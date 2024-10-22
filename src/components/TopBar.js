@@ -7,15 +7,36 @@ import axios from 'axios';
 function TopBar() {
   const [error, setError] = useState('');
 
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
 
   const { setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUserData = JSON.parse(sessionStorage.getItem('userData'));
-    setUserData(storedUserData);
+    fetchUserData();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const token = sessionStorage.getItem('userToken');
+
+      const response = await axios.get('http://localhost:5000/api/users/info', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // 응답에서 사용자 데이터를 가져와 상태를 업데이트
+      setUserData(response.data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      // 에러 처리 로직 추가
+    }
+  };
 
   const Logout = async (e) => {
     e.preventDefault();
@@ -52,8 +73,8 @@ function TopBar() {
         </button>
         <div className='user-avatar'>A</div>
         <div className='user-details'>
-          <h3>User Name</h3>
-          <p>Level</p>
+          <h3>{userData.name}</h3>
+          <p>{userData.email}</p>
         </div>
         <button className='settings-button' onClick={GoSetting}>
           ⚙️
