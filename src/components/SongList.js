@@ -7,11 +7,9 @@ function SongList({ viewType, onSongSelect, searchTerm, songs, onOpenPopup }) {
 
   const handlePlay = (e, songId) => {
     e.stopPropagation();
-    if(viewType === 'private'){
-      navigate(`/play/${songId}`);
-    } else {
-      navigate(`/play/public/${songId}`);
-    }
+    
+    navigate(`/play/${songId}`);
+  
   };
 
   const filteredSongs = songs.filter((song) =>
