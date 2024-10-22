@@ -32,25 +32,10 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
       // 추가적인 그리기 작업을 수행할 수 있습니다
       // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
+      ctx.fillRect(dimensions.width/3, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
     
 
-    // 수평선과 레이블 그리기
-    cFrequencies.forEach((freq, index) => {
-      const y = logScale(freq, dimensions, cFrequencies);
 
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.moveTo(0, y);
-      ctx.lineTo(dimensions.width, y);
-      ctx.stroke();
-
-      ctx.fillStyle = 'white';
-      ctx.font = '10px Arial';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 2}`, 15, y);
-    });
   }, [dimensions, cFrequencies]);
 
   // 실시간 및 참조 데이터 그리기
@@ -136,11 +121,31 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     drawPitchData(referenceData, '#EEEEEE77', graphWidth, true, currentTimeMs);  // 녹색
     // 실시간 피치 그래프 그리기
     drawPitchData(realtimeData, '#FFA500', graphWidth/3);  // 주황색
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, dimensions.width/3, dimensions.height); // 흐리지 않은 사각형 그리기
 
     // 파란선 그리기
     drawBlueLine();
 
-  }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeMs]);
+
+
+        // 수평선과 레이블 그리기
+        cFrequencies.forEach((freq, index) => {
+          const y = logScale(freq, dimensions, cFrequencies);
+    
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.moveTo(0, y);
+          ctx.lineTo(dimensions.width, y);
+          ctx.stroke();
+    
+          ctx.fillStyle = 'white';
+          ctx.font = '10px Arial';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`C${index + 2}`, 15, y);
+        });
+  }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeMs, cFrequencies]);
 
   return (
     <>
