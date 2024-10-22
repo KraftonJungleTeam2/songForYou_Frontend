@@ -47,10 +47,14 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
     // Pitch 데이터 그리는 함수
-    const drawPitchData = (data, color, startpoint, useTime = false, currentTimeMs = 0) => {
+    const drawPitchData = (data, color, startpoint, glow=false, useTime = false, currentTimeMs = 0) => {
       ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 3.5;
+      if (glow) {
+        ctx.shadowColor = 'rgba(255, 170, 150, 0.8)'; // 글로우 색상
+        ctx.shadowBlur = 5;                // 글로우 강도 (블러 크기)
+      }
 
       if (useTime) {
         const interval = 25; // 밀리초 단위
@@ -99,13 +103,17 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
         });
       }
       ctx.stroke();
+
+      // shadow 설정 초기화
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
     };
 
     // 1/3 지점에 파란색 수직선 그리기
     const drawBlueLine = () => {
       ctx.beginPath();
       ctx.strokeStyle = '#EEEEEE';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
       ctx.shadowColor = 'rgba(255, 170, 150, 0.8)'; // 글로우 색상
       ctx.shadowBlur = 10;                // 글로우 강도 (블러 크기)
       ctx.moveTo(graphWidth / 3, 0);
@@ -118,12 +126,12 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     };
 
     // 참조 피치 그래프 그리기
-    drawPitchData(referenceData, '#EEEEEE77', graphWidth, true, currentTimeMs);  // 녹색
-    // 실시간 피치 그래프 그리기
-    drawPitchData(realtimeData, '#FFA500', graphWidth/3);  // 주황색
+    drawPitchData(referenceData, '#FFFFFFAA', graphWidth, false, true, currentTimeMs);  // 녹색
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, dimensions.width/3, dimensions.height); // 흐리지 않은 사각형 그리기
-
+    // 실시간 피치 그래프 그리기
+    drawPitchData(realtimeData, '#FFA500', graphWidth/3, true);  // 주황색
+    
     // 파란선 그리기
     drawBlueLine();
 
