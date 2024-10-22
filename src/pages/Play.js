@@ -13,7 +13,7 @@ function doubleDataFrequency(dataArray) {
   let referdelay = 175;
   let appendnullnum = referdelay / 25;
   for (let j = 0; j < appendnullnum; j++){
-    doubledData.push(null);
+    doubledData.push(NaN);
   }
 
   for (let i = 0; i < dataArray.length; i++) {
