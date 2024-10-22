@@ -6,11 +6,9 @@ function SongList({ viewType, onSongSelect, searchTerm, songs, onOpenPopup }) {
   const navigate = useNavigate();
   const handlePlay = (e, songId) => {
     e.stopPropagation();
-    if (viewType === 'private') {
-      navigate(`/play/${songId}`);
-    } else {
-      navigate(`/play/${songId}`);
-    }
+    
+    navigate(`/play/${songId}`);
+  
   };
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
