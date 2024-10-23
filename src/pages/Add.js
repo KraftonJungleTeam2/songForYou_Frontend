@@ -28,6 +28,31 @@ function Add() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!file) {
+      alert('Please upload a song file.');
+      return;
+    }
+
+    if (!image) {
+      alert('Please upload a song image.');
+      return;
+    }
+
+    if (!name.trim()) {
+      alert('Please enter a song name.');
+      return;
+    }
+
+    if (!description.trim()) {
+      alert('Please enter a description.');
+      return;
+    }
+
+    if (!genre.trim()) {
+      alert('Please enter a genre.');
+      return;
+    }
     // FormData 생성
     const formData = new FormData();
     formData.append('file', file); // 파일 추가
