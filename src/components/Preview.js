@@ -67,7 +67,7 @@ function Preview({ selectedSong }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ songId: songId }),
+        body: JSON.stringify({ "songId": songId }),
       });
 
       if (!response.ok) {
@@ -85,10 +85,10 @@ function Preview({ selectedSong }) {
       // URL이 설정된 후 audio 엘리먼트 다시 로드
       audioRef.current.load();
 
+
       // 약간의 지연 후 재생 시작
       setTimeout(() => {
-        audioRef.current
-          .play()
+        audioRef.current.play()
           .then(() => {
             setIsPlaying(true);
           })
@@ -97,6 +97,7 @@ function Preview({ selectedSong }) {
             setIsPlaying(false);
           });
       }, 100);
+
     } catch (error) {
       console.error('Error playing preview:', error);
       setIsPlaying(false);
@@ -116,15 +117,37 @@ function Preview({ selectedSong }) {
   return (
     <div className='preview'>
       <h3>{selectedSong.metadata.title}</h3>
-      <div className='song-icon'>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} width='200' /> : <div>No Image Available</div>}</div>
+      <div className='song-icon'>
+        {selectedSong.image && selectedSong.image.data ? (
+          <img
+            src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`}
+            alt={selectedSong.metadata.title}
+            width='200'
+          />
+        ) : (
+          <div>No Image Available</div>
+        )}
+      </div>
       <p>{selectedSong.metadata.description}</p>
-      <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        onEnded={handleAudioEnded}
+        style={{ display: 'none' }}
+      />
       <div className='preview-buttons'>
-        <button className={`enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)}>
+        <button
+          className={`enabled ${isPlaying ? 'playing' : ''}`}
+          onClick={(e) => handlePreview(e, selectedSong.id)}
+        >
           {isPlaying ? 'Stop Preview' : 'Preview'}
         </button>
 
-        <button className='enabled purple' onClick={(e) => handlePlay(e, selectedSong.id)}>
+        <button
+          className='enabled purple'
+          onClick={(e) => handlePlay(e, selectedSong.id)}
+        >
+
           Play
         </button>
       </div>
