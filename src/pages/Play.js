@@ -13,16 +13,16 @@ function doubleDataFrequency(dataArray) {
   const doubledData = [];
   const referdelay = 175;
   const appendnullnum = referdelay / 25;
-  
+
   for (let j = 0; j < appendnullnum; j++) {
     doubledData.push(NaN);
   }
 
   for (let i = 0; i < dataArray.length; i++) {
-    doubledData.push(dataArray[i]);  // 첫 번째 복사
-    doubledData.push(dataArray[i]);  // 두 번째 복사
+    doubledData.push(dataArray[i]); // 첫 번째 복사
+    doubledData.push(dataArray[i]); // 두 번째 복사
   }
-  
+
   return doubledData;
 }
 
@@ -160,7 +160,6 @@ const Play = () => {
           console.warn('Warning: lyrics data not found or invalid in the response');
           setLyricsLoaded(true); // lyrics 데이터가 없어도 로드 완료로 표시
         }
-
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -181,15 +180,13 @@ const Play = () => {
       const pixelsPerMillisecond = graphWidth / totalTimeWindowMs;
       const currentTimeMs = playbackPosition * 1000;
 
-      const windowStartTime = currentTimeMs - (graphWidth / 3) / pixelsPerMillisecond;
-      const windowEndTime = currentTimeMs + (2 * graphWidth / 3) / pixelsPerMillisecond;
+      const windowStartTime = currentTimeMs - graphWidth / 3 / pixelsPerMillisecond;
+      const windowEndTime = currentTimeMs + (2 * graphWidth) / 3 / pixelsPerMillisecond;
 
       const actualWindowStartTime = Math.max(0, windowStartTime);
       const actualWindowEndTime = Math.min(duration * 1000, windowEndTime);
 
-      const windowData = entireReferData.filter(
-        (point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime
-      );
+      const windowData = entireReferData.filter((point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime);
 
       setRefer(windowData);
     }
@@ -213,85 +210,52 @@ const Play = () => {
       <Sidebar />
       <div className='main-content'>
         <TopBar />
-        <div className='content-area' ref={containerRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: "10px", marginRight: "10px"}}>
-          
-        <h1 className="text-2xl font-bold mb-4 text-center p-4">
-          Pitch Detector
-        </h1>
-        <div className="flex flex-col">
-          <div className="p-4 bg-gray-50 flex justify-around items-center">
-            <p className="text-lg">
-              <span className="font-semibold">Pitch:</span>{' '}
-              {pitch ? `${pitch.toFixed(2)} Hz (${getNote(pitch)})` : 'N/A'}
-            </p>
-            <p className="text-lg">
-              <span className="font-semibold">Clarity:</span>{' '}
-              {clarity ? `${(clarity * 100).toFixed(2)}%` : 'N/A'}
-            </p>
-            <p className="text-lg">
-              <span className="font-semibold">Decibel:</span>{' '}
-              {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
-            </p>
+        <div className='content-area' ref={containerRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '10px', marginRight: '10px' }}>
+          <h1 className='text-2xl font-bold mb-4 text-center p-4'>Pitch Detector</h1>
+          <div className='flex flex-col'>
+            <div className='p-4 bg-gray-50 flex justify-around items-center'>
+              <p className='text-lg'>
+                <span className='font-semibold'>Pitch:</span> {pitch ? `${pitch.toFixed(2)} Hz (${getNote(pitch)})` : 'N/A'}
+              </p>
+              <p className='text-lg'>
+                <span className='font-semibold'>Clarity:</span> {clarity ? `${(clarity * 100).toFixed(2)}%` : 'N/A'}
+              </p>
+              <p className='text-lg'>
+                <span className='font-semibold'>Decibel:</span> {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
+              </p>
+            </div>
           </div>
-        </div>
 
           {/* Pitch Graph */}
           <div style={{ width: '100%', height: '500px' }}>
-            <PitchGraph
-              dimensions={dimensions}
-              referenceData={refer}
-              realtimeData={graphData}
-              dataPointCount={dataPointCount}
-              currentTimeMs={playbackPosition * 1000}
-            />
+            <PitchGraph dimensions={dimensions} referenceData={refer} realtimeData={graphData} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
-          <p className="karaoke-lyrics" style={{height: '20px'}}>{currentLyric}</p>
+          <p className='karaoke-lyrics' style={{ height: '20px' }}>
+            {currentLyric}
+          </p>
 
           {/* 오디오 플레이어 컨트롤 */}
           <div style={{ width: '1000px' }}>
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input
-              type="range"
-              min="0"
-              max={duration}
-              step="0.01"
-              value={playbackPosition}
-              onChange={handlePlaybackPositionChange}
-              className="w-full range-slider"
-              disabled={!dataLoaded}
-            />
-            <div>{playbackPosition.toFixed(2)} / {Math.floor(duration)} 초</div>
+            <input type='range' min='0' max={duration} step='0.01' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
+            <div>
+              {playbackPosition.toFixed(2)} / {Math.floor(duration)} 초
+            </div>
 
             <div>
               <label>속도 조절:</label>
-              <input
-                type="range"
-                min="25"
-                max="300"
-                step="1"
-                value={dataPointCount}
-                onChange={handleSpeedChange}
-                className="w-full range-slider"
-              />
+              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='w-full range-slider' />
               <div>렌더링 사이즈: {dataPointCount}</div>
             </div>
             {!dataLoaded && <p>데이터 로딩 중...</p>}
           </div>
 
           {/* 오디오 플레이어 컴포넌트 */}
-          <AudioPlayer
-            isPlaying={isPlaying}
-            setIsPlaying={setIsPlaying}
-            userSeekPosition={userSeekPosition}
-            setDuration={setDuration}
-            audioBlob={mrDataBlob}
-            setAudioLoaded={setAudioLoaded}
-            onPlaybackPositionChange={setPlaybackPosition}
-          />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} setDuration={setDuration} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} onPlaybackPositionChange={setPlaybackPosition} />
         </div>
       </div>
     </div>
