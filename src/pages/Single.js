@@ -10,10 +10,14 @@ import { SongProvider, useSongs } from '../Context/SongContext';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
-  const { songLists } = useSongs();
+  const { songLists, fetchSongLists } = useSongs();
   const handleSongSelect = (song) => {
     setSelectedSong(song);
   };
+
+  useEffect(() => {
+    fetchSongLists();
+  }, []);
 
   return (
     <div className='single-page'>
