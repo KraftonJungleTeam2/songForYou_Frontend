@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
-
+import '../css/Add.css';
 function Add() {
   const [file, setFile] = useState(null);
   const [image, setImage] = useState(null);

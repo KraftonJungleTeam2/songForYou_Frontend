@@ -9,9 +9,19 @@ function SongList({ viewType, onSongSelect, searchTerm, songs }) {
 
     navigate(`/play/${songId}`);
   };
-  console.log(songs)
+
+  function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  }
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  console.log('filteredSongs', filteredSongs);
   return (
     <div className='song-list'>
       {filteredSongs.length === 0 ? (
@@ -29,10 +39,18 @@ function SongList({ viewType, onSongSelect, searchTerm, songs }) {
       ) : (
         filteredSongs.map((song) => (
           <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
-            <div className='song-icon'>▲■●</div>
+            <div className='song-icon'>
+              {song.image && song.image.data ? (
+                <img src={`data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)}`} alt={song.metadata.title} width='200' />
+              ) : (
+                <div>No Image Available</div> // 이미지가 없을 경우 대체 내용
+              )}{' '}
+            </div>
+
             <div className='song-info'>
               <h4>{song.metadata.title}</h4>
               <p>{song.metadata.description}</p>
+
               <span className='timestamp'>{song.timestamp}</span>
             </div>
             <div className='play-button' onClick={(e) => handlePlay(e, song.id)}>
