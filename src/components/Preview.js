@@ -36,9 +36,10 @@ function Preview({ selectedSong }) {
     return window.btoa(binary);
   }
 
-  const handlePlay = (e, songId) => {
+  const handlePlay = (e, song) => {
     e.stopPropagation();
-    navigate(`/play/${songId}`);
+
+    navigate(`/play/${song.id}`, { state: { song } }); // 상태와 함께 네비게이션
   };
 
   const handlePreview = async (e, songId) => {
@@ -141,10 +142,12 @@ function Preview({ selectedSong }) {
         >
           {isPlaying ? 'Stop Preview' : 'Preview'}
         </button>
+
         <button
           className='enabled purple'
           onClick={(e) => handlePlay(e, selectedSong.id)}
         >
+
           Play
         </button>
       </div>
