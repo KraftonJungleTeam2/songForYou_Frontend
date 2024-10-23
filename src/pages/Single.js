@@ -10,10 +10,8 @@ function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
   const [songLists, setSongLists] = useState({ public: [], private: [] });
 
-  useEffect(() => {
-    fetchSongLists();
-  }, []);
-  
+  useEffect(() => {}, []);
+
   const fetchSongLists = async () => {
     try {
       const token = sessionStorage.getItem('userToken');
@@ -50,7 +48,7 @@ function Single() {
       console.error('Error fetching song lists:', error);
     }
   };
-
+  fetchSongLists();
   const handleSongSelect = (song) => {
     setSelectedSong(song);
   };

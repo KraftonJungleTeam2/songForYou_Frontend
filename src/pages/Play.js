@@ -108,7 +108,6 @@ const Play = () => {
         const fileBlob = result.file; // 서버 응답 필드명: 'file'
         if (fileBlob instanceof Blob) {
           setMrDataBlob(fileBlob);
-          setAudioLoaded(true);
         } else {
           console.error('Error: file not found or invalid in the response');
         }

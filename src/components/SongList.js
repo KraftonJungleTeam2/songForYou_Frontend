@@ -20,7 +20,7 @@ function SongList({ viewType, onSongSelect, searchTerm, songs }) {
     return window.btoa(binary);
   }
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
+  
   console.log('filteredSongs', filteredSongs);
   return (
     <div className='song-list'>
