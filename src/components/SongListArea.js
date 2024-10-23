@@ -41,7 +41,7 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
           + 곡 추가
         </button>
       </div>
-      <SongList viewType={viewType} searchTerm={searchTerm} onSongSelect={onSongSelect} songs={viewType === 'public' ? publicSongs : privateSongs} />
+      <SongList searchTerm={searchTerm} onSongSelect={onSongSelect} songs={viewType === 'public' ? publicSongs : privateSongs} />
     </div>
   );
 }
