@@ -1,10 +1,17 @@
 // PitchGraph.js
-
 import React, { useEffect, useRef } from 'react';
 import { getCFrequencies, logScale } from '../utils/GraphUtils';
-import backgroundImage from './background.webp';
 
-const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 200, currentTimeMs }) => {
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
+const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 200, currentTimeMs, songState}) => {
   const backgroundCanvasRef = useRef(null);
   const dataCanvasRef = useRef(null);
   const cFrequencies = getCFrequencies();
@@ -12,11 +19,34 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
 
   // 배경 그리기
   useEffect(() => {
-    
-    
+    const canvas = backgroundCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    // 데이터 캔버스 초기화
+    ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
 
-  }, [dimensions, cFrequencies]);
+    const image = new Image();
+    
+    // songState 이미지가 있으면 그 이미지를 base64로 설정
+    if (songState && songState.image && songState.image.data) {
+      image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
+    } 
+    
+    // 블러 필터 설정
+    ctx.filter = 'blur(15px)'; // 10px 정도의 블러 효과
+    const imgHeight = image.height;
+    const imgWidth = image.width;
+      console.log(imgHeight, imgWidth);
+      console.log(graphWidth, dimensions.height);
+    // 이미지 그리기 (이미지를 흐리게 적용)
+    ctx.drawImage(image, 0, -(imgHeight+dimensions.height)/2, graphWidth, imgHeight / imgWidth * dimensions.width);
+
+            
+    // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
+    ctx.filter = 'none';
+    
+  }, [dimensions]);
 
   // 실시간 및 참조 데이터 그리기
   useEffect(() => {
@@ -26,25 +56,13 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     // 데이터 캔버스 초기화
     ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-
-    const image = new Image();
-        image.src = backgroundImage; // 이미지 경로 설정
-        
-          // 블러 필터 설정
-          ctx.filter = 'blur(10px)'; // 10px 정도의 블러 효과
-          const imgWidth = image.width;
-          const imgHeight = image.height;
-    
-          // 이미지 그리기 (이미지를 흐리게 적용)
-          ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
-        
-          // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
-          ctx.filter = 'none';
           
-          // 추가적인 그리기 작업을 수행할 수 있습니다
-          // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-          ctx.fillRect(dimensions.width/3, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
+    // 추가적인 그리기 작업을 수행할 수 있습니다
+    // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(dimensions.width/3, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
     
     // Pitch 데이터 그리는 함수
     const drawPitchData = (data, color, startpoint, glow=false, useTime = false, currentTimeMs = 0) => {
@@ -126,7 +144,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     };
 
     // 참조 피치 그래프 그리기
-    drawPitchData(referenceData, '#FFFFFFAA', graphWidth, false, true, currentTimeMs);  // 녹색
+    drawPitchData(referenceData, '#FFFFFF', graphWidth, false, true, currentTimeMs);  // 녹색
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, dimensions.width/3, dimensions.height); // 흐리지 않은 사각형 그리기
     // 실시간 피치 그래프 그리기

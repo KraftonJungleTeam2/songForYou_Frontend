@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { getNote } from '../utils/NoteUtils';
 import PitchGraph from '../components/PitchGraph';
 import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
-import { useLocation, useParams, useNavigate } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 
@@ -27,7 +27,10 @@ function doubleDataFrequency(dataArray) {
 }
 
 const Play = () => {
-  const [song, setSong] = React.useState(useLocation().state?.song || null);
+  // song State 받아옴
+  const location = useLocation();
+  const { song } = location.state || {};
+  console.log(song);
 
   const { id: songId } = useParams(); // URL에서 songId 추출
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
@@ -213,7 +216,7 @@ const Play = () => {
       <div className='main-content'>
         <TopBar />
         <div className='flex flex-col' ref={containerRef} style={{display: 'flex',flexDirection: 'column', marginLeft: '10px', marginRight: '10px' }}>
-          <h1 className='text-2xl font-bold mb-4 text-center p-4'>Pitch Detector</h1>
+          {/* <h1 className='text-2xl font-bold mb-4 text-center p-4'>Pitch Detector</h1>
           <div className='flex flex-col'>
             <div className='p-4 bg-gray-50 flex justify-around items-center'>
               <p className='text-lg'>
@@ -226,15 +229,15 @@ const Play = () => {
                 <span className='font-semibold'>Decibel:</span> {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Pitch Graph */}
           <div style={{ width: '100%', height: '470px' }}>
-            <PitchGraph dimensions={dimensions} referenceData={refer} realtimeData={graphData} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} />
+            <PitchGraph dimensions={dimensions} referenceData={refer} realtimeData={graphData} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} songState={song} />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
-          <p className='karaoke-lyrics' style={{ height: '150px' }}>
+          <p className='karaoke-lyrics' style={{ height: '150px' , textAlign: 'center' }}>
             {currentLyric}
           </p>
 
