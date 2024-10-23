@@ -3,7 +3,10 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 import '../css/Add.css';
+
+import { SongProvider, useSongs } from '../Context/SongContext';
 function Add() {
+  const { fetchSongLists } = useSongs();
   const [file, setFile] = useState(null);
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState('');
@@ -79,6 +82,7 @@ function Add() {
       });
 
       console.log('Song added successfully:', response.data);
+      fetchSongLists();
     } catch (error) {
       console.error('Error adding song:', error);
     }

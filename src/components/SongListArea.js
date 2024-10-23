@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import SongList from './SongList';
 import '../css/SongListArea.css';
-import SongUploadPopup from './SongUploadPopup';
 import { useNavigate } from 'react-router-dom';
 
 function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
@@ -15,11 +14,6 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-  };
-
-  const handleFileUpload = (file) => {
-    // 파일 업로드 로직 구현
-    console.log('File uploaded:', file.name);
   };
 
   return (

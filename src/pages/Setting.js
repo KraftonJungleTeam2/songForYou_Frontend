@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Setting.css';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../Context/AuthContext';
 
 function Setting() {
   const [userData, setUserData] = useState({
