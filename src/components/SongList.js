@@ -2,12 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongList.css';
 
-function SongList({ viewType, onSongSelect, searchTerm, songs }) {
+function SongList({onSongSelect, searchTerm, songs }) {
   const navigate = useNavigate();
-  const handlePlay = (e, songId) => {
+  const handlePlay = (e, song) => {
     e.stopPropagation();
-    
-    navigate(`/play/${songId}`);
+
+    navigate(`/play/${song.id}`, { state: { song } }); // 상태와 함께 네비게이션
   };
 
   function arrayBufferToBase64(buffer) {
@@ -52,7 +52,7 @@ function SongList({ viewType, onSongSelect, searchTerm, songs }) {
 
               <span className='timestamp'>{song.timestamp}</span>
             </div>
-            <div className='play-button' onClick={(e) => handlePlay(e, song.id)}>
+            <div className='play-button' onClick={(e) => handlePlay(e, song)}>
               ▶
             </div>
           </div>
