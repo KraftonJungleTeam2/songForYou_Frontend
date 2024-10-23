@@ -213,7 +213,28 @@ const Play = () => {
       <Sidebar />
       <div className='main-content'>
         <TopBar />
-        <div className='content-area' ref={containerRef} style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className='content-area' ref={containerRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: "10px", marginRight: "10px"}}>
+          
+        <h1 className="text-2xl font-bold mb-4 text-center p-4">
+          Pitch Detector
+        </h1>
+        <div className="flex flex-col">
+          <div className="p-4 bg-gray-50 flex justify-around items-center">
+            <p className="text-lg">
+              <span className="font-semibold">Pitch:</span>{' '}
+              {pitch ? `${pitch.toFixed(2)} Hz (${getNote(pitch)})` : 'N/A'}
+            </p>
+            <p className="text-lg">
+              <span className="font-semibold">Clarity:</span>{' '}
+              {clarity ? `${(clarity * 100).toFixed(2)}%` : 'N/A'}
+            </p>
+            <p className="text-lg">
+              <span className="font-semibold">Decibel:</span>{' '}
+              {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
+            </p>
+          </div>
+        </div>
+
           {/* Pitch Graph */}
           <div style={{ width: '100%', height: '500px' }}>
             <PitchGraph
@@ -226,7 +247,7 @@ const Play = () => {
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
-          <p className="karaoke-lyrics">{currentLyric}</p>
+          <p className="karaoke-lyrics" style={{height: '20px'}}>{currentLyric}</p>
 
           {/* 오디오 플레이어 컨트롤 */}
           <div style={{ width: '1000px' }}>
