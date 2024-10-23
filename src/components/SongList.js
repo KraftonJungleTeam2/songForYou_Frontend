@@ -21,7 +21,6 @@ function SongList({onSongSelect, searchTerm, songs }) {
   }
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  console.log('filteredSongs', filteredSongs);
   return (
     <div className='song-list'>
       {filteredSongs.length === 0 ? (
