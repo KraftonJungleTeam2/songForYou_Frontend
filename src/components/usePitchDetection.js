@@ -9,6 +9,9 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
   const [graphData, setGraphData] = useState([]);
   const [startTime, setStartTime] = useState(Date.now());
 
+  const pitchHistoryRef = useRef([]);
+  const MAX_HISTORY_LENGTH = 5;
+
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
@@ -16,7 +19,20 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
   const pitchRef = useRef(pitch);
   const isPlayingRef = useRef(isPlaying);
 
-  const MAX_ALLOWED_OCTAVE_DIFFERENCE = Infinity;
+  // 피치 변화 감지를 위한 상태 추가
+  const potentialPitchRef = useRef(null);
+  const potentialPitchCountRef = useRef(0);
+  const lastPitchTimeRef = useRef(0);
+
+  const PITCH_CONFIG = {
+    MIN_VALID_PITCH: 50,
+    MAX_VALID_PITCH: 1500,
+    MIN_CLARITY: 0.85,
+    MIN_DECIBEL: -50,
+    MAX_PITCH_JUMP: 0.3,
+    CONFIRMATION_THRESHOLD: 3,
+    JUMP_TOLERANCE_TIME: 100,
+  };
 
   useEffect(() => {
     pitchRef.current = pitch;
@@ -26,14 +42,82 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
+  const getMedianPitch = (pitches) => {
+    const validPitches = pitches.filter(p => p > 0);
+    if (validPitches.length === 0) return 0;
+    
+    const sorted = [...validPitches].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+  };
+
+  const calculateMovingAverage = (newPitch) => {
+    pitchHistoryRef.current.push(newPitch);
+    if (pitchHistoryRef.current.length > MAX_HISTORY_LENGTH) {
+      pitchHistoryRef.current.shift();
+    }
+    
+    return getMedianPitch(pitchHistoryRef.current);
+  };
+
+  const validatePitchChange = (newPitch, currentPitch, currentTime) => {
+    if (currentPitch === 0) return true;
+
+    const octaveDiff = Math.abs(Math.log2(newPitch / currentPitch));
+    const timeSinceLastUpdate = currentTime - lastPitchTimeRef.current;
+
+    // 급격한 변화가 아닌 경우 바로 허용
+    if (octaveDiff <= PITCH_CONFIG.MAX_PITCH_JUMP) {
+      potentialPitchRef.current = null;
+      potentialPitchCountRef.current = 0;
+      return true;
+    }
+
+    // 이전과 동일한 급격한 변화가 감지된 경우
+    if (potentialPitchRef.current !== null) {
+      const potentialPitchDiff = Math.abs(Math.log2(newPitch / potentialPitchRef.current));
+      
+      // 새로운 피치가 이전에 감지된 potential pitch와 비슷한 경우
+      if (potentialPitchDiff <= 0.1) {  // 10% 이내의 변화는 같은 피치로 간주
+        potentialPitchCountRef.current++;
+        
+        // 충분한 횟수동안 같은 피치가 감지되면 새로운 피치로 인정
+        if (potentialPitchCountRef.current >= PITCH_CONFIG.CONFIRMATION_THRESHOLD) {
+          potentialPitchRef.current = null;
+          potentialPitchCountRef.current = 0;
+          return true;
+        }
+      } else {
+        // 다른 피치가 감지되면 카운터 리셋
+        potentialPitchRef.current = newPitch;
+        potentialPitchCountRef.current = 1;
+      }
+    } else {
+      // 새로운 급격한 변화 감지 시작
+      potentialPitchRef.current = newPitch;
+      potentialPitchCountRef.current = 1;
+    }
+
+    // 일정 시간이 지나면 강제로 피치 업데이트 허용
+    if (timeSinceLastUpdate > PITCH_CONFIG.JUMP_TOLERANCE_TIME) {
+      potentialPitchRef.current = null;
+      potentialPitchCountRef.current = 0;
+      return true;
+    }
+
+    return false;
+  };
+
   useEffect(() => {
     async function setupAudio() {
       try {
         const { audioContext, analyser, source } = await setupAudioContext();
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
-        // window size 결정
         analyserRef.current.fftSize = 4096;
+        analyserRef.current.smoothingTimeConstant = 0.8;
         sourceRef.current = source;
 
         const bufferLength = analyserRef.current.fftSize;
@@ -69,66 +153,64 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
       const newDecibel = 20 * Math.log10(rms);
       setDecibel(newDecibel);
 
-      const currentTime = (Date.now() - startTime) / 1000;
+      const currentTime = Date.now();
 
-      if (newDecibel > -60) {
+      if (newDecibel > PITCH_CONFIG.MIN_DECIBEL) {
         const [pitchResult, clarityResult] = detectorRef.current.findPitch(
           input,
           audioContextRef.current.sampleRate
         );
 
-        if (clarityResult > 0.85 && pitchResult > 40) {
-          let correctedPitch = pitchResult;
-
-          function getOctaveDifference(freq1, freq2) {
-            if (freq1 <= 0 || freq2 <= 0) return Infinity;
-            return Math.abs(Math.log2(freq1 / freq2));
-          }
-
-          if (
-            pitchRef.current !== 0 &&
-            getOctaveDifference(pitchResult, pitchRef.current) <= MAX_ALLOWED_OCTAVE_DIFFERENCE
-          ) {
-            correctedPitch = pitchRef.current * 0.5 + correctedPitch * 0.5;
-          } else if (pitchRef.current !== 0) {
-            correctedPitch = pitchRef.current;
-          }
-
-          const MIN_VALID_PITCH = 20;
-          const MAX_VALID_PITCH = 20000;
-          if (correctedPitch >= MIN_VALID_PITCH && correctedPitch <= MAX_VALID_PITCH) {
-            setPitch(correctedPitch);
+        if (
+          clarityResult > PITCH_CONFIG.MIN_CLARITY && 
+          pitchResult >= PITCH_CONFIG.MIN_VALID_PITCH && 
+          pitchResult <= PITCH_CONFIG.MAX_VALID_PITCH
+        ) {
+          // 피치 변화 검증
+          if (validatePitchChange(pitchResult, pitchRef.current, currentTime)) {
+            const smoothedPitch = calculateMovingAverage(pitchResult);
+            lastPitchTimeRef.current = currentTime;
+            setPitch(smoothedPitch);
             setClarity(clarityResult);
 
             if (isPlayingRef.current) {
-              setGraphData((prevData) =>
-                [...prevData, { time: currentTime, pitch: correctedPitch }].slice(-graphMaxDatapoint)
+              setGraphData(prevData => 
+                [...prevData, { 
+                  time: (currentTime - startTime) / 1000, 
+                  pitch: smoothedPitch 
+                }].slice(-graphMaxDatapoint)
               );
             }
           } else {
-            setPitch(0);
-            setClarity(0);
-            if (isPlayingRef.current) {
-              setGraphData((prevData) =>
-                [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint)
+            // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
+            if (isPlayingRef.current && pitchRef.current > 0) {
+              setGraphData(prevData => 
+                [...prevData, { 
+                  time: (currentTime - startTime) / 1000, 
+                  pitch: pitchRef.current 
+                }].slice(-graphMaxDatapoint)
               );
             }
           }
         } else {
-          setPitch(0);
-          setClarity(0);
+          // 유효하지 않은 피치인 경우
           if (isPlayingRef.current) {
-            setGraphData((prevData) =>
-              [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint)
+            setGraphData(prevData => 
+              [...prevData, { 
+                time: (currentTime - startTime) / 1000, 
+                pitch: null 
+              }].slice(-graphMaxDatapoint)
             );
           }
         }
       } else {
         setPitch(0);
-        setClarity(0);
         if (isPlayingRef.current) {
-          setGraphData((prevData) =>
-            [...prevData, { time: currentTime, pitch: null }].slice(-graphMaxDatapoint)
+          setGraphData(prevData => 
+            [...prevData, { 
+              time: (currentTime - startTime) / 1000, 
+              pitch: null 
+            }].slice(-graphMaxDatapoint)
           );
         }
       }
