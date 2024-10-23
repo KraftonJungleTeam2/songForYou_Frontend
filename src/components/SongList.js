@@ -9,6 +9,7 @@ function SongList({ viewType, onSongSelect, searchTerm, songs }) {
 
     navigate(`/play/${songId}`);
   };
+  console.log(songs)
   const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (

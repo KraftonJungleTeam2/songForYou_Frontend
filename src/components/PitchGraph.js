@@ -12,27 +12,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
 
   // 배경 그리기
   useEffect(() => {
-    const canvas = backgroundCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    const image = new Image();
-    image.src = backgroundImage; // 이미지 경로 설정
     
-      // 블러 필터 설정
-      ctx.filter = 'blur(10px)'; // 10px 정도의 블러 효과
-      const imgWidth = image.width;
-      const imgHeight = image.height;
-
-      // 이미지 그리기 (이미지를 흐리게 적용)
-      ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
-    
-      // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
-      ctx.filter = 'none';
-      
-      // 추가적인 그리기 작업을 수행할 수 있습니다
-      // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(dimensions.width/3, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
     
 
 
@@ -46,6 +26,26 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     // 데이터 캔버스 초기화
     ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
+
+    const image = new Image();
+        image.src = backgroundImage; // 이미지 경로 설정
+        
+          // 블러 필터 설정
+          ctx.filter = 'blur(10px)'; // 10px 정도의 블러 효과
+          const imgWidth = image.width;
+          const imgHeight = image.height;
+    
+          // 이미지 그리기 (이미지를 흐리게 적용)
+          ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
+        
+          // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
+          ctx.filter = 'none';
+          
+          // 추가적인 그리기 작업을 수행할 수 있습니다
+          // 예: 다른 요소나 텍스트를 그릴 때 블러가 적용되지 않도록
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.fillRect(dimensions.width/3, 0, dimensions.width, dimensions.height); // 흐리지 않은 사각형 그리기
+    
     // Pitch 데이터 그리는 함수
     const drawPitchData = (data, color, startpoint, glow=false, useTime = false, currentTimeMs = 0) => {
       ctx.beginPath();
@@ -135,8 +135,6 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     // 파란선 그리기
     drawBlueLine();
 
-
-
         // 수평선과 레이블 그리기
         cFrequencies.forEach((freq, index) => {
           const y = logScale(freq, dimensions, cFrequencies);
@@ -153,6 +151,8 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
           ctx.textBaseline = 'middle';
           ctx.fillText(`C${index + 2}`, 15, y);
         });
+    
+        
   }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeMs, cFrequencies]);
 
   return (

@@ -32,6 +32,8 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
         const { audioContext, analyser, source } = await setupAudioContext();
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
+        // window size 결정
+        analyserRef.current.fftSize = 4096;
         sourceRef.current = source;
 
         const bufferLength = analyserRef.current.fftSize;
@@ -69,7 +71,7 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
 
       const currentTime = (Date.now() - startTime) / 1000;
 
-      if (newDecibel > -40) {
+      if (newDecibel > -60) {
         const [pitchResult, clarityResult] = detectorRef.current.findPitch(
           input,
           audioContextRef.current.sampleRate
