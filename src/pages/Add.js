@@ -6,7 +6,7 @@ import '../css/Add.css';
 function Add() {
   const [file, setFile] = useState(null);
   const [image, setImage] = useState(null);
-  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState('jazz');
@@ -20,7 +20,7 @@ function Add() {
   };
 
   const handleNameChange = (e) => {
-    setName(e.target.value);
+    setTitle(e.target.value);
   };
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -39,7 +39,7 @@ function Add() {
       return;
     }
 
-    if (!name.trim()) {
+    if (!title.trim()) {
       alert('Please enter a song name.');
       return;
     }
@@ -57,7 +57,7 @@ function Add() {
     const formData = new FormData();
     formData.append('file', file); // 파일 추가
     formData.append('image', image); // 이미지 추가
-    formData.append('metadata', JSON.stringify({ name, description }));
+    formData.append('metadata', JSON.stringify({ title, description }));
     formData.append('isPublic', isPublic); // 공개 여부 추가
     formData.append('genre', genre); // 장르 추가
     formData.forEach((value, key) => {
@@ -103,7 +103,7 @@ function Add() {
             <br />
             <label>
               Name
-              <input type='text' value={name} onChange={handleNameChange} />
+              <input type='text' value={title} onChange={handleNameChange} />
             </label>
             <br />{' '}
             <label>
