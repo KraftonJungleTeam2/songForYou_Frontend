@@ -28,7 +28,7 @@ export const usePitchDetection = (isPlaying = true, graphMaxDatapoint = 100) => 
     MIN_VALID_PITCH: 50,
     MAX_VALID_PITCH: 1500,
     MIN_CLARITY: 0.5,
-    MIN_DECIBEL: -20,
+    MIN_DECIBEL: -35,
     MAX_PITCH_JUMP: 0.3,
     CONFIRMATION_THRESHOLD: 3,
     JUMP_TOLERANCE_TIME: 10,

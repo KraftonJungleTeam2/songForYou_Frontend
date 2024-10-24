@@ -75,9 +75,7 @@ const Play = () => {
   const [mrDataBlob, setMrDataBlob] = useState(null);
   const [lyricsData, setLyricsData] = useState(null);
 
-  // 모든 데이터가 로드되었는지 확인
-  const dataLoaded = audioLoaded && pitchLoaded && lyricsLoaded;
-
+  // 화면 조정 시 감지
   useEffect(() => {
     function handleResize() {
       if (containerRef.current) {
@@ -94,7 +92,10 @@ const Play = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 서버에서 데이터 로딩
+  // 모든 데이터가 로드되었는지 확인
+  const dataLoaded = audioLoaded && pitchLoaded && lyricsLoaded;
+
+  // 서버에서 데이터 로딩 후 배열 생성
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -113,7 +114,6 @@ const Play = () => {
         const fileBlob = result.file; // 서버 응답 필드명: 'file'
         if (fileBlob instanceof Blob) {
           setMrDataBlob(fileBlob);
-
         } else {
           console.error('Error: file not found or invalid in the response');
         }
@@ -246,9 +246,9 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input type='range' min='0' max={duration} step='0.01' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
+            <input type='range' min='0' max={duration} step='0.25' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
             <div>
-              {playbackPosition.toFixed(2)} / {Math.floor(duration)} 초
+              {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
 
             <div>
