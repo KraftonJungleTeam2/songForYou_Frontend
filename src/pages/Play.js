@@ -53,7 +53,7 @@ const Play = () => {
   const [refer, setRefer] = useState([]);
 
   // 재생 위치 및 길이
-  const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (초 단위)
+  const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (25ms 단위 모든 데이터가 이를 기준으로 update)
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
   const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
   const [currentLyric, setCurrentLyric] = useState(''); // 현재 재생 중인 가사 상태
@@ -72,6 +72,7 @@ const Play = () => {
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [pitchLoaded, setPitchLoaded] = useState(false);
   const [lyricsLoaded, setLyricsLoaded] = useState(false);
+
   const [mrDataBlob, setMrDataBlob] = useState(null);
   const [lyricsData, setLyricsData] = useState(null);
 
@@ -246,7 +247,7 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input type='range' min='0' max={duration} step='0.25' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
+            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
             <div>
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
