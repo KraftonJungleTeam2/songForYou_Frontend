@@ -62,6 +62,7 @@ const AudioPlayer = ({
     source.start(0, offset);
 
     source.onended = () => {
+      // 일시정지를 위해 전해진 state변경 함수 seekbar누르면 멈추게함
       setIsPlaying(false);
       playbackPositionRef.current = 0;
       if (animationFrameRef.current) {
@@ -90,7 +91,7 @@ const AudioPlayer = ({
       playbackPositionRef.current = currentTime;
 
       if (playbackPositionRef.current >= audioBufferRef.current.duration) {
-        setIsPlaying(false);
+
         playbackPositionRef.current = 0;
         return;
       }
