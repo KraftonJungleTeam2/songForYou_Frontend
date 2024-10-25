@@ -46,12 +46,6 @@ export const SongProvider = ({ children }) => {
     }
   };
 
-  // 컴포넌트가 마운트되면 노래 리스트를 가져옴
-  useEffect(() => {
-    fetchSongLists();
-  }, []);
-
-  // Context를 통해 songLists와 fetchSongLists를 제공
   return <SongContext.Provider value={{ songLists, fetchSongLists }}>{children}</SongContext.Provider>;
 };
 
