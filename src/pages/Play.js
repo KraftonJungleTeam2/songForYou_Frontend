@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { getNote } from '../utils/NoteUtils';
 import PitchGraph from '../components/PitchGraph';
@@ -9,13 +9,14 @@ import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID �
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 
+// 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
   const referdelay = 175;
   const appendnullnum = referdelay / 25;
 
   for (let j = 0; j < appendnullnum; j++) {
-    doubledData.push(NaN);
+    doubledData.push(null);
   }
 
   for (let i = 0; i < dataArray.length; i++) {
@@ -30,7 +31,7 @@ const Play = () => {
   // song State 받아옴
   const location = useLocation();
   const { song } = location.state || {};
-  console.log(song);
+  // console.log(song);
 
   const { id: songId } = useParams(); // URL에서 songId 추출
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
@@ -45,15 +46,13 @@ const Play = () => {
       alert('데이터가 아직 로드되지 않았습니다.');
     }
   };
-
   const [dataPointCount, setDataPointCount] = useState(200);
-  const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
-
-  const [entireReferData, setEntireReferData] = useState([]);
-  const [refer, setRefer] = useState([]);
 
   // 재생 위치 및 길이
   const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (25ms 단위 모든 데이터가 이를 기준으로 update)
+  const playbackPositionRef = useRef(playbackPosition); // 최신 재생 위치 참조 유지
+  playbackPositionRef.current = playbackPosition; // useRef를 통해 최신 재생 위치를 참조로 유지
+
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
   const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
   const [currentLyric, setCurrentLyric] = useState(''); // 현재 재생 중인 가사 상태
@@ -97,6 +96,9 @@ const Play = () => {
   const dataLoaded = audioLoaded && pitchLoaded && lyricsLoaded;
 
   // 서버에서 데이터 로딩 후 배열 생성
+  const [entireGraphData, setEntireGraphData] = useState([]);
+  const [entireReferData, setEntireReferData] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -132,6 +134,14 @@ const Play = () => {
                   pitch,
                 }))
               );
+
+              setEntireGraphData(
+                processedPitchArray.map((_, index) => ({
+                  time: index * 25, // 25ms 단위로 시간 계산
+                  pitch: null,
+                }))
+              );
+
               setPitchLoaded(true);
             } else {
               console.warn('Warning: pitch data is not an array');
@@ -176,28 +186,6 @@ const Play = () => {
     }
   }, [songId]);
 
-  // playbackPosition에 따라 refer 데이터 업데이트
-  useEffect(() => {
-    if (dimensions.width > 0 && pitchLoaded && entireReferData.length > 0) {
-      const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
-      const interval = 25; // 밀리초 단위
-      const windowSize = dataPointCount * 3; // 데이터 포인트 수
-      const totalTimeWindowMs = windowSize * interval;
-      const pixelsPerMillisecond = graphWidth / totalTimeWindowMs;
-      const currentTimeMs = playbackPosition * 1000;
-
-      const windowStartTime = currentTimeMs - graphWidth / 3 / pixelsPerMillisecond;
-      const windowEndTime = currentTimeMs + (2 * graphWidth) / 3 / pixelsPerMillisecond;
-
-      const actualWindowStartTime = Math.max(0, windowStartTime);
-      const actualWindowEndTime = Math.min(duration * 1000, windowEndTime);
-
-      const windowData = entireReferData.filter((point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime);
-
-      setRefer(windowData);
-    }
-  }, [playbackPosition, entireReferData, dataPointCount, dimensions.width, pitchLoaded, duration]);
-
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
     if (lyricsData && Array.isArray(lyricsData.start) && Array.isArray(lyricsData.end) && Array.isArray(lyricsData.text)) {
@@ -211,30 +199,19 @@ const Play = () => {
     }
   }, [playbackPosition, lyricsData]);
 
+  // Use the custom hook and pass necessary parameters
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+  
   return (
     <div className='single-page'>
       <Sidebar />
       <div className='main-content'>
         <TopBar />
         <div className='flex flex-col' ref={containerRef} style={{display: 'flex',flexDirection: 'column', marginLeft: '10px', marginRight: '10px' }}>
-          {/* <h1 className='text-2xl font-bold mb-4 text-center p-4'>Pitch Detector</h1>
-          <div className='flex flex-col'>
-            <div className='p-4 bg-gray-50 flex justify-around items-center'>
-              <p className='text-lg'>
-                <span className='font-semibold'>Pitch:</span> {pitch ? `${pitch.toFixed(2)} Hz (${getNote(pitch)})` : 'N/A'}
-              </p>
-              <p className='text-lg'>
-                <span className='font-semibold'>Clarity:</span> {clarity ? `${(clarity * 100).toFixed(2)}%` : 'N/A'}
-              </p>
-              <p className='text-lg'>
-                <span className='font-semibold'>Decibel:</span> {decibel ? `${decibel.toFixed(2)} dB` : 'N/A'}
-              </p>
-            </div>
-          </div> */}
 
           {/* Pitch Graph */}
           <div style={{ width: '100%', height: '470px' }}>
-            <PitchGraph dimensions={dimensions} referenceData={refer} realtimeData={graphData} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} songState={song} />
+            <PitchGraph dimensions={dimensions} realtimeData = {entireGraphData} referenceData={entireReferData}  dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={song} />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
