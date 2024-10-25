@@ -9,6 +9,8 @@ import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID �
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 
+
+// 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
   const referdelay = 175;
@@ -30,7 +32,7 @@ const Play = () => {
   // song State 받아옴
   const location = useLocation();
   const { song } = location.state || {};
-  console.log(song);
+  // console.log(song);
 
   const { id: songId } = useParams(); // URL에서 songId 추출
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
@@ -45,9 +47,12 @@ const Play = () => {
       alert('데이터가 아직 로드되지 않았습니다.');
     }
   };
-
   const [dataPointCount, setDataPointCount] = useState(200);
-  const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
+
+  const [graphData, setGraphData] = useState([]);
+  // const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
+  const getpitch = usePitchDetection(isPlaying);
+
 
   const [entireReferData, setEntireReferData] = useState([]);
   const [refer, setRefer] = useState([]);
@@ -75,6 +80,39 @@ const Play = () => {
 
   const [mrDataBlob, setMrDataBlob] = useState(null);
   const [lyricsData, setLyricsData] = useState(null);
+
+
+  // useEffect(() => {
+  //   async function setupAudio() {
+  //     try {
+  //       const { audioContext, analyser, source } = await setupAudioContext();
+  //       audioContextRef.current = audioContext;
+  //       analyserRef.current = analyser;
+  //       analyserRef.current.fftSize = 2 ** 13;
+  //       analyserRef.current.smoothingTimeConstant = 0.8;
+  //       sourceRef.current = source;
+
+  //       const bufferLength = analyserRef.current.fftSize;
+  //       detectorRef.current = PitchDetector.forFloat32Array(bufferLength);
+
+  //       setStartTime(Date.now());
+  //     } catch (error) {
+  //       console.error('Error accessing the microphone', error);
+  //     }
+  //   }
+
+  //   setupAudio();
+
+  //   return () => {
+  //     if (sourceRef.current) {
+  //       sourceRef.current.disconnect();
+  //     }
+  //     if (audioContextRef.current) {
+  //       audioContextRef.current.close();
+  //     }
+  //   };
+  // }, []);
+
 
   // 화면 조정 시 감지
   useEffect(() => {
@@ -132,6 +170,10 @@ const Play = () => {
                   pitch,
                 }))
               );
+
+              // 실시간 배열도 생성 NULL
+              setGraphData(new Array(processedPitchArray.length).fill(NaN));
+
               setPitchLoaded(true);
             } else {
               console.warn('Warning: pitch data is not an array');
@@ -194,8 +236,21 @@ const Play = () => {
 
       const windowData = entireReferData.filter((point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime);
 
-      setRefer(windowData);
-    }
+      const currentpitch = getpitch()
+      // graphData 배열을 새로운 배열로 업데이트
+      setGraphData((prevGraphData) => {
+        const newGraphData = [...prevGraphData]; // 기존 배열 복사
+        const index = Math.floor(playbackPosition * 40); // 정수 인덱스 계산
+        if (index < newGraphData.length) {
+          newGraphData[index] = currentpitch; // 새로운 피치 값 설정
+          console.log(newGraphData[index]);
+        }
+        return newGraphData; // 새로운 배열 반환
+      });
+
+        setRefer(windowData);
+      }
+
   }, [playbackPosition, entireReferData, dataPointCount, dimensions.width, pitchLoaded, duration]);
 
   // 재생 위치에 따라 가사 업데이트

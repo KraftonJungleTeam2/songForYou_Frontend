@@ -37,8 +37,8 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     ctx.filter = 'blur(15px)'; // 10px 정도의 블러 효과
     const imgHeight = image.height;
     const imgWidth = image.width;
-      console.log(imgHeight, imgWidth);
-      console.log(graphWidth, dimensions.height);
+      // console.log(imgHeight, imgWidth);
+      // console.log(graphWidth, dimensions.height);
     // 이미지 그리기 (이미지를 흐리게 적용)
     ctx.drawImage(image, 0, -(imgHeight+dimensions.height)/2, graphWidth, imgHeight / imgWidth * dimensions.width);
 
