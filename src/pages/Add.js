@@ -4,8 +4,10 @@ import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 import { v4 as uuidv4 } from 'uuid';
 import '../css/Add.css';
-
 import { SongProvider, useSongs } from '../Context/SongContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function Add() {
   const { fetchSongLists } = useSongs();
   const [file, setFile] = useState(null);
@@ -83,13 +85,37 @@ function Add() {
           'X-Request-ID': requestId,
         },
       });
-      console.log(response.data);
+      toast.success(`곡 추가 프로세스가 시작되었습니다.`, {
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
 
       const eventSource = new EventSource(`http://localhost:5000/api/songs/completion?requestId=${requestId}`);
 
       eventSource.onmessage = (event) => {
-        console.log('서버로부터 받은 메시지:', event.data);
-        // 응답을 받은 후 연결 종료
+        const message = event.data; // Get the received message
+
+        // Regular expression to capture the name value
+        const nameMatch = message.match(/name:\s*(.+?)\s*$/);
+        const name = nameMatch ? nameMatch[1] : null; // Get the captured group
+
+        // Now you can use the name
+        toast.success(`곡 ${name} 추가가 완료되었습니다.`, {
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+
+        // Close the event source connection
         eventSource.close(); // 연결 종료
         fetchSongLists();
       };
