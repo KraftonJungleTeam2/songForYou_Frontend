@@ -14,11 +14,9 @@ function Single() {
   const handleSongSelect = (song) => {
     setSelectedSong(song);
   };
-
   useEffect(() => {
     fetchSongLists();
-  }, []);
-
+  }, []); // Context를 통해 songLists와 fetchSongLists를 제공
   return (
     <div className='single-page'>
       <Sidebar />

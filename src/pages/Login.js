@@ -20,7 +20,6 @@ function Login() {
         // JWT를 헤더에서 추출
 
         const jwtToken = response.headers['authorization']?.split(' ')[1]; // 'Bearer '를 제거하고 토큰만 가져옴
-        console.log('response', response.headers);
         // 사용자 정보는 response.data에 있습니다
         const userData = response.data;
         // JWT를 세션 스토리지에 저장
