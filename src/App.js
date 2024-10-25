@@ -13,11 +13,13 @@ import { SongProvider, useSong } from './Context/SongContext';
 
 function ProtectedRoute({ element }) {
   const { isLoggedIn } = useAuth();
+  if (isLoggedIn === null) return null; // 초기화가 완료될 때까지 대기
   return isLoggedIn ? element : <Navigate to='/login' replace />;
 }
 
 function CheckLoggedIn({ element }) {
   const { isLoggedIn } = useAuth();
+  if (isLoggedIn === null) return null; // 초기화가 완료될 때까지 대기
   return isLoggedIn ? <Navigate to='/single' replace /> : element;
 }
 
