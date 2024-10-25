@@ -120,6 +120,7 @@ const PitchGraph = ({
         // 인덱스를 기반으로 시간 차이 계산
         let indexDifference1 = 0;
         let indexDifference2 = 0;
+        
         if(isRealtime){
         indexDifference1 = dataIndex  - currentTimeIndex;
         indexDifference2 = dataIndex + 1 - currentTimeIndex;
