@@ -7,6 +7,7 @@ import Setting from './pages/Setting';
 import Register from './pages/Register';
 import Add from './pages/Add';
 import Play from './pages/Play'; // 곡 페이지 컴포넌트
+import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from './Context/AuthContext';
 import { SongProvider, useSong } from './Context/SongContext';
 
@@ -26,6 +27,7 @@ function App() {
       <Router>
         <div className='App'>
           <SongProvider>
+            <ToastContainer />
             <Routes>
               <Route path='/login' element={<CheckLoggedIn element={<Login />} />} />
               <Route path='/register' element={<CheckLoggedIn element={<Register />} />} />
