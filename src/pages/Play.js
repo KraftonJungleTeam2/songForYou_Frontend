@@ -223,18 +223,17 @@ const Play = () => {
     if (dimensions.width > 0 && pitchLoaded && entireReferData.length > 0) {
       const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
       const interval = 25; // 밀리초 단위
-      const windowSize = dataPointCount * 3; // 데이터 포인트 수
-      const totalTimeWindowMs = windowSize * interval;
-      const pixelsPerMillisecond = graphWidth / totalTimeWindowMs;
-      const currentTimeMs = playbackPosition * 1000;
+      const currentTimeMs = playbackPosition * 1000; // 현재 재생 시간 밀리초
 
-      const windowStartTime = currentTimeMs - graphWidth / 3 / pixelsPerMillisecond;
-      const windowEndTime = currentTimeMs + (2 * graphWidth) / 3 / pixelsPerMillisecond;
+      const windowStartIndex = Math.floor((currentTimeMs - (graphWidth / 3) * interval) / interval);
+      const windowEndIndex = Math.ceil((currentTimeMs + (2 * graphWidth) / 3 * interval) / interval);
 
-      const actualWindowStartTime = Math.max(0, windowStartTime);
-      const actualWindowEndTime = Math.min(duration * 1000, windowEndTime);
+      // index 기반으로 실제 유효 범위를 조정
+      const actualStartIndex = Math.max(0, windowStartIndex);
+      const actualEndIndex = Math.min(entireReferData.length - 1, windowEndIndex);
 
-      const windowData = entireReferData.filter((point) => point.time >= actualWindowStartTime && point.time <= actualWindowEndTime);
+      // 해당 시간 범위의 데이터를 필터링
+      const windowData = entireReferData.slice(actualStartIndex, actualEndIndex + 1);
 
       const currentpitch = getpitch()
       // graphData 배열을 새로운 배열로 업데이트
