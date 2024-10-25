@@ -10,7 +10,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Add() {
   const { fetchSongLists } = useSongs();
+  const [ischeckBox, setischeckBox] = useState(true); // file과 URL 입력 전환 상태
   const [file, setFile] = useState(null);
+  const [url, setUrl] = useState(''); // URL 입력 필드 상태 추가
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -18,7 +20,11 @@ function Add() {
   const [genre, setGenre] = useState('jazz');
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]); // 첫 번째 파일을 선택
+    setFile(e.target.files[0]);
+  };
+
+  const handleUrlChange = (e) => {
+    setUrl(e.target.value);
   };
 
   const handleImageChange = (e) => {
@@ -28,6 +34,7 @@ function Add() {
   const handleNameChange = (e) => {
     setTitle(e.target.value);
   };
+
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
   };
@@ -35,8 +42,11 @@ function Add() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!file) {
+    if (ischeckBox && !file) {
       alert('Please upload a song file.');
+      return;
+    } else if (!ischeckBox && !url.trim()) {
+      alert('Please enter a song URL.');
       return;
     }
 
@@ -59,13 +69,18 @@ function Add() {
       alert('Please enter a genre.');
       return;
     }
+
     // FormData 생성
     const formData = new FormData();
-    formData.append('file', file); // 파일 추가
-    formData.append('image', image); // 이미지 추가
+    if (ischeckBox) {
+      formData.append('file', file);
+    } else {
+      formData.append('url', url);
+    }
+    formData.append('image', image);
     formData.append('metadata', JSON.stringify({ title, description }));
-    formData.append('isPublic', isPublic); // 공개 여부 추가
-    formData.append('genre', genre); // 장르 추가
+    formData.append('isPublic', isPublic);
+    formData.append('genre', genre);
 
     const token = sessionStorage.getItem('userToken');
 
@@ -77,7 +92,6 @@ function Add() {
     const requestId = uuidv4();
 
     try {
-      // API 요청
       const response = await axios.put('http://localhost:5000/api/songs/add', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -96,15 +110,11 @@ function Add() {
       });
 
       const eventSource = new EventSource(`http://localhost:5000/api/songs/completion?requestId=${requestId}`);
-
       eventSource.onmessage = (event) => {
-        const message = event.data; // Get the received message
-
-        // Regular expression to capture the name value
+        const message = event.data;
         const nameMatch = message.match(/name:\s*(.+?)\s*$/);
-        const name = nameMatch ? nameMatch[1] : null; // Get the captured group
+        const name = nameMatch ? nameMatch[1] : null;
 
-        // Now you can use the name
         toast.success(`곡 ${name} 추가가 완료되었습니다.`, {
           position: 'bottom-right',
           autoClose: 5000,
@@ -115,8 +125,7 @@ function Add() {
           progress: undefined,
         });
 
-        // Close the event source connection
-        eventSource.close(); // 연결 종료
+        eventSource.close();
         fetchSongLists();
       };
     } catch (error) {
@@ -132,9 +141,26 @@ function Add() {
         <div className='content-area'>
           <form onSubmit={handleSubmit}>
             <label>
-              Song File:
-              <input type='file' onChange={handleFileChange} />
+              파일 vs 유투브 URL:
+              <input
+                type='checkbox'
+                checked={ischeckBox}
+                onChange={(e) => setischeckBox(e.target.checked)}
+              />
+              {ischeckBox ? ' File Upload' : ' URL Upload'}
             </label>
+            <br />
+            {ischeckBox ? (
+              <label>
+                Song File:
+                <input type='file' onChange={handleFileChange} />
+              </label>
+            ) : (
+              <label>
+                Song URL:
+                <input type='text' value={url} onChange={handleUrlChange} />
+              </label>
+            )}
             <br />
             <label>
               Song Image:
@@ -145,7 +171,7 @@ function Add() {
               Name
               <input type='text' value={title} onChange={handleNameChange} />
             </label>
-            <br />{' '}
+            <br />
             <label>
               Description
               <input type='text' value={description} onChange={handleDescriptionChange} />
