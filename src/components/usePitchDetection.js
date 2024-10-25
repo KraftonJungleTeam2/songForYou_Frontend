@@ -242,7 +242,7 @@ export const usePitchDetection = (
     }
 
     if (isPlaying) {
-      intervalId = setInterval(updatePitch, 5);
+      intervalId = setInterval(updatePitch, 25);
     }
 
     return () => {
