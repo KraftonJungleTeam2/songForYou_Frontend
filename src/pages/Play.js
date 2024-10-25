@@ -48,11 +48,8 @@ const Play = () => {
     }
   };
   const [dataPointCount, setDataPointCount] = useState(200);
-
-  const [graphData, setGraphData] = useState([]);
-  // const { pitch, clarity, decibel, graphData } = usePitchDetection(isPlaying, dataPointCount);
-  const getpitch = usePitchDetection(isPlaying);
-
+  
+  
 
   const [entireReferData, setEntireReferData] = useState([]);
   const [refer, setRefer] = useState([]);
@@ -171,9 +168,7 @@ const Play = () => {
                 }))
               );
 
-              // 실시간 배열도 생성 NULL
-              setGraphData(new Array(processedPitchArray.length).fill(NaN));
-
+          
               setPitchLoaded(true);
             } else {
               console.warn('Warning: pitch data is not an array');
@@ -221,31 +216,18 @@ const Play = () => {
   // playbackPosition에 따라 refer 데이터 업데이트
   useEffect(() => {
     if (dimensions.width > 0 && pitchLoaded && entireReferData.length > 0) {
-      const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
+      // const graphWidth = dimensions.width; // width에 기반해 graphWidth를 계산
       const interval = 25; // 밀리초 단위
       const currentTimeMs = playbackPosition * 1000; // 현재 재생 시간 밀리초
-
-      const windowStartIndex = Math.floor((currentTimeMs - (graphWidth / 3) * interval) / interval);
-      const windowEndIndex = Math.ceil((currentTimeMs + (2 * graphWidth) / 3 * interval) / interval);
-
-      // index 기반으로 실제 유효 범위를 조정
+    
+      // 슬라이싱된 참조 데이터 계산
+      const windowStartIndex = Math.floor((currentTimeMs - (dimensions.width / 3) * interval) / interval);
+      const windowEndIndex = Math.ceil((currentTimeMs + (2 * dimensions.width) / 3 * interval) / interval);
+    
       const actualStartIndex = Math.max(0, windowStartIndex);
-      const actualEndIndex = Math.min(entireReferData.length - 1, windowEndIndex);
-
-      // 해당 시간 범위의 데이터를 필터링
-      const windowData = entireReferData.slice(actualStartIndex, actualEndIndex + 1);
-
-      const currentpitch = getpitch()
-      // graphData 배열을 새로운 배열로 업데이트
-      setGraphData((prevGraphData) => {
-        const newGraphData = [...prevGraphData]; // 기존 배열 복사
-        const index = Math.floor(playbackPosition * 40); // 정수 인덱스 계산
-        if (index < newGraphData.length) {
-          newGraphData[index] = currentpitch; // 새로운 피치 값 설정
-          console.log(newGraphData[index]);
-        }
-        return newGraphData; // 새로운 배열 반환
-      });
+      const actualEndIndex = Math.min(entireReferData.length, windowEndIndex); // slice는 endIndex가 포함되지 않으므로 그대로 사용
+    
+      const windowData = entireReferData.slice(actualStartIndex, actualEndIndex);
 
         setRefer(windowData);
       }
@@ -288,7 +270,7 @@ const Play = () => {
 
           {/* Pitch Graph */}
           <div style={{ width: '100%', height: '470px' }}>
-            <PitchGraph dimensions={dimensions} referenceData={refer} realtimeData={graphData} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} songState={song} />
+            <PitchGraph dimensions={dimensions} referenceData={refer} dataPointCount={dataPointCount} currentTimeMs={playbackPosition * 1000} songState={song} />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}

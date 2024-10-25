@@ -11,7 +11,7 @@ const arrayBufferToBase64 = (buffer) => {
   }
   return window.btoa(binary);
 };
-const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 200, currentTimeMs, songState}) => {
+const PitchGraph = ({ dimensions, referenceData, dataPointCount = 200, currentTimeMs, songState}) => {
   const backgroundCanvasRef = useRef(null);
   const dataCanvasRef = useRef(null);
   const cFrequencies = getCFrequencies();
@@ -25,7 +25,6 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     // 데이터 캔버스 초기화
     ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-
     const image = new Image();
     
     // songState 이미지가 있으면 그 이미지를 base64로 설정
@@ -37,8 +36,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     ctx.filter = 'blur(15px)'; // 10px 정도의 블러 효과
     const imgHeight = image.height;
     const imgWidth = image.width;
-      // console.log(imgHeight, imgWidth);
-      // console.log(graphWidth, dimensions.height);
+
     // 이미지 그리기 (이미지를 흐리게 적용)
     ctx.drawImage(image, 0, -(imgHeight+dimensions.height)/2, graphWidth, imgHeight / imgWidth * dimensions.width);
 
@@ -148,7 +146,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, dimensions.width/3, dimensions.height); // 흐리지 않은 사각형 그리기
     // 실시간 피치 그래프 그리기
-    drawPitchData(realtimeData, '#FFA500', graphWidth/3, true);  // 주황색
+    // drawPitchData(realtimeData, '#FFA500', graphWidth/3, true);  // 주황색
     
     // 파란선 그리기
     drawBlueLine();
@@ -171,7 +169,7 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
         });
     
         
-  }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeMs, cFrequencies]);
+  }, [dimensions, referenceData, cFrequencies, dataPointCount, currentTimeMs, cFrequencies]);
 
   return (
     <>
