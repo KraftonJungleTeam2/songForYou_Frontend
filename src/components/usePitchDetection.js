@@ -166,7 +166,7 @@ export const usePitchDetection = (isPlaying = true) => {
     }
 
     if (isPlaying) {
-      intervalId = setInterval(updatePitch, 25);
+      intervalId = setInterval(updatePitch, 5);
     }
 
     return () => {
