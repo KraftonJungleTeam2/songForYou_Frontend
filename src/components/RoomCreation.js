@@ -38,10 +38,12 @@ function RoomCreation({ onCancel }) {
         // 해당 방으로 이동
       } else {
         alert('Failed to create room');
+        onCancel(); // 토큰이 없을 경우 onCancel 호출
       }
     } catch (error) {
       console.error('Error:', error);
       alert('Error creating room');
+      onCancel(); // 토큰이 없을 경우 onCancel 호출
     }
   };
 
