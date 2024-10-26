@@ -19,6 +19,14 @@ function Add() {
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState('jazz');
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -92,7 +100,7 @@ function Add() {
     const requestId = uuidv4();
 
     try {
-      const response = await axios.put('http://localhost:5000/api/songs/add', formData, {
+      const response = await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/songs/add`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -109,7 +117,7 @@ function Add() {
         progress: undefined,
       });
 
-      const eventSource = new EventSource(`http://localhost:5000/api/songs/completion?requestId=${requestId}`);
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_ENDPOINT}/songs/completion?requestId=${requestId}`);
       eventSource.onmessage = (event) => {
         const message = event.data;
         const nameMatch = message.match(/name:\s*(.+?)\s*$/);
@@ -135,8 +143,12 @@ function Add() {
 
   return (
     <div className='single-page'>
-      <Sidebar />
-      <div className='main-content'>
+       <button onClick={toggleSidebar} className="toggle-button">
+        {isSidebarOpen ? 'Close' : 'Open'}
+      </button>
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
           <form onSubmit={handleSubmit}>

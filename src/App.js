@@ -7,6 +7,7 @@ import Setting from './pages/Setting';
 import Register from './pages/Register';
 import Add from './pages/Add';
 import Play from './pages/Play'; // 곡 페이지 컴포넌트
+import MultiPlay from './pages/MultiPlay';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from './Context/AuthContext';
 import { SongProvider, useSong } from './Context/SongContext';
@@ -38,6 +39,7 @@ function App() {
               <Route path='/setting' element={<ProtectedRoute element={<Setting />} />} />
               <Route path='/play/:id' element={<Play />} />
               <Route path='/add' element={<Add />} />
+              <Route path='/multiplay/:roomid' element={<MultiPlay/>}/>
               <Route path='/' element={<Navigate to='/login' replace />} />
             </Routes>
           </SongProvider>

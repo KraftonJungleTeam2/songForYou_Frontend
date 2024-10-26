@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../Context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import '../css/TopBar.css';
 import axios from 'axios';
 
@@ -15,6 +15,7 @@ function TopBar() {
 
   const { setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchUserData();
@@ -24,7 +25,7 @@ function TopBar() {
     try {
       const token = sessionStorage.getItem('userToken');
 
-      const response = await axios.get('http://localhost:5000/api/users/info', {
+      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -43,7 +44,7 @@ function TopBar() {
     setError('');
     try {
       const token = sessionStorage.getItem('userToken');
-      const response = await axios.delete('http://localhost:5000/api/users/logout', {
+      const response = await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/users/logout`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

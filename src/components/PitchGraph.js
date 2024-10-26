@@ -166,12 +166,31 @@ useEffect(() => {
         // y 좌표 계산
         const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
         const y2 = logScale(point.pitch, dimensions, cFrequencies);
+        
+        // console.log(y2);
 
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
       });
 
       ctx.stroke();
+
+      // 리얼타임 모드일 경우 반투명 선 추가
+      if (isRealtime) {
+        const startX = x0; // 기준 x 위치
+        const endX = 0; // 좌측 끝
+        const currentY = logScale(data[currentTimeIndex]?.pitch, dimensions, cFrequencies);
+        
+        // currentY가 0이 아닐 때만 선을 그리기
+        if (data[currentTimeIndex]?.pitch !== null) {
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)'; // 노란색 반투명 선
+          ctx.lineWidth = 10;
+          ctx.moveTo(startX, currentY);
+          ctx.lineTo(endX, currentY);
+          ctx.stroke();
+        }
+      }
 
       // 그림자 설정 초기화
       ctx.shadowBlur = 0;
