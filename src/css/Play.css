@@ -1,0 +1,58 @@
+  .main-content-play {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* margin-left: 150px */
+  }
+  
+  /* Container */
+  .flex-col {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  
+  /* Pitch Graph */
+  .pitch-graph {
+    width: 100%;
+    height: 450px;
+  }
+  
+  /* Karaoke Lyrics */
+  .karaoke-lyrics {
+    height: 150px;
+    text-align: center;
+  }
+  
+  /* Audio Player Control */
+  .audio-controls {
+    width: 1000px;
+  }
+  
+  .audio-controls button {
+    cursor: pointer;
+  }
+  
+  .range-slider {
+    width: 100%;
+  }
+  
+  .playback-info {
+    margin-top: 10px;
+  }
+  
+  /* Speed Control */
+  .speed-control label {
+    margin-right: 5px;
+  }
+  
+  .speed-control-value {
+    margin-top: 5px;
+  }
+  
+  /* Loading */
+  .loading-text {
+    color: #555;
+  }
+  
