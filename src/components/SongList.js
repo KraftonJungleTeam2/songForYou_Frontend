@@ -2,50 +2,59 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongList.css';
 
-function SongList({ viewType, onSongSelect, searchTerm, songs, onOpenPopup }) {
+function SongList({onSongSelect, searchTerm, songs }) {
   const navigate = useNavigate();
-
-  const handlePlay = (e, songId) => {
+  const handlePlay = (e, song) => {
     e.stopPropagation();
-    if(viewType === 'private'){
-      navigate(`/play/${songId}`);
-    } else {
-      navigate(`/play/public/${songId}`);
+
+    navigate(`/play/${song.id}`, { state: { song } }); // 상태와 함께 네비게이션
+  };
+
+  function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
-  };
-
-  const filteredSongs = songs.filter((song) =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleAddSongClick = () => {
-    onOpenPopup();
-  };
+    return window.btoa(binary);
+  }
+  const filteredSongs = songs.filter((song) => song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="song-list">
+    <div className='song-list'>
       {filteredSongs.length === 0 ? (
-        <div className="add-song-banner" onClick={handleAddSongClick}>
-          <div className="add-song-icon">+</div>
-          <div className="add-song-text">
+        <div
+          className='add-song-banner'
+          onClick={() => {
+            navigate('/add');
+          }}>
+          <div className='add-song-icon'>+</div>
+          <div className='add-song-text'>
             <h4>곡을 추가하세요</h4>
             <p>곡 추가를 위해 여기를 클릭하세요.</p>
           </div>
         </div>
       ) : (
         filteredSongs.map((song) => (
-          <div
-            key={song.id}
-            className="song-item"
-            onClick={() => onSongSelect(song)}
-          >
-            <div className="song-icon">▲■●</div>
-            <div className="song-info">
-              <h4>{song.title}</h4>
-              <p>{song.description}</p>
-              <span className="timestamp">{song.timestamp}</span>
+          <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
+            <div className='song-icon'>
+              {song.image && song.image.data ? (
+                <img src={`data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)}`} alt={song.metadata.title} width='200' />
+              ) : (
+                <div>No Image Available</div> // 이미지가 없을 경우 대체 내용
+              )}{' '}
             </div>
-            <div className="play-button" onClick={(e) => handlePlay(e, song.id)}>▶</div>
+
+            <div className='song-info'>
+              <h4>{song.metadata.title}</h4>
+              <p>{song.metadata.description}</p>
+
+              <span className='timestamp'>{song.timestamp}</span>
+            </div>
+            <div className='play-button' onClick={(e) => handlePlay(e, song)}>
+              ▶
+            </div>
           </div>
         ))
       )}

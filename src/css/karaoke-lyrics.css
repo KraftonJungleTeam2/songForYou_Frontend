@@ -1,0 +1,25 @@
+.karaoke-lyrics-container {
+    display: flex;
+    justify-content: center; /* 수평 중앙 정렬 */
+    /* align-items: center; 수직 중앙 정렬 */
+    /* height: 100vh; 화면 전체 높이를 차지 */
+  }
+
+.karaoke-lyrics {
+    font-size: 48px; /* 텍스트 크기를 크게 설정 */
+    font-weight: bold;
+    color: #fff; /* 기본 텍스트 색상 */
+    /* text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); 텍스트 그림자 효과 */
+    animation: fade-color 2s ease-in-out infinite alternate; /* 색상 변화 애니메이션 */
+  }
+  
+  /* 색상 변화를 위한 애니메이션 */
+  @keyframes fade-color {
+    0% {
+      color: black; /* 시작 색상 (핑크) */
+    }
+    100% {
+      color: black; /* 끝 색상 (주황) */
+    }
+  }
+  

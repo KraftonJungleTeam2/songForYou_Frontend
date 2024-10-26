@@ -4,7 +4,7 @@
 
 .main-content {
   flex-grow: 1;
-  margin-left: 200px; /* Sidebar의 너비 */
+  margin-left: 150px; /* Sidebar의 너비 */
 }
 
 .content-area {
