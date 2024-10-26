@@ -98,7 +98,7 @@ const Play = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/songs/play/${songId}`, {
           method: 'GET',
         });
 
