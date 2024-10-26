@@ -202,7 +202,7 @@ const Play = () => {
 
   // Use the custom hook and pass necessary parameters
   usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
-  
+  // console.log(entireGraphData);
   return (
     <div className="single-page">
       <Sidebar />
