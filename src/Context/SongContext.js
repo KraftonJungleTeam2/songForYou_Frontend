@@ -18,7 +18,7 @@ export const SongProvider = ({ children }) => {
       }
 
       const publicResponse = await axios.post(
-        'http://localhost:5000/api/songs/getList',
+        `${process.env.REACT_APP_API_ENDPOINT}/songs/getList`,
         { isPublic: true, offset: 0 }, // body 부분
         {
           headers: {
@@ -28,7 +28,7 @@ export const SongProvider = ({ children }) => {
         }
       );
       const privateResponse = await axios.post(
-        'http://localhost:5000/api/songs/getList',
+        `${process.env.REACT_APP_API_ENDPOINT}/songs/getList`,
         { isPublic: false, offset: 0 }, // body 부분
         {
           headers: {
