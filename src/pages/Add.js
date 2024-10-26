@@ -78,7 +78,7 @@ function Add() {
 
     try {
       // API 요청
-      const response = await axios.put('http://localhost:5000/api/songs/add', formData, {
+      const response = await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/songs/add`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -95,7 +95,7 @@ function Add() {
         progress: undefined,
       });
 
-      const eventSource = new EventSource(`http://localhost:5000/api/songs/completion?requestId=${requestId}`);
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_ENDPOINT}/songs/completion?requestId=${requestId}`);
 
       eventSource.onmessage = (event) => {
         const message = event.data; // Get the received message

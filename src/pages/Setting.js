@@ -21,7 +21,7 @@ function Setting() {
     try {
       const token = sessionStorage.getItem('userToken');
 
-      const response = await axios.get('http://localhost:5000/api/users/info', {
+      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -55,7 +55,7 @@ function Setting() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/users/update', {
+      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/users/update`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ function Setting() {
       try {
         const token = sessionStorage.getItem('userToken');
 
-        const response = await axios.delete('http://localhost:5000/api/users/delete', {
+        const response = await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/users/delete`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
