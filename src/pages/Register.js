@@ -14,7 +14,7 @@ function Register() {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/users/register', { name, email, password });
+      const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/users/register`, { name, email, password });
       console.log(response.data);
       // 회원가입 성공 시 로그인 페이지로 이동
       navigate('/login');

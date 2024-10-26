@@ -25,7 +25,7 @@ function TopBar() {
     try {
       const token = sessionStorage.getItem('userToken');
 
-      const response = await axios.get('http://localhost:5000/api/users/info', {
+      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,7 +44,7 @@ function TopBar() {
     setError('');
     try {
       const token = sessionStorage.getItem('userToken');
-      const response = await axios.delete('http://localhost:5000/api/users/logout', {
+      const response = await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/users/logout`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
