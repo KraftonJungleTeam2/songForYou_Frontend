@@ -1,70 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
+import RoomCreation from '../components/RoomCreation';
 import '../css/Multi.css';
 
 function Multi() {
-  const rooms = [
-    { id: 1, thumbnail: 'thumb1.png', title: 'Room 1', players: '2/7', song: 'Song A' },
-    { id: 2, thumbnail: 'thumb2.png', title: 'Room 2', players: '3/7', song: 'Song B' },
-    { id: 3, thumbnail: 'thumb3.png', title: 'Room 3', players: '4/7', song: 'Song C' },
-    // 10개 정도의 방 목록이 필요하면 더 추가합니다.
-  ];
-
+  const [rooms, setRooms] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const roomsPerPage = 10; // 페이지당 방 개수
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false); // 방 생성 상태
+  const roomsPerPage = 10;
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+
+  const fetchRooms = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem('userToken');
+      if (!token) {
+        alert('No JWT token found');
+        console.error('No JWT token found');
+        return;
+      }
+
+      const response = await axios.post(
+        'http://localhost:5000/api/rooms/getlist',
+        { offset: (currentPage - 1) * roomsPerPage },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setRooms(response.data);
+    } catch (error) {
+      alert('Error fetching rooms:');
+      console.error('Error fetching rooms:', error);
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   const handleNextPage = () => {
-    // 총 페이지 수에 맞춰 페이지 이동 제어
     setCurrentPage(currentPage + 1);
   };
 
-  // 빈 카드를 채워서 항상 10개의 카드를 유지하도록 함
   const roomCards = [...rooms];
   while (roomCards.length < roomsPerPage) {
-    roomCards.push({ id: `empty-${roomCards.length}`, empty: true }); // 빈 방 카드
+    roomCards.push({ roomId: `empty-${roomCards.length}`, empty: true });
   }
 
   return (
     <div className='single-page'>
-      <Sidebar />
-      <div className='main-content'>
+       <button onClick={toggleSidebar} className="toggle-button">
+        {isSidebarOpen ? 'Close' : 'Open'}
+      </button>
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area-multi'>
-          <div className='main-area'>
-            <button onClick={handlePreviousPage}>Previous Page</button> 
-            <div className="room-list">
-              {roomCards.map((room, index) => (
-                <div className={`room-card ${room.empty ? 'empty' : ''}`} key={room.id}>
-                  {room.empty ? (
-                    <div className="room-info-empty">빈 방</div>
-                  ) : (
-                    <>
-                      <img className="thumbnail" src={room.thumbnail} alt={`Thumbnail for ${room.title}`} />
-                      <div className="room-info">
-                        <h3>{room.title}</h3>
-                        <p>Players: {room.players}</p>
-                        <p>Song: {room.song}</p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+          {isCreatingRoom ? (
+            <RoomCreation onCancel={() => setIsCreatingRoom(false)} /> // 방 생성 화면
+          ) : (
+            <div className='main-area'>
+              <button onClick={handlePreviousPage}>Previous Page</button>
+              <div className="room-list">
+                {roomCards.map((room, index) => (
+                  <div className={`room-card ${room.empty ? 'empty' : ''}`} key={room.roomId}>
+                    {room.empty ? (
+                      <div className="room-info-empty">빈 방</div>
+                    ) : (
+                      <>
+                        <img className="thumbnail" src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
+                        <div className="room-info">
+                          <h3>{room.roomTitle}</h3>
+                          <p>Players: {room.players}/5</p>
+                          <p>Song: {room.playingsongTitle}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button onClick={handleNextPage}>Next Page</button>
             </div>
-            <button onClick={handleNextPage}>Next Page</button>
-          </div>
+          )}
           
-          <div className="bottom-buttons">
+          <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
             <button className="quick-join">빠른 입장</button>
             <button className='sort-by'> 정렬 조건</button>
-            <button className="create-room">방 생성</button>
-            <button className="refresh">새로고침</button>
+            <button className="create-room" onClick={() => setIsCreatingRoom(true)}>방 생성</button>
+            <button className="refresh" onClick={fetchRooms}>새로고침</button>
           </div>
-
         </div>
       </div>
     </div>
