@@ -55,7 +55,9 @@ const Play = () => {
 
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
   const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
+  const [prevLyric, setPrevLyric] = useState(''); // 이전 가사
   const [currentLyric, setCurrentLyric] = useState(''); // 현재 재생 중인 가사 상태
+  const [nextLyric, setNextLyric] = useState(''); // 다음 가사
 
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
@@ -188,14 +190,29 @@ const Play = () => {
 
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
-    if (lyricsData && Array.isArray(lyricsData.start) && Array.isArray(lyricsData.end) && Array.isArray(lyricsData.text)) {
-      for (let i = 0; i < lyricsData.start.length; i++) {
-        if (playbackPosition >= lyricsData.start[i] && playbackPosition <= lyricsData.end[i]) {
-          setCurrentLyric(lyricsData.text[i]);
-          return; // 가사를 찾으면 루프 종료
+    let curr_idx = -1;
+    if (lyricsData && lyricsData.segments) {
+      const segments = lyricsData.segments;
+      for (let i = 0; i < segments.length; i++) {
+        if (playbackPosition >= segments[i].start) {
+          curr_idx = i;
+          break;
         }
       }
-      setCurrentLyric(''); // 현재 재생 위치에 해당하는 가사가 없을 경우 빈 문자열
+      if (segments[i-1])
+        setPrevLyric(segments[i-1].text);
+      else
+        setPrevLyric('');
+
+      if (segments[i])
+        setCurrentLyric(segments[i].text);
+      else
+        setCurrentLyric('');
+
+      if (segments[i+1])
+        setNextLyric(segments[i+1].text);
+      else
+        setNextLyric('');
     }
   }, [playbackPosition, lyricsData]);
 
@@ -215,8 +232,14 @@ const Play = () => {
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
+          <p className='karaoke-lyrics-prev' style={{ height: '100px' , textAlign: 'center', opacity: 0.5}}>
+            {prevLyric}
+          </p>
           <p className='karaoke-lyrics' style={{ height: '150px' , textAlign: 'center' }}>
             {currentLyric}
+          </p>
+          <p className='karaoke-lyrics-next' style={{ height: '100px' , textAlign: 'center', opacity: 0.5}}>
+            {nextLyric}
           </p>
 
           {/* 오디오 플레이어 컨트롤 */}
