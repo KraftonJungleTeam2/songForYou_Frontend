@@ -1,10 +1,11 @@
 /* 전체 페이지 레이아웃 */
 .main-content {
-  
-  display: flex;
-  flex-direction: column;
-  width: calc(100% - 250px); /* Sidebar를 제외한 나머지 영역 */
-  position: relative;
+  flex-grow: 1;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.shifted {
+  margin-left: 200px; /* Sidebar의 너비와 일치 */
 }
 
 /* content-area: 내부 요소를 세로로 정렬 */
@@ -77,8 +78,8 @@
 .bottom-buttons {
   position: fixed;
   bottom: 0;
-  left: 150px; /*Sidebar의 너비만큼 왼쪽에서 시작*/
-  width: calc(100% - 150px); /* Sidebar를 제외한 나머지 너비 */
+  left: 0; /* 기본값은 왼쪽부터 시작 */
+  width: 100%;
   height: 100px; /* 높이 고정 */
   display: flex;
   justify-content: space-around;
@@ -86,6 +87,12 @@
   background-color: #fff;
   border-top: 1px solid #ddd;
   z-index: 2; /* 다른 요소 위로 고정 */
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+.bottom-buttons.shifted {
+  left: 200px; /* Sidebar의 너비와 일치 */
+  width: calc(100% - 200px); /* 전체 너비에서 Sidebar 너비를 제외 */
 }
 
 /* 버튼 스타일 */

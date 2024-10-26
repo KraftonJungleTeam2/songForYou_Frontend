@@ -19,6 +19,14 @@ function Add() {
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState('jazz');
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -135,8 +143,12 @@ function Add() {
 
   return (
     <div className='single-page'>
-      <Sidebar />
-      <div className='main-content'>
+       <button onClick={toggleSidebar} className="toggle-button">
+        {isSidebarOpen ? 'Close' : 'Open'}
+      </button>
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
           <form onSubmit={handleSubmit}>
