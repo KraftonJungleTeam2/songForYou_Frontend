@@ -1,43 +1,52 @@
-/* 사이드바 스타일 */
+/* 기본 sidebar 스타일 */
 .sidebar {
-    width: 150px;
-    height: 100%;
-    background-color: #333;
-    color: white;
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 1000;
-    /* display: flex; */
-    flex-direction: column;
-    align-items: center;
-    padding-top: 60px; /* 네비게이션 버튼을 아래로 내리기 위한 패딩 */
-}
-
-.sidebar-nav {
+    width: 200px;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease; /* 애니메이션 추가 */
+    z-index: 100;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0); /* 열릴 때 */
+  }
+  
+  .sidebar.closed {
+    transform: translateX(-100%); /* 닫힐 때 */
+  }
+  
+  .sidebar-nav {
+    padding: 20px;
+  }
+  
+  .sidebar-nav button {
+    display: block;
+    margin-bottom: 10px;
+    padding: 10px;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.sidebar-nav button {
-    background-color: #007bff;
+    background-color: #444;
     color: white;
     border: none;
-    padding: 10px;
-    margin: 5px 0;
     cursor: pointer;
-    width: 80%;
-    text-align: center;
-}
-
-.sidebar-nav button:hover {
-    background-color: #0056b3;
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-    }
-}
+  }
+  
+  .sidebar-nav button:hover {
+    background-color: #555;
+  }
+  
+  .toggle-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
