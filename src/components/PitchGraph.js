@@ -28,15 +28,15 @@ const PitchGraph = ({ dimensions, referenceData, realtimeData, dataPointCount = 
 
 
     const image = new Image();
-        image.src = backgroundImage; // 이미지 경로 설정
+        // image.src = backgroundImage; // 이미지 경로 설정
         
           // 블러 필터 설정
           ctx.filter = 'blur(10px)'; // 10px 정도의 블러 효과
-          const imgWidth = image.width;
-          const imgHeight = image.height;
+        //   const imgWidth = image.width;
+        //   const imgHeight = image.height;
     
           // 이미지 그리기 (이미지를 흐리게 적용)
-          ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
+        //   ctx.drawImage(image, 0, -(imgHeight-dimensions.height)/2, dimensions.width, imgHeight/imgWidth*dimensions.width);
         
           // 블러 필터를 제거하여 이후 요소에 영향을 주지 않도록 함
           ctx.filter = 'none';
