@@ -1,6 +1,5 @@
 // src/pages/Single.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import '../css/Single.css';
 import Sidebar from '../components/SideBar';
 import SongListArea from '../components/SongListArea';
