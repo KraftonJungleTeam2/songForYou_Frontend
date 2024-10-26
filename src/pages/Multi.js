@@ -11,6 +11,13 @@ function Multi() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false); // 방 생성 상태
   const roomsPerPage = 10;
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+
   const fetchRooms = useCallback(async () => {
     try {
       const token = sessionStorage.getItem('userToken');
@@ -57,8 +64,11 @@ function Multi() {
 
   return (
     <div className='single-page'>
-      <Sidebar />
-      <div className='main-content'>
+       <button onClick={toggleSidebar} className="toggle-button">
+        {isSidebarOpen ? 'Close' : 'Open'}
+      </button>
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area-multi'>
           {isCreatingRoom ? (
@@ -88,7 +98,7 @@ function Multi() {
             </div>
           )}
           
-          <div className="bottom-buttons">
+          <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
             <button className="quick-join">빠른 입장</button>
             <button className='sort-by'> 정렬 조건</button>
             <button className="create-room" onClick={() => setIsCreatingRoom(true)}>방 생성</button>
