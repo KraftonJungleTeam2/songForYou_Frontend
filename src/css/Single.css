@@ -1,3 +1,4 @@
+/* Single.css */
 .single-page {
   display: flex;
   height: 100vh;
@@ -5,17 +6,21 @@
 
 .main-content {
   flex-grow: 1;
-  margin-left: 150px; /* Sidebar의 너비 */
+  transition: margin-left 0.3s ease;
 }
 
-.content-area {
-  display: flex;
+.main-content.shifted {
+  margin-left: 200px; /* Sidebar의 너비와 일치 */
 }
 
-.song-list-area {
-  flex-grow: 1;
-}
-
-.preview-area {
-  width: 300px; /* 또는 원하는 너비 */
+.toggle-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 200; /* Sidebar보다 높은 값 설정 */
 }
