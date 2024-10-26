@@ -73,21 +73,6 @@
   color: #666;
 }
 
-/* 페이지 버튼 스타일링 */
-button {
-  padding: 10px 20px;
-  font-size: 1em;
-  cursor: pointer;
-}
-
-.main-area button {
-  background-color: #ddd;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  margin: 0 30px; /* 좌우 버튼에 여백 추가 */
-}
-
 /* 하단 버튼들 고정 영역 */
 .bottom-buttons {
   position: fixed;
@@ -100,7 +85,7 @@ button {
   align-items: center; /* 버튼을 수직 중앙에 정렬 */
   background-color: #fff;
   border-top: 1px solid #ddd;
-  z-index: 1000; /* 다른 요소 위로 고정 */
+  z-index: 2; /* 다른 요소 위로 고정 */
 }
 
 /* 버튼 스타일 */
