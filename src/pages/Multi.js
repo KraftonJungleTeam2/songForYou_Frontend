@@ -28,7 +28,7 @@ function Multi() {
       }
 
       const response = await axios.post(
-        'http://localhost:5000/api/rooms/getlist',
+        `${process.env.REACT_APP_API_ENDPOINT}/rooms/getlist`,
         { offset: (currentPage - 1) * roomsPerPage },
         {
           headers: {
