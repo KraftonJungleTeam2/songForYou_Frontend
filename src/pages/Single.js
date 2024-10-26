@@ -6,55 +6,17 @@ import SongListArea from '../components/SongListArea';
 import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 
+import { SongProvider, useSongs } from '../Context/SongContext';
+
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
-  const [songLists, setSongLists] = useState({ public: [], private: [] });
-
-  useEffect(() => {
-    fetchSongLists();
-  }, []);
-  
-  const fetchSongLists = async () => {
-    try {
-      const token = sessionStorage.getItem('userToken');
-      if (!token) {
-        console.error('No JWT token found');
-        return;
-      }
-
-      const publicResponse = await axios.post(
-        'http://localhost:5000/api/songs/getList',
-        { isPublic: true, offset: 0 }, // body 부분
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const privateResponse = await axios.post(
-        'http://localhost:5000/api/songs/getList',
-        { isPublic: false, offset: 0 }, // body 부분
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      setSongLists({
-        public: publicResponse.data,
-        private: privateResponse.data,
-      });
-    } catch (error) {
-      console.error('Error fetching song lists:', error);
-    }
-  };
-
+  const { songLists, fetchSongLists } = useSongs();
   const handleSongSelect = (song) => {
     setSelectedSong(song);
   };
-
+  useEffect(() => {
+    fetchSongLists();
+  }, []); // Context를 통해 songLists와 fetchSongLists를 제공
   return (
     <div className='single-page'>
       <Sidebar />
