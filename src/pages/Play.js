@@ -5,6 +5,7 @@ import PitchGraph from '../components/PitchGraph';
 import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
+import '../css/Play.css'
 import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
@@ -104,7 +105,7 @@ const Play = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/songs/play/${songId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/songs/play/${songId}`, {
           method: 'GET',
         });
 
@@ -218,19 +219,26 @@ const Play = () => {
 
   // Use the custom hook and pass necessary parameters
   usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
-  
+  // console.log(entireGraphData);
   return (
-    <div className='single-page'>
+    <div className="single-page">
       <Sidebar />
-      <div className='main-content'>
+      <div className="main-content-play">
         <TopBar />
-        <div className='flex flex-col' ref={containerRef} style={{display: 'flex',flexDirection: 'column', marginLeft: '10px', marginRight: '10px' }}>
-
+        <div className="flex-col" ref={containerRef}>
+  
           {/* Pitch Graph */}
-          <div style={{ width: '100%', height: '470px' }}>
-            <PitchGraph dimensions={dimensions} realtimeData = {entireGraphData} referenceData={entireReferData}  dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={song} />
+          <div className="pitch-graph">
+            <PitchGraph 
+              dimensions={dimensions}
+              realtimeData={entireGraphData}
+              referenceData={entireReferData}
+              dataPointCount={dataPointCount}
+              currentTimeIndex={playbackPosition * 40}
+              songState={song}
+            />
           </div>
-
+  
           {/* 현재 재생 중인 가사 출력 */}
           <p className='karaoke-lyrics-prev' style={{ height: '100px' , textAlign: 'center', opacity: 0.5}}>
             {prevLyric}
@@ -243,29 +251,53 @@ const Play = () => {
           </p>
 
           {/* 오디오 플레이어 컨트롤 */}
-          <div style={{ width: '1000px' }}>
+          <div className="audio-controls">
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='w-full range-slider' disabled={!dataLoaded} />
-            <div>
+            <input 
+              type="range" 
+              min="0" 
+              max={duration} 
+              step="0.025" 
+              value={playbackPosition} 
+              onChange={handlePlaybackPositionChange} 
+              className="range-slider" 
+              disabled={!dataLoaded} 
+            />
+            <div className="playback-info">
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
-
-            <div>
+  
+            <div className="speed-control">
               <label>속도 조절:</label>
-              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='w-full range-slider' />
-              <div>렌더링 사이즈: {dataPointCount}</div>
+              <input 
+                type="range" 
+                min="25" 
+                max="300" 
+                step="1" 
+                value={dataPointCount} 
+                onChange={handleSpeedChange} 
+                className="range-slider" 
+              />
+              <div className="speed-control-value">렌더링 사이즈: {dataPointCount}</div>
             </div>
-            {!dataLoaded && <p>데이터 로딩 중...</p>}
+            {!dataLoaded && <p className="loading-text">데이터 로딩 중...</p>}
           </div>
-
+  
           {/* 오디오 플레이어 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} setDuration={setDuration} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} onPlaybackPositionChange={setPlaybackPosition} />
+          <AudioPlayer 
+            isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
+            userSeekPosition={userSeekPosition}
+            setDuration={setDuration}
+            audioBlob={mrDataBlob}
+            setAudioLoaded={setAudioLoaded}
+            onPlaybackPositionChange={setPlaybackPosition}
+          />
         </div>
       </div>
     </div>
   );
-};
-
+}
 export default Play;
