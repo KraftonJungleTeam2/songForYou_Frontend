@@ -1,5 +1,6 @@
 .preview-area {
-    width: 300px;
+    width: var(--preview-width);
+    max-width: 25rem;
     padding: 20px;
     background-color: #f9f9f9;
     border-left: 1px solid #e0e0e0;
@@ -15,3 +16,11 @@
     font-size: 14px;
     color: #666;
   }
+
+.song-icon {
+    width: 100%;
+}
+
+.preview-buttons {
+    display: flex;
+}
