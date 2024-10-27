@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../Context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import '../css/TopBar.css';
 import axios from 'axios';
 
@@ -15,6 +15,7 @@ function TopBar() {
 
   const { setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchUserData();

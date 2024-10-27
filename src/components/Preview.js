@@ -62,7 +62,7 @@ function Preview({ selectedSong }) {
       }
 
       // 오디오 URL이 없는 경우에만 새로 요청
-      const response = await fetch( `${process.env.REACT_APP_API_ENDPOINT}/songs/preview`, {
+      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/songs/preview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
