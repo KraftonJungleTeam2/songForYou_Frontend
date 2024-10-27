@@ -3,7 +3,7 @@ export const setupAudioContext = async () => {
     audio: {
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: true
+      autoGainControl: false
     }
   });
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
