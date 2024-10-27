@@ -14,7 +14,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
+      const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/users/login`, { email, password });
 
       if (response.status === 200) {
         // JWT를 헤더에서 추출
