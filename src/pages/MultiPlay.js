@@ -1,46 +1,40 @@
 import { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
+import '../css/MultiPlay.css';
+import AudioPlayer from "../components/AudioPlayer";
 
 function MultiPlay() {
-    const [message, setMessage] = useState("No message received");
+    const [players, setPlayers] = useState(Array(8).fill(null)); // 8자리 초기화
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [userSeekPosition, setUserSeekPosition] = useState(0);
+    const [audioLoaded, setAudioLoaded] = useState(false);
+    const [duration, setDuration] = useState(0);
 
-    useEffect(() => {
-        // WebSocket 연결 설정
-        const socket = new WebSocket("ws://your-websocket-server-url");
-
-        // WebSocket 연결 성공 시 실행
-        socket.onopen = () => {
-            console.log("WebSocket connection established.");
-            socket.send("Hello Server!"); // 서버로 메시지 전송
-        };
-
-        // WebSocket 메시지 수신 시 실행
-        socket.onmessage = (event) => {
-            console.log("Message received from server:", event.data);
-            setMessage(event.data); // 수신된 메시지를 상태에 저장
-        };
-
-        // WebSocket 연결 오류 발생 시 실행
-        socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
-
-        // WebSocket 연결 종료 시 실행
-        socket.onclose = () => {
-            console.log("WebSocket connection closed.");
-        };
-
-        // 컴포넌트 언마운트 시 WebSocket 연결 해제
-        return () => {
-            socket.close();
-        };
-    }, []);
+    const handlePlaybackPositionChange = (position) => {
+        setUserSeekPosition(position);
+    };
 
     return (
         <div className="multiPlay-page">
-            <TopBar />
-            <h1>Hello</h1>
-            <p>Server message: {message}</p>
+            <TopBar className="top-bar" />
+            <div className="multi-content">
+                <div className="players">
+                    {players.map((player, index) => (
+                        <div key={index} className="player-card">
+                            {player ? (
+                                <div>
+                                    <p>{player.name}</p>
+                                </div>
+                            ) : (
+                                <p>빈 자리</p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div>
+                  <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={player.audioBlob} setAudioLoaded={setAudioLoaded}  setDuration={setDuration}  onPlaybackPositionChange={handlePlaybackPositionChange}/>
+                </div>
+            </div>
         </div>
     );
 }
