@@ -38,7 +38,7 @@ function SongList({onSongSelect, searchTerm, songs }) {
       ) : (
         filteredSongs.map((song) => (
           <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
-            <div className='song-icon'>
+            <div className='song-image'>
               {song.image && song.image.data ? (
                 <img src={`data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)}`} alt={song.metadata.title} width='200' />
               ) : (
