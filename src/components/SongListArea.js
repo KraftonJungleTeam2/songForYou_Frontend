@@ -19,20 +19,20 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
   return (
     <div className='song-list-area'>
       <div className='top-section'>
-        <div className='tabs'>
-          <button className={viewType === 'private' ? 'active' : ''} onClick={() => handleTabClick('private')}>
-            Private
-          </button>
-          <button className={viewType === 'public' ? 'active' : ''} onClick={() => handleTabClick('public')}>
-            Public
-          </button>
+        <div className='tabs' style={{paddingBottom: '1px', marginLeft: '0rem', margin: 'auto'}}>
+          <li className={viewType === 'private' ? 'is-active' : ''} onClick={() => handleTabClick('private')}>
+            <a>내 노래</a>
+          </li>
+          <li className={viewType === 'public' ? 'is-active' : ''} onClick={() => handleTabClick('public')}>
+            <a>공개 노래</a>
+          </li>
         </div>
         <div className='search-bar'>
-          <input type='text' placeholder='Hinted search text' value={searchTerm} onChange={handleSearch} />
-          <button>🔍</button>
+          <input type='text' placeholder='노래 검색' value={searchTerm} onChange={handleSearch} />
+          <button className='button is-dark'><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
-        <button className='add-song-button' onClick={() => navigate('/add')}>
-          + 곡 추가
+        <button className='button is-link add-song-button' onClick={() => navigate('/add')}>
+        <i class="fa-solid fa-upload"></i>   노래 올리기
         </button>
       </div>
       <SongList searchTerm={searchTerm} onSongSelect={onSongSelect} songs={viewType === 'public' ? publicSongs : privateSongs} />
