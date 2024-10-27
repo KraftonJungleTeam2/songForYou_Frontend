@@ -57,33 +57,26 @@
 .search-bar button {
   padding: 8px 12px;
   font-size: 14px;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 0 4px 4px 0;
   cursor: pointer;
+  margin-right: 1rem;
 }
 
 /* 곡 추가 버튼 스타일 */
 .add-song-button {
-  padding: 10px 20px;
-  background-color: #28a745;
+  padding: 0.5rem 1rem;
+  height: 90%;
   border: none;
-  color: white;
   font-size: 16px;
   cursor: pointer;
   border-radius: 4px;
-}
-
-.add-song-button:hover {
-  background-color: #218838;
 }
 
 /* SongList 컴포넌트에 대한 스타일 */
 .song-list {
   flex-grow: 1;
   overflow-y: auto;
-  background-color: white;
 }
 
 /* SongList 내부의 곡 추가 배너 */
