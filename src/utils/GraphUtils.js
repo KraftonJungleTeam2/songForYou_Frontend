@@ -4,6 +4,8 @@ export const getCFrequencies = () => {
   };
   
   export const logScale = (value, dimensions, cFrequencies) => {
+    if (value === 0) return null; // value가 0이면 null 반환
+  
     const minValue = cFrequencies[0];
     const maxValue = cFrequencies[5];
     const minPixel = dimensions.height - 20;
@@ -11,5 +13,7 @@ export const getCFrequencies = () => {
     const logMin = Math.log(minValue);
     const logMax = Math.log(maxValue);
     const scale = (maxPixel - minPixel) / (logMax - logMin);
+    
     return minPixel + scale * (Math.log(Math.max(value, minValue)) - logMin);
   };
+  
