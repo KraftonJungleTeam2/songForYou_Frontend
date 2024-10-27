@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongList.css';
 
-function SongList({onSongSelect, searchTerm, songs }) {
+function SongList({ onSongSelect, searchTerm, songs }) {
   const navigate = useNavigate();
   const handlePlay = (e, song) => {
     e.stopPropagation();
@@ -38,13 +38,16 @@ function SongList({onSongSelect, searchTerm, songs }) {
       ) : (
         filteredSongs.map((song) => (
           <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
-            <div className='song-icon'>
-              {song.image && song.image.data ? (
-                <img src={`data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)}`} alt={song.metadata.title} width='200' />
-              ) : (
-                <div>No Image Available</div> // 이미지가 없을 경우 대체 내용
-              )}{' '}
-            </div>
+            <div className='song-icon'
+              style={{
+                backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
+                width: '65px',          // 원하는 크기로 설정
+                aspectRatio: '1 / 1'     // 정사각형 비율 유지
+              }}
+              alt={song.metadata.title}
+            />
 
             <div className='song-info'>
               <h4>{song.metadata.title}</h4>
