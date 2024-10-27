@@ -27,77 +27,77 @@ const PitchGraph = ({
   const graphWidth = dimensions.width;
 
   // 배경 그리기
-useEffect(() => {
-  const canvas = backgroundCanvasRef.current;
-  const ctx = canvas.getContext('2d');
+  useEffect(() => {
+    const canvas = backgroundCanvasRef.current;
+    const ctx = canvas.getContext('2d');
 
-  // 캔버스 초기화
-  ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+    // 캔버스 초기화
+    ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-  const image = new Image();
+    const image = new Image();
 
-  // songState에 이미지가 있으면 Base64로 설정
-  if (songState && songState.image && songState.image.data) {
-    image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
-  }
+    // songState에 이미지가 있으면 Base64로 설정
+    if (songState && songState.image && songState.image.data) {
+      image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
+    }
 
-  // 이미지 로드 후 그리기
-  image.onload = () => {
-    // 블러 필터 설정
-    ctx.filter = 'blur(15px)';
-    const imgHeight = image.height;
-    const imgWidth = image.width;
+    // 이미지 로드 후 그리기
+    image.onload = () => {
+      // 블러 필터 설정
+      ctx.filter = 'blur(15px)';
+      const imgHeight = image.height;
+      const imgWidth = image.width;
 
-    // 이미지 그리기
-    ctx.drawImage(
-      image,
-      0,
-      -(imgHeight + dimensions.height) / 2,
-      graphWidth,
-      (imgHeight / imgWidth) * dimensions.width
-    );
+      // 이미지 그리기
+      ctx.drawImage(
+        image,
+        0,
+        -(imgHeight + dimensions.height) / 2,
+        graphWidth,
+        (imgHeight / imgWidth) * dimensions.width
+      );
 
-    // 블러 필터 초기화 (이미지만 블러 처리)
-    ctx.filter = 'none';
+      // 블러 필터 초기화 (이미지만 블러 처리)
+      ctx.filter = 'none';
 
       // 이미지 위에 어둡게 덮는 반투명한 사각형
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 어둡게 할 색상 설정
-    ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 이미지 전체에 덮기
-    
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 어둡게 할 색상 설정
+      ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 이미지 전체에 덮기
 
-    // 기준 선 그리기
-    ctx.beginPath();
-    ctx.strokeStyle = '#EEEEEE';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-    ctx.shadowBlur = 10;
-    ctx.moveTo(graphWidth / 3, 0);
-    ctx.lineTo(graphWidth / 3, dimensions.height);
-    ctx.stroke();
 
-    // 그림자 설정 초기화
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
-
-    // 수평선과 레이블 그리기
-    cFrequencies.forEach((freq, index) => {
-      const y = logScale(freq, dimensions, cFrequencies);
-
-      ctx.lineWidth = 2;
+      // 기준 선 그리기
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.moveTo(0, y);
-      ctx.lineTo(dimensions.width, y);
+      ctx.strokeStyle = '#EEEEEE';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
+      ctx.shadowBlur = 10;
+      ctx.moveTo(graphWidth / 3, 0);
+      ctx.lineTo(graphWidth / 3, dimensions.height);
       ctx.stroke();
 
-       // 레이블 글자 설정
-      ctx.fillStyle = 'white';  // 글자 색깔 하얀색으로 설정
-      ctx.font = '10px Arial';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 2}`, 15, y);
-    });
-  };
-}, [dimensions, songState, graphWidth]);
+      // 그림자 설정 초기화
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+
+      // 수평선과 레이블 그리기
+      cFrequencies.forEach((freq, index) => {
+        const y = logScale(freq, dimensions, cFrequencies);
+
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.moveTo(0, y);
+        ctx.lineTo(dimensions.width, y);
+        ctx.stroke();
+
+        // 레이블 글자 설정
+        ctx.fillStyle = 'white';  // 글자 색깔 하얀색으로 설정
+        ctx.font = '10px Arial';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`C${index + 2}`, 15, y);
+      });
+    };
+  }, [dimensions, songState, graphWidth]);
 
   // 실시간 및 참조 데이터 그리기
   useEffect(() => {
@@ -124,17 +124,17 @@ useEffect(() => {
       let end = 0;
       let visibleData = [];
 
-      if(!isRealtime){
-      // 슬라이스 인덱스 계산 (end는 data.length를 초과하지 않도록 제한)
-      start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
-      end = Math.min(data.length, Math.floor(currentTimeIndex) + (dataPointCount * 2));
-      visibleData = data.slice(start, end);
+      if (!isRealtime) {
+        // 슬라이스 인덱스 계산 (end는 data.length를 초과하지 않도록 제한)
+        start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
+        end = Math.min(data.length, Math.floor(currentTimeIndex) + (dataPointCount * 2));
+        visibleData = data.slice(start, end);
       }
-      else{
-      start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
-      visibleData = data.slice(start, currentTimeIndex+1);
+      else {
+        start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
+        visibleData = data.slice(start, currentTimeIndex + 1);
       }
-      
+
       const windowSize = dataPointCount * 3; // 데이터 포인트 수
       const pixelsPerIndex = graphWidth / windowSize;
       const x0 = graphWidth / 3; // 기준 x 위치
@@ -152,24 +152,24 @@ useEffect(() => {
         // 인덱스를 기반으로 시간 차이 계산
         let indexDifference1 = 0;
         let indexDifference2 = 0;
-        
-        if(isRealtime){
-        indexDifference1 = dataIndex -1 - currentTimeIndex;
-        indexDifference2 = dataIndex  - currentTimeIndex;
+
+        if (isRealtime) {
+          indexDifference1 = dataIndex - 1 - currentTimeIndex;
+          indexDifference2 = dataIndex - currentTimeIndex;
         }
-        else{
-        indexDifference1 = (dataIndex - 1) - currentTimeIndex;
-        indexDifference2 = dataIndex - currentTimeIndex;
+        else {
+          indexDifference1 = (dataIndex - 1) - currentTimeIndex;
+          indexDifference2 = dataIndex - currentTimeIndex;
         }
         // x 좌표 계산
         const x1 = x0 + indexDifference1 * pixelsPerIndex;
         const x2 = x0 + indexDifference2 * pixelsPerIndex;
-      
+
 
         // y 좌표 계산
         const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
         const y2 = logScale(point.pitch, dimensions, cFrequencies);
-        
+
         // console.log(y2);
 
         ctx.moveTo(x1, y1);
@@ -178,23 +178,6 @@ useEffect(() => {
 
       ctx.stroke();
 
-      // 리얼타임 모드일 경우 반투명 선 추가
-      if (isRealtime) {
-        const startX = x0; // 기준 x 위치
-        const endX = 0; // 좌측 끝
-        const currentY = logScale(data[currentTimeIndex]?.pitch, dimensions, cFrequencies);
-        
-        // currentY가 0이 아닐 때만 선을 그리기
-        if (data[currentTimeIndex]?.pitch !== null) {
-          ctx.beginPath();
-          ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)'; // 노란색 반투명 선
-          ctx.lineWidth = 10;
-          ctx.moveTo(startX, currentY);
-          ctx.lineTo(endX, currentY);
-          ctx.stroke();
-        }
-      }
-
       // 그림자 설정 초기화
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
@@ -202,11 +185,11 @@ useEffect(() => {
 
 
     // 참조 피치 데이터 그리기
-    drawPitchData(referenceData, '#FFFFFF', 'grey', currentTimeIndex); // 흰색
+    drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex); // 흰색
     // 실시간 피치 데이터 그리기
     drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true); // 주황색
 
-    
+
 
   }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeIndex, graphWidth]);
 
