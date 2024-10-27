@@ -109,17 +109,17 @@ const PitchGraph = ({
 
     // Pitch 데이터를 그리는 함수 수정
     const drawPitchData = (data, color, glow = '', currentTimeIndex = 0, isRealtime = false) => {
-      ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 3.5;
-      if (glow == 'coral') {
+    
+      if (glow === 'coral') {
         ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
         ctx.shadowBlur = 5;
-      } else if (glow == 'grey') {
+      } else if (glow === 'grey') {
         ctx.shadowColor = 'rgba(200, 200, 200, 0.8)';
         ctx.shadowBlur = 3;
       }
-
+    
       let start = 0;
       let end = 0;
       let visibleData = [];
@@ -137,48 +137,50 @@ const PitchGraph = ({
 
       const windowSize = dataPointCount * 3; // 데이터 포인트 수
       const pixelsPerIndex = graphWidth / windowSize;
-      const x0 = graphWidth / 3; // 기준 x 위치
-
+      const x0 = graphWidth / 3;
+    
       visibleData.forEach((point, index) => {
-        const dataIndex = start + index; // 전체 데이터에서의 실제 인덱스
-
-        // point가 undefined인지, 또는 pitch가 null인지 확인
+        const dataIndex = start + index;
+    
         if (!point || point.pitch === null) return;
         const prevPoint = data[dataIndex - 1];
-        if (!prevPoint || prevPoint.pitch === null) {
-          return;
-        }
-
-        // 인덱스를 기반으로 시간 차이 계산
-        let indexDifference1 = 0;
-        let indexDifference2 = 0;
-
-        if (isRealtime) {
-          indexDifference1 = dataIndex - 1 - currentTimeIndex;
-          indexDifference2 = dataIndex - currentTimeIndex;
-        }
-        else {
-          indexDifference1 = (dataIndex - 1) - currentTimeIndex;
-          indexDifference2 = dataIndex - currentTimeIndex;
-        }
-        // x 좌표 계산
+        if (!prevPoint || prevPoint.pitch === null) return;
+    
+        let indexDifference1 = isRealtime ? dataIndex - 1 - currentTimeIndex : dataIndex - 1 - currentTimeIndex;
+        let indexDifference2 = isRealtime ? dataIndex - currentTimeIndex : dataIndex - currentTimeIndex;
+    
         const x1 = x0 + indexDifference1 * pixelsPerIndex;
         const x2 = x0 + indexDifference2 * pixelsPerIndex;
-
-
-        // y 좌표 계산
+    
         const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
         const y2 = logScale(point.pitch, dimensions, cFrequencies);
-
-        // console.log(y2);
-
+    
+        // x1이 1/3 지점 이하일 때 불투명도 조정
+        ctx.globalAlpha = !isRealtime && x1 + 1 <= x0 ? 0.5 : 1.0;
+    
+        ctx.beginPath(); // 각 선마다 경로 시작
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
+        ctx.stroke();
       });
-
-      ctx.stroke();
-
-      // 그림자 설정 초기화
+    
+      ctx.globalAlpha = 1.0; // 불투명도 초기화
+    
+      if (isRealtime) {
+        const startX = x0;
+        const endX = 0;
+        const currentY = logScale(data[currentTimeIndex]?.pitch, dimensions, cFrequencies);
+    
+        if (data[currentTimeIndex]?.pitch !== null) {
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+          ctx.lineWidth = 10;
+          ctx.moveTo(startX, currentY);
+          ctx.lineTo(endX, currentY);
+          ctx.stroke();
+        }
+      }
+    
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
     };
