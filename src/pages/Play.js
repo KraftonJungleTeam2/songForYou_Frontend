@@ -197,23 +197,24 @@ const Play = () => {
       for (let i = 0; i < segments.length; i++) {
         if (playbackPosition >= segments[i].start) {
           curr_idx = i;
+        } else if (curr_idx >= 0) {
           break;
         }
       }
-      if (segments[i-1])
-        setPrevLyric(segments[i-1].text);
+      if (segments[curr_idx-1])
+        setPrevLyric(segments[curr_idx-1].text);
       else
-        setPrevLyric('');
+        setPrevLyric(' ');
 
-      if (segments[i])
-        setCurrentLyric(segments[i].text);
+      if (segments[curr_idx])
+        setCurrentLyric(segments[curr_idx].text);
       else
-        setCurrentLyric('');
+        setCurrentLyric(' ');
 
-      if (segments[i+1])
-        setNextLyric(segments[i+1].text);
+      if (segments[curr_idx+1])
+        setNextLyric(segments[curr_idx+1].text);
       else
-        setNextLyric('');
+        setNextLyric(' ');
     }
   }, [playbackPosition, lyricsData]);
 
@@ -240,15 +241,17 @@ const Play = () => {
           </div>
   
           {/* 현재 재생 중인 가사 출력 */}
-          <p className='karaoke-lyrics-prev' style={{ height: '100px' , textAlign: 'center', opacity: 0.5}}>
-            {prevLyric}
-          </p>
-          <p className='karaoke-lyrics' style={{ height: '150px' , textAlign: 'center' }}>
-            {currentLyric}
-          </p>
-          <p className='karaoke-lyrics-next' style={{ height: '100px' , textAlign: 'center', opacity: 0.5}}>
-            {nextLyric}
-          </p>
+          <div className='karaoke-lyrics'>
+            <p className='prev-lyrics'>
+              {prevLyric}
+            </p>
+            <p className='curr-lyrics'>
+              {currentLyric}
+            </p>
+            <p className='next-lyrics'>
+              {nextLyric}
+            </p>
+          </div>
 
           {/* 오디오 플레이어 컨트롤 */}
           <div className="audio-controls">
