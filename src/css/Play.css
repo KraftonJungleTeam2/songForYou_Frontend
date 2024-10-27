@@ -16,13 +16,33 @@
   /* Pitch Graph */
   .pitch-graph {
     width: 100%;
-    height: 450px;
+    height: 500px;
+    margin: auto;
   }
   
   /* Karaoke Lyrics */
   .karaoke-lyrics {
-    height: 150px;
+    /* height: 150px; */
     text-align: center;
+  }
+
+  /* Lyrics box */
+  .prev-lyrics {
+    margin: auto;
+    font-size: 30px;
+    text-Align: 'center';
+    opacity: 0.3;
+}
+.curr-lyrics {
+    margin: auto;
+    font-size: 50px;
+    text-Align: 'center';
+  }
+  .next-lyrics {
+    margin: auto;
+    font-size: 30px;
+    text-Align: 'center';
+    opacity: 0.3;
   }
   
   /* Audio Player Control */

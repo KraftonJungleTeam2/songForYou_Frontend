@@ -70,7 +70,7 @@ useEffect(() => {
     ctx.strokeStyle = '#EEEEEE';
     ctx.lineWidth = 4;
     ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-    // ctx.shadowBlur = 10;
+    ctx.shadowBlur = 10;
     ctx.moveTo(graphWidth / 3, 0);
     ctx.lineTo(graphWidth / 3, dimensions.height);
     ctx.stroke();
@@ -108,13 +108,16 @@ useEffect(() => {
     ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
     // Pitch 데이터를 그리는 함수 수정
-    const drawPitchData = (data, color, glow = false, currentTimeIndex = 0, isRealtime = false) => {
+    const drawPitchData = (data, color, glow = '', currentTimeIndex = 0, isRealtime = false) => {
       ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 3.5;
-      if (glow) {
+      if (glow == 'coral') {
         ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
         ctx.shadowBlur = 5;
+      } else if (glow == 'grey') {
+        ctx.shadowColor = 'rgba(200, 200, 200, 0.8)';
+        ctx.shadowBlur = 3;
       }
 
       let start = 0;
@@ -199,9 +202,9 @@ useEffect(() => {
 
 
     // 참조 피치 데이터 그리기
-    drawPitchData(referenceData, '#FFFFFF', true, currentTimeIndex); // 흰색
+    drawPitchData(referenceData, '#FFFFFF', 'grey', currentTimeIndex); // 흰색
     // 실시간 피치 데이터 그리기
-    drawPitchData(realtimeData, '#FFA500', true, currentTimeIndex, true); // 주황색
+    drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true); // 주황색
 
     
 
