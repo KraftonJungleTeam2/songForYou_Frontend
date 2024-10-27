@@ -44,7 +44,6 @@ function SongList({ onSongSelect, searchTerm, songs }) {
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
                 width: '65px',          // 원하는 크기로 설정
-                aspectRatio: '1 / 1'     // 정사각형 비율 유지
               }}
               alt={song.metadata.title}
             />
