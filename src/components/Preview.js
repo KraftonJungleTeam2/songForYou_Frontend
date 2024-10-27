@@ -115,17 +115,16 @@ function Preview({ selectedSong }) {
 
   return (
     <div className='preview'>
-      <h3>{selectedSong.metadata.title}</h3>
-      <div className='song-icon'>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} width='200' /> : <div>No Image Available</div>}</div>
-      <p>{selectedSong.metadata.description}</p>
+      <div className='song-icon'>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} width='100%' /> : <div>No Image Available</div>}</div>
+      <h3 className='title'>{selectedSong.metadata.title}</h3>
+      <p className='subtitle'>{selectedSong.metadata.description}</p>
       <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
       <div className='preview-buttons'>
-        <button className={`enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)}>
-          {isPlaying ? 'Stop Preview' : 'Preview'}
+        <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{flex: 1}}>
+          {isPlaying ? '멈추기' : '미리듣기'}
         </button>
-
-        <button className='enabled purple' onClick={(e) => handlePlay(e, selectedSong)}>
-          Play
+        <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{flex: 1}}>
+          부르기
         </button>
       </div>
     </div>
