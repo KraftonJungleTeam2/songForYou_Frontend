@@ -44,7 +44,7 @@ function MultiPlay() {
 
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("ws://192.168.1.152:5000");
+        socketRef.current = new WebSocket(`ws://${REACT_APP_API_ENDPOINT}`);
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
