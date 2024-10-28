@@ -70,7 +70,7 @@ function MultiPlay() {
             console.log("웹소켓 연결 종료");
         };
     }, []);
-    
+
     // 초기 지연 시간 계산 함수
     const calculateDelay = () => {
         pingTimes.current = []; // 초기화
@@ -97,7 +97,7 @@ function MultiPlay() {
             const avgStarttime = pingTimes.current[10];
             console.log(pingTimes.current);
             setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback(avgStarttime);
+            handleStartPlayback(avgStarttimeavgStarttime);
         } else {
             console.log(["RTT", roundTripTime])
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
@@ -105,9 +105,9 @@ function MultiPlay() {
     };
 
     // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = (avgStarttime) => {
+    const handleStartPlayback = (avgStarttimeavgstartTime) => {
         const clientTime = Date.now();
-        const timeUntilStart = avgStarttime - clientTime; // 지연 고려한 대기 시간 계산
+        const timeUntilStart = avgavgStartTime - clientTime; // 지연 고려한 대기 시간 계산
         console.log(timeUntilStart);
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
@@ -162,7 +162,7 @@ function MultiPlay() {
                         </div>
                     ))}
                 </div>
-                
+
                 {/* 오디오 상태 표시 */}
                 <div className="audio-status">
                     {audioLoaded ? (
@@ -178,8 +178,8 @@ function MultiPlay() {
                 </div>
 
                 {/* 시작 버튼 */}
-                <button 
-                    onClick={handleStartClick} 
+                <button
+                    onClick={handleStartClick}
                     disabled={!audioLoaded && !isPlaying}
                     className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}
                 >
@@ -188,15 +188,15 @@ function MultiPlay() {
 
                 {/* Seek Bar */}
                 <div className="seek-bar-container">
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max={duration} 
-                        step="0.025" 
-                        value={playbackPosition} 
-                        onChange={handlePlaybackPositionChange} 
-                        className="range-slider" 
-                        disabled={!audioLoaded} 
+                    <input
+                        type="range"
+                        min="0"
+                        max={duration}
+                        step="0.025"
+                        value={playbackPosition}
+                        onChange={handlePlaybackPositionChange}
+                        className="range-slider"
+                        disabled={!audioLoaded}
                     />
                     <div className="playback-info">
                         {playbackPosition.toFixed(2)} / {duration.toFixed(2)} 초
