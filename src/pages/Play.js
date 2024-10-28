@@ -5,7 +5,7 @@ import PitchGraph from '../components/PitchGraph';
 import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
-import '../css/Play.css'
+import '../css/Play.css';
 import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
@@ -32,9 +32,8 @@ const Play = () => {
   // song State 받아옴
   const location = useLocation();
   const { song } = location.state || {};
-  // console.log(song);
-
   const { id: songId } = useParams(); // URL에서 songId 추출
+
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const containerRef = useRef(null);
 
@@ -47,23 +46,34 @@ const Play = () => {
       alert('데이터가 아직 로드되지 않았습니다.');
     }
   };
-  const [dataPointCount, setDataPointCount] = useState(200);
 
   // 재생 위치 및 길이
-  const [playbackPosition, setPlaybackPosition] = useState(0); // 시크 바에 표시될 재생 위치 (25ms 단위 모든 데이터가 이를 기준으로 update)
-  const playbackPositionRef = useRef(playbackPosition); // 최신 재생 위치 참조 유지
-  playbackPositionRef.current = playbackPosition; // useRef를 통해 최신 재생 위치를 참조로 유지
+  const [playbackPosition, setPlaybackPosition] = useState(0);
+  const playbackPositionRef = useRef(playbackPosition);
+  playbackPositionRef.current = playbackPosition;
 
-  const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
-  const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
-  const [prevLyric, setPrevLyric] = useState(' '); // 이전 가사
-  const [currentLyric, setCurrentLyric] = useState(' '); // 현재 재생 중인 가사 상태
-  const [nextLyric, setNextLyric] = useState(' '); // 다음 가사
+  const [userSeekPosition, setUserSeekPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [prevLyric, setPrevLyric] = useState(' ');
+  const [currentLyric, setCurrentLyric] = useState(' ');
+  const [nextLyric, setNextLyric] = useState(' ');
+
+  // 데이터 로드 상태
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  const [pitchLoaded, setPitchLoaded] = useState(false);
+  const [lyricsLoaded, setLyricsLoaded] = useState(false);
+
+  const [mrDataBlob, setMrDataBlob] = useState(null);
+  const [lyricsData, setLyricsData] = useState(null);
+
+  // 렌더링 크기 및 속도 상태
+  const [dataPointCount, setDataPointCount] = useState(200);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
     setUserSeekPosition(newPosition);
-    setPlaybackPosition(newPosition); // 시크 바 업데이트
+    setPlaybackPosition(newPosition);
   };
 
   const handleSpeedChange = (e) => {
@@ -71,12 +81,10 @@ const Play = () => {
     setDataPointCount(newSpeed);
   };
 
-  const [audioLoaded, setAudioLoaded] = useState(false);
-  const [pitchLoaded, setPitchLoaded] = useState(false);
-  const [lyricsLoaded, setLyricsLoaded] = useState(false);
-
-  const [mrDataBlob, setMrDataBlob] = useState(null);
-  const [lyricsData, setLyricsData] = useState(null);
+  const handlePlaybackSpeedChange = (e) => {
+    const newPlaybackSpeed = parseFloat(e.target.value);
+    setPlaybackSpeed(newPlaybackSpeed);
+  };
 
   // 화면 조정 시 감지
   useEffect(() => {
@@ -116,68 +124,55 @@ const Play = () => {
         const formData = await response.formData();
         const result = Object.fromEntries(formData.entries());
 
-        // 파일 데이터 처리 ('file' 필드명 확인)
-        const fileBlob = result.file; // 서버 응답 필드명: 'file'
+        const fileBlob = result.file;
         if (fileBlob instanceof Blob) {
           setMrDataBlob(fileBlob);
         } else {
           console.error('Error: file not found or invalid in the response');
         }
 
-        // pitch 데이터 처리 ('pitch' 필드명 확인)
         const pitchString = result.pitch;
         if (typeof pitchString === 'string') {
           try {
             const pitchArray = JSON.parse(pitchString);
-            if (Array.isArray(pitchArray)) {
-              const processedPitchArray = doubleDataFrequency(pitchArray);
-              setEntireReferData(
-                processedPitchArray.map((pitch, index) => ({
-                  time: index * 25, // 25ms 단위로 시간 계산
-                  pitch,
-                }))
-              );
+            const processedPitchArray = doubleDataFrequency(pitchArray);
+            setEntireReferData(
+              processedPitchArray.map((pitch, index) => ({
+                time: index * 25,
+                pitch,
+              }))
+            );
 
-              setEntireGraphData(
-                processedPitchArray.map((_, index) => ({
-                  time: index * 25, // 25ms 단위로 시간 계산
-                  pitch: null,
-                }))
-              );
+            setEntireGraphData(
+              processedPitchArray.map((_, index) => ({
+                time: index * 25,
+                pitch: null,
+              }))
+            );
 
-              setPitchLoaded(true);
-            } else {
-              console.warn('Warning: pitch data is not an array');
-              setPitchLoaded(true); // pitch 데이터가 없어도 로드 완료로 표시
-            }
+            setPitchLoaded(true);
           } catch (parseError) {
             console.error('Error parsing pitch data:', parseError);
-            setPitchLoaded(true); // 파싱 실패 시에도 로드 완료로 표시
+            setPitchLoaded(true);
           }
         } else {
           console.warn('Warning: pitch data not found or invalid in the response');
-          setPitchLoaded(true); // pitch 데이터가 없어도 로드 완료로 표시
+          setPitchLoaded(true);
         }
 
-        // lyrics 데이터 처리 ('lyrics' 필드명 확인)
         const lyricsString = result.lyrics;
         if (typeof lyricsString === 'string') {
           try {
             const lyrics = JSON.parse(lyricsString);
-            if (lyrics && typeof lyrics === 'object') {
-              setLyricsData(lyrics);
-              setLyricsLoaded(true);
-            } else {
-              console.warn('Warning: lyrics data is not an object');
-              setLyricsLoaded(true); // lyrics 데이터가 없어도 로드 완료로 표시
-            }
+            setLyricsData(lyrics);
+            setLyricsLoaded(true);
           } catch (parseError) {
             console.error('Error parsing lyrics data:', parseError);
-            setLyricsLoaded(true); // 파싱 실패 시에도 로드 완료로 표시
+            setLyricsLoaded(true);
           }
         } else {
           console.warn('Warning: lyrics data not found or invalid in the response');
-          setLyricsLoaded(true); // lyrics 데이터가 없어도 로드 완료로 표시
+          setLyricsLoaded(true);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -203,35 +198,24 @@ const Play = () => {
         }
       }
     }
-    if (segments[curr_idx-1])
-      setPrevLyric(segments[curr_idx-1].text);
-    else
-      setPrevLyric(' ');
-
-    if (segments[curr_idx])
-      setCurrentLyric(segments[curr_idx].text);
-    else
-      setCurrentLyric(' ');
-
-    if (segments[curr_idx+1])
-      setNextLyric(segments[curr_idx+1].text);
-    else
-      setNextLyric(' ');
+    setPrevLyric(segments[curr_idx - 1]?.text || ' ');
+    setCurrentLyric(segments[curr_idx]?.text || ' ');
+    setNextLyric(segments[curr_idx + 1]?.text || ' ');
   }, [playbackPosition, lyricsData]);
 
   // Use the custom hook and pass necessary parameters
   usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
-  // console.log(entireGraphData);
+
   return (
     <div className="single-page">
       <Sidebar />
       <div className="main-content-play">
         <TopBar />
         <div className="flex-col" ref={containerRef}>
-  
+
           {/* Pitch Graph */}
           <div className="pitch-graph">
-            <PitchGraph 
+            <PitchGraph
               dimensions={dimensions}
               realtimeData={entireGraphData}
               referenceData={entireReferData}
@@ -240,18 +224,12 @@ const Play = () => {
               songState={song}
             />
           </div>
-  
+
           {/* 현재 재생 중인 가사 출력 */}
-          <div className='karaoke-lyrics'>
-            <p className='prev-lyrics'>
-              {prevLyric}
-            </p>
-            <p className='curr-lyrics'>
-              {currentLyric}
-            </p>
-            <p className='next-lyrics'>
-              {nextLyric}
-            </p>
+          <div className="karaoke-lyrics">
+            <p className="prev-lyrics">{prevLyric}</p>
+            <p className="curr-lyrics">{currentLyric}</p>
+            <p className="next-lyrics">{nextLyric}</p>
           </div>
 
           {/* 오디오 플레이어 컨트롤 */}
@@ -259,38 +237,52 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input 
-              type="range" 
-              min="0" 
-              max={duration} 
-              step="0.025" 
-              value={playbackPosition} 
-              onChange={handlePlaybackPositionChange} 
-              className="range-slider" 
-              disabled={!dataLoaded} 
+            <input
+              type="range"
+              min="0"
+              max={duration}
+              step="0.025"
+              value={playbackPosition}
+              onChange={handlePlaybackPositionChange}
+              className="range-slider"
+              disabled={!dataLoaded}
             />
             <div className="playback-info">
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
-  
+
             <div className="speed-control">
               <label>속도 조절:</label>
-              <input 
-                type="range" 
-                min="25" 
-                max="300" 
-                step="1" 
-                value={dataPointCount} 
-                onChange={handleSpeedChange} 
-                className="range-slider" 
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={playbackSpeed}
+                onChange={handlePlaybackSpeedChange}
+                className="range-slider"
+              />
+              <div className="speed-control-value">재생 속도: {playbackSpeed} 배</div>
+            </div>
+
+            <div className="speed-control">
+              <label>렌더링 사이즈:</label>
+              <input
+                type="range"
+                min="25"
+                max="300"
+                step="1"
+                value={dataPointCount}
+                onChange={handleSpeedChange}
+                className="range-slider"
               />
               <div className="speed-control-value">렌더링 사이즈: {dataPointCount}</div>
             </div>
             {!dataLoaded && <p className="loading-text">데이터 로딩 중...</p>}
           </div>
-  
+
           {/* 오디오 플레이어 컴포넌트 */}
-          <AudioPlayer 
+          <AudioPlayer
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
             userSeekPosition={userSeekPosition}
@@ -298,10 +290,12 @@ const Play = () => {
             audioBlob={mrDataBlob}
             setAudioLoaded={setAudioLoaded}
             onPlaybackPositionChange={setPlaybackPosition}
+            playbackSpeed={playbackSpeed} // 재생 속도 prop 추가
           />
         </div>
       </div>
     </div>
   );
-}
+};
+
 export default Play;
