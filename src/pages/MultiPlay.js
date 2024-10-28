@@ -4,7 +4,7 @@ import "../css/MultiPlay.css";
 import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from "../components/PitchGraph";
-
+import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 function MultiPlay() {
     const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
@@ -17,9 +17,11 @@ function MultiPlay() {
     const [playbackPosition, setPlaybackPosition] = useState(0);
     const [starttime, setStarttime] = useState(null);
     
+    //웹소켓 부분
     const socketRef = useRef(null); // 웹소켓 참조
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
-    
+    const peerConnections = {}; // 개별 연결을 저장한 배열 생성
+
     //화면 조정을 위한 state들
     const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
     const containerRef = useRef(null);
@@ -87,6 +89,25 @@ function MultiPlay() {
             setIsSocketOpen(false);
         };
     }, []);
+
+    // 화면 비율 조정 감지
+    useEffect(() => {
+        function handleResize() {
+          if (containerRef.current) {
+            setDimensions({
+              width: containerRef.current.offsetWidth,
+              height: 500,
+            });
+          }
+        }
+    
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+
 
     // 초기 지연 시간 계산 함수
     const calculateDelay = () => {
@@ -160,23 +181,14 @@ function MultiPlay() {
         setPlaybackPosition(position);
     };
 
-    // 화면 비율 조정 감지
-    useEffect(() => {
-        function handleResize() {
-          if (containerRef.current) {
-            setDimensions({
-              width: containerRef.current.offsetWidth,
-              height: 500,
-            });
-          }
+    const getLocalStream = async () => {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        } catch (error) {
+          console.error('마이크 스트림 오류:', error);
         }
+      };
     
-        handleResize();
-        window.addEventListener('resize', handleResize);
-    
-        return () => window.removeEventListener('resize', handleResize);
-      }, []);
-
     return (
         <div className="multiPlay-page">
             <TopBar className="top-bar" />
