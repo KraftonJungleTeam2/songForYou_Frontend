@@ -7,6 +7,7 @@ const AudioPlayer = ({
   setAudioLoaded, // 오디오가 로드된 상태를 설정하는 함수, 로드 완료 여부를 표시
   setDuration, // 오디오 길이를 설정하는 함수, 오디오 파일의 총 길이를 설정
   onPlaybackPositionChange, // 재생 위치가 변경될 때 호출되는 콜백 함수, 시크바 위치를 업데이트하는데 사용
+  starttime,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -80,13 +81,11 @@ const AudioPlayer = ({
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
     sourceRef.current = source;
-    // 재생 속도 설정
-    source.playbackRate.value = speed;
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
     while (Date.now() < starttime) {};
     const offset = Date.now()-starttime;
     source.start(0, offset/1000);
-    resumeTimeRef.current = audioContext.currentTime - offset / speed;
+    resumeTimeRef.current = audioContext.currentTime;
     // 재생 완료 시 호출되는 콜백 설정
     source.onended = () => {
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
@@ -139,7 +138,7 @@ const AudioPlayer = ({
     };
     if (isPlaying) {
       resumeAudioContext().then(() => {
-        playAudio(playbackPositionRef.current, playbackSpeed); // 재생 위치와 속도로 재생
+        playSyncAudio(starttime); // 재생 위치와 속도로 재생
         updatePosition();
       });
     } else {
