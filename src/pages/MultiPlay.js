@@ -114,18 +114,21 @@ function MultiPlay() {
             startTimeoutRef.current = setTimeout(() => {
                 // AudioPlayer.playAudio();
                 setIsPlaying(true);
+                setIsWaiting(false);
             }, timeUntilStart);
         } else {
             console.log("Server start time has already passed. Starting playback immediately.");
             setIsPlaying(true);
+            setIsWaiting(false);
         }
     };
 
     // 시작 버튼 클릭 핸들러
     const handleStartClick = () => {
-
+        setIsWaiting(true);
         if (!audioLoaded) {
             alert("오디오가 아직 로딩되지 않았습니다.");
+            setIsWaiting(false);
             return;
         }
 
@@ -180,8 +183,8 @@ function MultiPlay() {
                 {/* 시작 버튼 */}
                 <button
                     onClick={handleStartClick}
-                    disabled={!audioLoaded && !isPlaying}
-                    className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}
+                    disabled={!audioLoaded || isPlaying || isWaiting}
+                    className={`button start-button ${!audioLoaded || isWaiting? 'is-loading' : ''}`}
                 >
                     {audioLoaded ? "노래 시작" : "로딩 중..."}
                 </button>
