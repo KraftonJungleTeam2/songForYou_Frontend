@@ -8,6 +8,7 @@ function MultiPlay() {
     const [players, setPlayers] = useState(Array(8).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
+    const [isSocketOpen, setIsSocketOpen] = useState(false);
     const [userSeekPosition, setUserSeekPosition] = useState(0);
     const [audioLoaded, setAudioLoaded] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -49,6 +50,7 @@ function MultiPlay() {
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
+            setIsSocketOpen(true);
         };
 
         socketRef.current.onmessage = (event) => {
@@ -68,6 +70,7 @@ function MultiPlay() {
 
         socketRef.current.onclose = () => {
             console.log("웹소켓 연결 종료");
+            setIsSocketOpen(false);
         };
     }, []);
 
@@ -111,11 +114,17 @@ function MultiPlay() {
         console.log(timeUntilStart);
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
-            startTimeoutRef.current = setTimeout(() => {
-                // AudioPlayer.playAudio();
-                setIsPlaying(true);
-                setIsWaiting(false);
-            }, timeUntilStart);
+            // busywait
+            console.log(avgStartTime);
+            console.log(Date.now());
+            while (Date.now() - avgStartTime < 0) {
+                // console.log("waiting");
+            }
+            console.log("PLAY NOW@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            setIsPlaying(true);
+            setIsWaiting(false);
+            // startTimeoutRef.current = setTimeout(() => {
+            // }, timeUntilStart);
         } else {
             console.log("Server start time has already passed. Starting playback immediately.");
             setIsPlaying(true);
@@ -183,8 +192,8 @@ function MultiPlay() {
                 {/* 시작 버튼 */}
                 <button
                     onClick={handleStartClick}
-                    disabled={!audioLoaded || isPlaying || isWaiting}
-                    className={`button start-button ${!audioLoaded || isWaiting? 'is-loading' : ''}`}
+                    disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                    className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
                 >
                     {audioLoaded ? "노래 시작" : "로딩 중..."}
                 </button>
