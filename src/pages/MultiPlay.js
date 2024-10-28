@@ -7,6 +7,7 @@ import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
 function MultiPlay() {
     const [players, setPlayers] = useState(Array(8).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isWaiting, setIsWaiting] = useState(false);
     const [userSeekPosition, setUserSeekPosition] = useState(0);
     const [audioLoaded, setAudioLoaded] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -44,7 +45,7 @@ function MultiPlay() {
 
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("ws://192.168.1.152:5000");
+        socketRef.current = new WebSocket("wss://benmo.shop/ws");
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
@@ -91,23 +92,27 @@ function MultiPlay() {
         const untilStartAdjusted = untilStart - (roundTripTime / 2);
         pingTimes.current.push(receiveTime + untilStartAdjusted);
 
-        if (pingTimes.current.length >= 50) {
-            const avgStarttime = pingTimes.current.reduce((acc, time) => acc + time, 0) / pingTimes.current.length;
+        if (pingTimes.current.length >= 20) {
+            pingTimes.current.sort();
+            const avgStarttime = pingTimes.current[10];
+            console.log(pingTimes.current);
             setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback();
+            handleStartPlayback(avgStarttime);
         } else {
+            console.log(["RTT", roundTripTime])
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
         }
     };
 
     // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = () => {
+    const handleStartPlayback = (avgStarttime) => {
         const clientTime = Date.now();
-        const timeUntilStart = starttime - clientTime; // 지연 고려한 대기 시간 계산
-
+        const timeUntilStart = avgStarttime - clientTime; // 지연 고려한 대기 시간 계산
+        console.log(timeUntilStart);
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
             startTimeoutRef.current = setTimeout(() => {
+                // AudioPlayer.playAudio();
                 setIsPlaying(true);
             }, timeUntilStart);
         } else {
@@ -118,6 +123,7 @@ function MultiPlay() {
 
     // 시작 버튼 클릭 핸들러
     const handleStartClick = () => {
+
         if (!audioLoaded) {
             alert("오디오가 아직 로딩되지 않았습니다.");
             return;
@@ -174,8 +180,8 @@ function MultiPlay() {
                 {/* 시작 버튼 */}
                 <button 
                     onClick={handleStartClick} 
-                    disabled={!audioLoaded}
-                    className={`start-button ${!audioLoaded ? 'disabled' : ''}`}
+                    disabled={!audioLoaded && !isPlaying}
+                    className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}
                 >
                     {audioLoaded ? "노래 시작" : "로딩 중..."}
                 </button>
