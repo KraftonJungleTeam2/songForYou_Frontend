@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+
 const AudioPlayer = ({
   isPlaying, // 재생 여부를 나타내는 bool 값, true면 재생 중, false면 일시정지 상태
   setIsPlaying, // 재생 상태를 제어하는 함수, 외부에서 재생/일시정지 상태를 변경할 수 있음
@@ -8,6 +9,8 @@ const AudioPlayer = ({
   setDuration, // 오디오 길이를 설정하는 함수, 오디오 파일의 총 길이를 설정
   onPlaybackPositionChange, // 재생 위치가 변경될 때 호출되는 콜백 함수, 시크바 위치를 업데이트하는데 사용
   starttime,
+  setStarttime,
+  setIsWaiting,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -16,7 +19,10 @@ const AudioPlayer = ({
   const resumeTimeRef = useRef(0); // 오디오 시작 시간을 저장, 일시정지 후 재생 시 기준 시간을 맞추기 위해 사용
   const playbackPositionRef = useRef(0); // 현재 재생 위치를 저장, 일시정지 및 재생 위치를 추적하는 데 사용
   const animationFrameRef = useRef(null); // requestAnimationFrame의 ID를 저장하여 애니메이션 업데이트 관리에 사용
+  const rateTimeoutRef = useRef(null);
   const FRAME_RATE = 0.025; // 프레임 속도, 25ms 단위로 업데이트하여 일정한 타이밍으로 재생 위치를 업데이트
+  const SPEEDFORWARD = 2.0;
+  const SPEEDBACKWARD = 0.5;
   // 현재 시간을 프레임 단위에 맞춰 반올림하는 함수
   const roundToFrame = (time) => {
     return Math.round(time / FRAME_RATE) * FRAME_RATE;
@@ -46,131 +52,110 @@ const AudioPlayer = ({
       if (audioContextRef.current) audioContextRef.current.close(); // AudioContext를 닫아 자원을 해제
     };
   }, [audioBlob]);
-  // 오디오 재생 함수
-  const playAudio = (offset, speed = 1) => {
-    const audioContext = audioContextRef.current;
-    const audioBuffer = audioBufferRef.current;
-    if (!audioBuffer || !audioContext) return;
-    if (sourceRef.current) sourceRef.current.stop(); // 이전에 재생 중이던 소스를 중지
-    // 새로운 소스 생성 및 연결
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    sourceRef.current = source;
-    // 재생 속도 설정
-    source.playbackRate.value = speed;
-    // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-    resumeTimeRef.current = audioContext.currentTime - offset / speed;
-    source.start(0, offset);
-    // 재생 완료 시 호출되는 콜백 설정
-    source.onended = () => {
-      setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
-      playbackPositionRef.current = 0; // 재생 위치를 초기화
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  };
+
   const playSyncAudio = (starttime) => {
     const audioContext = audioContextRef.current;
     const audioBuffer = audioBufferRef.current;
     if (!audioBuffer || !audioContext) return;
     if (sourceRef.current) sourceRef.current.stop(); // 이전에 재생 중이던 소스를 중지
+
     // 새로운 소스 생성 및 연결
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
     sourceRef.current = source;
+
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-    while (Date.now() < starttime) {};
-    const offset = Date.now()-starttime;
-    source.start(0, offset/1000);
-    resumeTimeRef.current = audioContext.currentTime;
+    const offset = (Date.now()-starttime)/1000;
+    // while (Date.now() < starttime) {}
+    // source.start();
+    if (offset < 0) {
+      source.start(audioContext.currentTime-offset);
+    } else {
+      source.start(0, offset);
+    }
+    setIsPlaying(true);
+    setIsWaiting(false);
+    resumeTimeRef.current = audioContext.currentTime-offset;
+
     // 재생 완료 시 호출되는 콜백 설정
     source.onended = () => {
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       playbackPositionRef.current = 0; // 재생 위치를 초기화
+      setStarttime(0);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
   };
-  // 오디오 일시정지 함수
-  const pauseAudio = () => {
-    if (sourceRef.current) {
-      sourceRef.current.stop(); // 현재 재생 중인 소스 중지
-      const audioContext = audioContextRef.current;
-      // 현재 재생 위치 저장 (재생 속도 반영)
-      playbackPositionRef.current =
-        (audioContext.currentTime - resumeTimeRef.current) * sourceRef.current.playbackRate.value;
-      sourceRef.current = null; // 소스 초기화
+
+  // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
+  const setPlaybackRate = (rate) => {
+    const audioContext = audioContextRef.current;
+    const source = sourceRef.current;
+    const prevRate = source.playbackRate.value;
+    const timePassed = audioContext.currentTime-resumeTimeRef.current;
+    
+    playbackPositionRef.current += timePassed * prevRate;
+    resumeTimeRef.current += timePassed;
+    source.playbackRate.value = rate;
+  }
+  
+  // 현재 재생시간을 초단위로 가져옴 예: getPlaybackTime() == 36.1 -> 현재 36.1초 플레이 중
+  const getPlaybackTime = () => {
+    const audioContext = audioContextRef.current;
+    const source = sourceRef.current;
+    const prevRate = source.playbackRate.value;
+    const timePassed = audioContext.currentTime-resumeTimeRef.current;
+
+    return playbackPositionRef.current + timePassed * prevRate; // in seconds
+  }
+
+  // starttime을 기준으로한 목표 재생시간으로 이동(재생속도를 변경하여)
+  const transition = () => {
+    const targetTime = Date.now() - starttime;
+    const overrun = getPlaybackTime()*1000 - targetTime; //실제보다 앞서나간 시간
+    console.log("target: "+targetTime +"overrun:" +overrun);
+    
+    if (overrun < 0) {
+      setPlaybackRate(SPEEDFORWARD);
+      clearTimeout(rateTimeoutRef.current);
+
+      rateTimeoutRef.current = setTimeout(() => {
+        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
+        setPlaybackRate(1);
+      }, -overrun/(SPEEDFORWARD-1));
+    } 
+    else {
+      setPlaybackRate(SPEEDBACKWARD);
+      clearTimeout(rateTimeoutRef.current);
+
+      rateTimeoutRef.current = setTimeout(() => {
+        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
+        setPlaybackRate(1);
+      }, overrun/(1-SPEEDBACKWARD));
     }
-  };
-  // 재생 위치를 주기적으로 업데이트하는 함수
-  const updatePosition = () => {
-    const update = () => {
-      const audioContext = audioContextRef.current;
-      if (!audioContext || !isPlaying) return;
-      // 현재 재생 위치 계산 (속도 반영)
-      const currentTime = (audioContext.currentTime - resumeTimeRef.current) * playbackSpeed;
-      const roundedTime = roundToFrame(currentTime);
-      playbackPositionRef.current = currentTime;
-      // 재생이 오디오 길이를 초과하면 재생 위치 초기화
-      if (playbackPositionRef.current >= audioBufferRef.current.duration) {
-        playbackPositionRef.current = 0;
-        return;
-      }
-      // 외부에서 재생 위치를 추적하도록 콜백 호출
-      if (onPlaybackPositionChange) {
-        onPlaybackPositionChange(roundedTime);
-      }
-      animationFrameRef.current = requestAnimationFrame(update); // 다음 프레임에서 다시 호출
-    };
-    animationFrameRef.current = requestAnimationFrame(update);
-  };
+  }
+
   // 재생 및 일시정지 상태, 속도 변경 시 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
-    const resumeAudioContext = async () => {
-      if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume(); // AudioContext가 멈춘 상태면 다시 시작
-      }
-    };
-    if (isPlaying) {
-      resumeAudioContext().then(() => {
+
+    if (starttime) {
+      if (isPlaying) {
+        transition();
+      } else {
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
-        updatePosition();
-      });
-    } else {
-      pauseAudio();
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current); // 애니메이션 업데이트 중지
       }
     }
+    
     return () => {
-      if (sourceRef.current) {
-        // sourceRef.current.stop();
-        // sourceRef.current = null;
-      }
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, playbackSpeed]);
-  // 사용자가 시크 바를 조작하여 재생 위치를 변경할 때 처리
-  useEffect(() => {
-    if (!audioBufferRef.current || !audioContextRef.current) return;
-    const roundedPosition = roundToFrame(userSeekPosition); // 시크 위치를 프레임 단위로 반올림
-    playbackPositionRef.current = userSeekPosition;
-    if (isPlaying) {
-      playAudio(playbackPositionRef.current, playbackSpeed); // 변경된 위치에서 재생 시작
-      updatePosition();
-    }
-    // 재생 중이 아니면 위치만 업데이트
-    if (onPlaybackPositionChange) {
-      onPlaybackPositionChange(roundedPosition);
-    }
-  }, [userSeekPosition]);
+  }, [starttime]);
+
   // 컴포넌트 언마운트 시 자원 정리
   useEffect(() => {
     return () => {

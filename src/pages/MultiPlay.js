@@ -16,6 +16,7 @@ function MultiPlay() {
     const [audioBlob, setAudioBlob] = useState(null);
     const [playbackPosition, setPlaybackPosition] = useState(0);
     const [starttime, setStarttime] = useState(null);
+    const [isMicOn, setIsMicOn] = useState(false);
     
     //웹소켓 부분
     const socketRef = useRef(null); // 웹소켓 참조
@@ -58,7 +59,7 @@ function MultiPlay() {
 
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("wss://benmo.shop/ws");
+        socketRef.current = new WebSocket("ws://localhost:5000/ws");
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
@@ -132,27 +133,10 @@ function MultiPlay() {
 
         if (pingTimes.current.length >= 20) {
             pingTimes.current.sort();
-            avgStarttime.current = pingTimes.current[10];
-            console.log(pingTimes.current);
-            setStarttime(avgStarttime.current); // 지연 시간을 초 단위로 설정
-            handleStartPlayback(avgStarttime.current);
+            const avgStartTime = pingTimes.current[10];
+            setStarttime(avgStartTime);
         } else {
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
-        }
-    };
-
-    // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = (avgStartTime) => {
-        const clientTime = Date.now();
-        const timeUntilStart = avgStartTime - clientTime; // 지연 고려한 대기 시간 계산
-        if (timeUntilStart > 0) {
-            console.log(`Starting playback in ${timeUntilStart.toFixed(2)}ms based on server time.`);
-            setIsPlaying(true);
-            setIsWaiting(false);
-        } else {
-            console.log("Server start time has already passed. Starting playback immediately.");
-            setIsPlaying(true);
-            setIsWaiting(false);
         }
     };
 
@@ -261,14 +245,19 @@ function MultiPlay() {
                         </div>
                     </div>
                     {/* 시작 버튼 */}
-                    <button
-                        onClick={handleStartClick}
-                        disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
-                        className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
-                    >
-                        {audioLoaded ? "노래 시작" : "로딩 중..."}
-                    </button>
-
+                      <button
+                          onClick={handleStartClick}
+                          disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                          className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
+                      >
+                          {audioLoaded ? "노래 시작" : "로딩 중..."}
+                      </button>
+                      <button className="button"
+                        onClick={() => {
+                          setStarttime(isMicOn ? starttime+200 : starttime-200);
+                          setIsMicOn(!isMicOn);}}
+                        > {isMicOn?'마이크 끄기':'마이크 켜기'}
+                        </button>
                     {/* AudioPlayer 컴포넌트 */}
                     <AudioPlayer
                         isPlaying={isPlaying}
@@ -278,7 +267,9 @@ function MultiPlay() {
                         setAudioLoaded={setAudioLoaded}
                         setDuration={setDuration}
                         onPlaybackPositionChange={handleAudioPlaybackPositionChange}
-                        starttime={avgStarttime.current}
+                        starttime={starttime}
+                        setStarttime={setStarttime}
+                        setIsWaiting={setIsWaiting}
                     />
 
                 </div>
