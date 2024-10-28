@@ -4,7 +4,7 @@ import "../css/MultiPlay.css";
 import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from "../components/PitchGraph";
-
+import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 function MultiPlay() {
     const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
@@ -18,9 +18,12 @@ function MultiPlay() {
     const [starttime, setStarttime] = useState(null);
     const [isMicOn, setIsMicOn] = useState(false);
     
-    const socketRef = useRef(null); // 웹소켓 참조
+    //웹소켓 부분
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
-    
+    const peerConnections = {}; // 개별 연결을 저장한 배열 생성
+    let localStream; // 마이크 로컬 스트림
+
+
     //화면 조정을 위한 state들
     const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
     const containerRef = useRef(null);
@@ -33,7 +36,11 @@ function MultiPlay() {
     const [dataPointCount, setDataPointCount] = useState(200);
     const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
-    const avgStarttime = useRef(null);
+   
+
+    // useRef로 관리하는 변수들
+    const socketRef = useRef(null); // 웹소켓 참조
+
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
         const loadAudioBlob = async () => {
@@ -55,6 +62,23 @@ function MultiPlay() {
         };
     }, []);
 
+
+    // 웹소켓 io 버전 (임시임)
+    useEffect(() => {
+        socketRef.current = io('http://yourserver.com'); // 웹소켓 초기화
+    
+        // 연결이 열렸을 때 처리
+        socketRef.current.on('connect', () => {
+            console.log("웹소켓 연결 성공");
+        });
+    
+        // 연결이 닫힐 때 처리
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect(); // 컴포넌트가 언마운트될 때 소켓 닫기
+            }
+        };
+    }, []);
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
         socketRef.current = new WebSocket("ws://localhost:5000/ws");
@@ -88,6 +112,25 @@ function MultiPlay() {
             setIsSocketOpen(false);
         };
     }, []);
+
+    // 화면 비율 조정 감지
+    useEffect(() => {
+        function handleResize() {
+          if (containerRef.current) {
+            setDimensions({
+              width: containerRef.current.offsetWidth,
+              height: 500,
+            });
+          }
+        }
+    
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+
 
     // 초기 지연 시간 계산 함수
     const calculateDelay = () => {
@@ -144,22 +187,40 @@ function MultiPlay() {
         setPlaybackPosition(position);
     };
 
-    // 화면 비율 조정 감지
-    useEffect(() => {
-        function handleResize() {
-          if (containerRef.current) {
-            setDimensions({
-              width: containerRef.current.offsetWidth,
-              height: 500,
-            });
-          }
+    const getLocalStream = async () => {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        } catch (error) {
+          console.error('마이크 스트림 오류:', error);
         }
+      };
     
-        handleResize();
-        window.addEventListener('resize', handleResize);
-    
-        return () => window.removeEventListener('resize', handleResize);
-      }, []);
+      // 피어 연결 생성 및 관리 함수
+    const createPeerConnection = (peerId) => {
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
+
+    // 로컬 스트림 추가
+    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+    // ICE 후보 생성 시 서버로 전송
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+        socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+        }
+    };
+
+    // 상대방의 스트림을 오디오 태그에 연결
+    peerConnection.ontrack = (event) => {
+        const remoteStream = event.streams[0];
+        document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
+    };
+
+    peerConnections[peerId] = peerConnection;
+    return peerConnection;
+    };
+
 
     return (
         <div className="multiPlay-page">
