@@ -19,7 +19,7 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
   return (
     <div className='song-list-area'>
       <div className='top-section'>
-        <div className='tabs' style={{paddingBottom: '1px', marginLeft: '0rem', margin: 'auto'}}>
+        <div className='tabs' style={{paddingBottom: '1px', margin: '0rem auto 0rem 0rem'}}>
           <li className={viewType === 'private' ? 'is-active' : ''} onClick={() => handleTabClick('private')}>
             <a>내 노래</a>
           </li>
