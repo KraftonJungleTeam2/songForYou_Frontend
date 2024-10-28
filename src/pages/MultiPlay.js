@@ -115,6 +115,7 @@ function MultiPlay() {
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
             while (Date.now() - avgStartTime < 0) {}
+            console.log("START NOW@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             setIsPlaying(true);
             setIsWaiting(false);
         } else {
