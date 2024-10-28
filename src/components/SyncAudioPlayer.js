@@ -11,6 +11,7 @@ const AudioPlayer = ({
   starttime,
   setStarttime,
   setIsWaiting,
+  setIsMicOn,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -76,6 +77,7 @@ const AudioPlayer = ({
     }
     setIsPlaying(true);
     setIsWaiting(false);
+    setTimeout(()=>{setIsMicOn(false);}, -offset*1000);
     resumeTimeRef.current = audioContext.currentTime-offset;
 
     // 재생 완료 시 호출되는 콜백 설정
