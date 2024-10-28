@@ -303,8 +303,11 @@ function MultiPlay() {
                       </button>
                       <button className="button"
                         onClick={() => {
-                          setStarttime(isMicOn ? starttime+200 : starttime-200);
-                          setIsMicOn(!isMicOn);}}
+                          if (isPlaying) {
+                            setStarttime(isMicOn ? starttime+200 : starttime-200);
+                            setIsMicOn(!isMicOn);
+                          }}
+                        }
                         > {isMicOn?'마이크 끄기':'마이크 켜기'}
                         </button>
                     {/* AudioPlayer 컴포넌트 */}
@@ -319,6 +322,7 @@ function MultiPlay() {
                         starttime={starttime}
                         setStarttime={setStarttime}
                         setIsWaiting={setIsWaiting}
+                        setIsMicOn={setIsMicOn}
                     />
 
                 </div>
