@@ -62,6 +62,23 @@ function MultiPlay() {
         };
     }, []);
 
+
+    // 웹소켓 io 버전 (임시임)
+    useEffect(() => {
+        socketRef.current = io('http://yourserver.com'); // 웹소켓 초기화
+    
+        // 연결이 열렸을 때 처리
+        socketRef.current.on('connect', () => {
+            console.log("웹소켓 연결 성공");
+        });
+    
+        // 연결이 닫힐 때 처리
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect(); // 컴포넌트가 언마운트될 때 소켓 닫기
+            }
+        };
+    }, []);
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
         socketRef.current = new WebSocket("ws://localhost:5000/ws");
