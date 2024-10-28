@@ -1,19 +1,19 @@
 .song-list {
     padding: 0;
-    border-top: none; /* 상단 테두리 제거 */
+    border-width: none; /* 상단 테두리 제거 */
     border-radius: 0 0 8px 8px; /* 하단만 둥글게 */
-    max-height: calc(100vh - 150px); /* 뷰포트 높이에서 상단 영역 높이를 뺀 값 */
+    height: calc(100vh - 150px); /* 뷰포트 높이에서 상단 영역 높이를 뺀 값 */
     overflow-y: auto;
-    background-color: #ffffff;
 }
 
 .song-item {
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 0.8rem;
     border-bottom: 1px solid #e0e0e0;
     cursor: pointer;
     transition: background-color 0.3s;
+    height: 4.5rem;
 }
 
 .song-item:last-child {
@@ -24,14 +24,23 @@
     background-color: #f8f9fa;
 }
 
-.song-icon {
+.song-image img {
+    width: 80px;
     margin-right: 15px;
     font-size: 24px;
     color: #007bff;
+    background-size: 'cover';
+    background-repeat: 'no-repeat';
+    width: '65px';
+}
+
+.song-icon-img {
+    object-fit: contain;
 }
 
 .song-info {
     flex-grow: 1;
+    margin: 1rem;
 }
 
 .song-info h4 {
@@ -51,8 +60,7 @@
 }
 
 .play-button {
-    font-size: 24px;
-    color: #28a745;
+    font-size: 2rem;
 }
 
 /* 추가 배너 스타일 */

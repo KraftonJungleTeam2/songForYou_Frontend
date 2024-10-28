@@ -1,10 +1,10 @@
 .content-area {
   display: flex;
   justify-content: center; /* 수평 가운데 정렬 */
-  height: 100vh; /* 화면 전체 높이로 설정 */
+  height: calc(100vh - 75px); /* 화면 전체 높이로 설정 */
 }
 .content-area form {
-  margin-top: 100px;
+  /* margin-top: 100px; */
 }
 .form-container {
   display: flex;

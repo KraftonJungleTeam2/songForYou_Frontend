@@ -56,7 +56,9 @@ const Play = () => {
 
   const [userSeekPosition, setUserSeekPosition] = useState(0); // 사용자가 시크 바를 조작하여 변경한 위치
   const [duration, setDuration] = useState(0); // 오디오 전체 길이 (초 단위)
-  const [currentLyric, setCurrentLyric] = useState(''); // 현재 재생 중인 가사 상태
+  const [prevLyric, setPrevLyric] = useState(' '); // 이전 가사
+  const [currentLyric, setCurrentLyric] = useState(' '); // 현재 재생 중인 가사 상태
+  const [nextLyric, setNextLyric] = useState(' '); // 다음 가사
 
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
@@ -189,15 +191,32 @@ const Play = () => {
 
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
-    if (lyricsData && Array.isArray(lyricsData.start) && Array.isArray(lyricsData.end) && Array.isArray(lyricsData.text)) {
-      for (let i = 0; i < lyricsData.start.length; i++) {
-        if (playbackPosition >= lyricsData.start[i] && playbackPosition <= lyricsData.end[i]) {
-          setCurrentLyric(lyricsData.text[i]);
-          return; // 가사를 찾으면 루프 종료
+    let curr_idx = -1;
+    let segments = [];
+    if (lyricsData && lyricsData.segments) {
+      segments = lyricsData.segments;
+      for (let i = 0; i < segments.length; i++) {
+        if (playbackPosition >= segments[i].start) {
+          curr_idx = i;
+        } else if (curr_idx >= 0) {
+          break;
         }
       }
-      setCurrentLyric(''); // 현재 재생 위치에 해당하는 가사가 없을 경우 빈 문자열
     }
+    if (segments[curr_idx-1])
+      setPrevLyric(segments[curr_idx-1].text);
+    else
+      setPrevLyric(' ');
+
+    if (segments[curr_idx])
+      setCurrentLyric(segments[curr_idx].text);
+    else
+      setCurrentLyric(' ');
+
+    if (segments[curr_idx+1])
+      setNextLyric(segments[curr_idx+1].text);
+    else
+      setNextLyric(' ');
   }, [playbackPosition, lyricsData]);
 
   // Use the custom hook and pass necessary parameters
@@ -223,10 +242,18 @@ const Play = () => {
           </div>
   
           {/* 현재 재생 중인 가사 출력 */}
-          <p className="karaoke-lyrics">
-            {currentLyric}
-          </p>
-  
+          <div className='karaoke-lyrics'>
+            <p className='prev-lyrics'>
+              {prevLyric}
+            </p>
+            <p className='curr-lyrics'>
+              {currentLyric}
+            </p>
+            <p className='next-lyrics'>
+              {nextLyric}
+            </p>
+          </div>
+
           {/* 오디오 플레이어 컨트롤 */}
           <div className="audio-controls">
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>

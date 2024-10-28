@@ -5,7 +5,7 @@ import Sidebar from '../components/SideBar';
 import SongListArea from '../components/SongListArea';
 import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
-import { SongProvider, useSongs } from '../Context/SongContext';
+import { useSongs } from '../Context/SongContext';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -26,17 +26,14 @@ function Single() {
 
   return (
     <div className='single-page'>
-      <button onClick={toggleSidebar} className="toggle-button">
-        {isSidebarOpen ? 'Close' : 'Open'}
-      </button>
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
+          <SongListArea onSongSelect={handleSongSelect} publicSongs={songLists.public} privateSongs={songLists.private} />
           <div className='preview-area'>
             <Preview selectedSong={selectedSong} />
           </div>
-          <SongListArea onSongSelect={handleSongSelect} publicSongs={songLists.public} privateSongs={songLists.private} />
         </div>
       </div>
     </div>
