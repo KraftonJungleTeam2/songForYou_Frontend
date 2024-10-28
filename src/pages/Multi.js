@@ -75,12 +75,12 @@ function Multi() {
             <RoomCreation onCancel={() => setIsCreatingRoom(false)} /> // 방 생성 화면
           ) : (
             <div className='main-area'>
-              <button onClick={handlePreviousPage}>Previous Page</button>
-              <div className="room-list">
+              <button className="button page-button is-white" onClick={handlePreviousPage}><i class="fa-solid fa-circle-chevron-left"></i></button>
+              <div className="grid is-col-min-20 room-list">
                 {roomCards.map((room, index) => (
-                  <div className={`room-card ${room.empty ? 'empty' : ''}`} key={room.roomId}>
+                  <div className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`} key={room.roomId}>
                     {room.empty ? (
-                      <div className="room-info-empty">빈 방</div>
+                      <div className="room-info-empty has-text-light-invert">빈 방</div>
                     ) : (
                       <>
                         <img className="thumbnail" src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
@@ -94,16 +94,16 @@ function Multi() {
                   </div>
                 ))}
               </div>
-              <button onClick={handleNextPage}>Next Page</button>
+              <button className="button page-button is-white" onClick={handleNextPage}><i class="fa-solid fa-circle-chevron-right"></i></button>
             </div>
           )}
           
-          <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
+          {/* <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
             <button className="quick-join">빠른 입장</button>
             <button className='sort-by'> 정렬 조건</button>
             <button className="create-room" onClick={() => setIsCreatingRoom(true)}>방 생성</button>
             <button className="refresh" onClick={fetchRooms}>새로고침</button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
