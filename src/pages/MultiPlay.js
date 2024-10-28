@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import TopBar from "../components/TopBar";
 import "../css/MultiPlay.css";
-import AudioPlayer from "../components/AudioPlayer";
+import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
 
 function MultiPlay() {
@@ -18,7 +18,10 @@ function MultiPlay() {
     const startTimeoutRef = useRef(null);
     const socketRef = useRef(null); // 웹소켓 참조
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
-
+    const animationFrameRef = useRef(null);
+    const FRAME_RATE = 0.025;
+    const playbackSpeed = 1;
+    const avgStarttime = useRef(null);
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
         const loadAudioBlob = async () => {
@@ -97,12 +100,11 @@ function MultiPlay() {
 
         if (pingTimes.current.length >= 20) {
             pingTimes.current.sort();
-            const avgStarttime = pingTimes.current[10];
+            avgStarttime.current = pingTimes.current[10];
             console.log(pingTimes.current);
-            setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback(avgStarttime);
+            setStarttime(avgStarttime.current); // 지연 시간을 초 단위로 설정
+            handleStartPlayback(avgStarttime.current);
         } else {
-            console.log(["RTT", roundTripTime])
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
         }
     };
@@ -111,11 +113,8 @@ function MultiPlay() {
     const handleStartPlayback = (avgStartTime) => {
         const clientTime = Date.now();
         const timeUntilStart = avgStartTime - clientTime; // 지연 고려한 대기 시간 계산
-        console.log(timeUntilStart);
         if (timeUntilStart > 0) {
-            console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
-            while (Date.now() - avgStartTime < 0) {}
-            console.log("START NOW@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            console.log(`Starting playback in ${timeUntilStart.toFixed(2)}ms based on server time.`);
             setIsPlaying(true);
             setIsWaiting(false);
         } else {
@@ -217,6 +216,7 @@ function MultiPlay() {
                     setAudioLoaded={setAudioLoaded}
                     setDuration={setDuration}
                     onPlaybackPositionChange={handleAudioPlaybackPositionChange}
+                    starttime={avgStarttime.current}
                 />
             </div>
         </div>
