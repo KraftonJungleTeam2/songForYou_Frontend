@@ -8,93 +8,40 @@ const AudioPlayer = ({
   setAudioLoaded,
   setDuration,
   onPlaybackPositionChange,
+  playbackSpeed = 1,
 }) => {
-  const audioContextRef = useRef(null);
-  const audioBufferRef = useRef(null);
-  const sourceRef = useRef(null);
-  const startTimeRef = useRef(0);
-  const playbackPositionRef = useRef(0);
+  const audioRef = useRef(null);
   const animationFrameRef = useRef(null);
-  const FRAME_RATE = 0.025; // 25ms in seconds
+  const FRAME_RATE = 0.025;
 
+  // 현재 시간을 프레임 단위에 맞춰 반올림하는 함수
   const roundToFrame = (time) => {
     return Math.round(time / FRAME_RATE) * FRAME_RATE;
   };
 
-  useEffect(() => {
-    if (!audioBlob) return;
-
-    const loadAudio = async () => {
-      try {
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        audioContextRef.current = audioContext;
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        audioBufferRef.current = audioBuffer;
-
-        setDuration(audioBuffer.duration);
-        setAudioLoaded(true);
-      } catch (error) {
-        console.error('오디오 로딩 오류:', error);
-      }
-    };
-
-    loadAudio();
-
-    return () => {
-      if (audioContextRef.current) audioContextRef.current.close();
-    };
-  }, [audioBlob, setDuration, setAudioLoaded]);
-
-  const playAudio = (offset, speed) => {
-    const audioContext = audioContextRef.current;
-    const audioBuffer = audioBufferRef.current;
-    if (!audioBuffer || !audioContext) return;
-
-    if (sourceRef.current) sourceRef.current.stop();
-
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    sourceRef.current = source;
-
-    startTimeRef.current = audioContext.currentTime - offset;
-    source.start(0, offset);
-
-    source.onended = () => {
-      // 일시정지를 위해 전해진 state변경 함수 seekbar누르면 멈추게함
-      setIsPlaying(false);
-      playbackPositionRef.current = 0;
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  };
-
-  const pauseAudio = () => {
-    if (sourceRef.current) {
-      sourceRef.current.stop();
-      const audioContext = audioContextRef.current;
-      playbackPositionRef.current = audioContext.currentTime - startTimeRef.current;
-      sourceRef.current = null;
+  // 오디오 메타데이터가 로드되었을 때 실행되는 핸들러
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+      setAudioLoaded(true);
     }
   };
 
+  // 오디오가 끝났을 때 실행되는 핸들러
+  const handleEnded = () => {
+    setIsPlaying(false);
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  };
+
+  // 재생 위치를 주기적으로 업데이트하는 함수
   const updatePosition = () => {
     const update = () => {
-      const audioContext = audioContextRef.current;
-      
-      if (!audioContext || !isPlaying) return;
+      if (!audioRef.current || !isPlaying) return;
 
-      const currentTime = audioContext.currentTime - startTimeRef.current;
+      const currentTime = audioRef.current.currentTime;
       const roundedTime = roundToFrame(currentTime);
-      playbackPositionRef.current = currentTime;
-
-      if (playbackPositionRef.current >= audioBufferRef.current.duration) {
-
-        playbackPositionRef.current = 0;
-        return;
-      }
 
       if (onPlaybackPositionChange) {
         onPlaybackPositionChange(roundedTime);
@@ -106,55 +53,52 @@ const AudioPlayer = ({
     animationFrameRef.current = requestAnimationFrame(update);
   };
 
+  // audioBlob이 변경될 때 audio 요소의 src 설정
   useEffect(() => {
-    if (!audioBufferRef.current || !audioContextRef.current) return;
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      audioRef.current.src = url;
 
-    const resumeAudioContext = async () => {
-      if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
-      }
-    };
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [audioBlob]);
+
+  // 재생/일시정지 상태 변경 처리
+  useEffect(() => {
+    if (!audioRef.current) return;
 
     if (isPlaying) {
-      resumeAudioContext().then(() => {
-        playAudio(playbackPositionRef.current);
-        updatePosition();
-      });
+      audioRef.current.play();
+      updatePosition();
     } else {
-      pauseAudio();
+      audioRef.current.pause();
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     }
-
-    return () => {
-      if (sourceRef.current) {
-        sourceRef.current.stop();
-        sourceRef.current = null;
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
   }, [isPlaying]);
 
+  // 재생 속도 변경 처리
   useEffect(() => {
-    if (!audioBufferRef.current || !audioContextRef.current) return;
-
-    const roundedPosition = roundToFrame(userSeekPosition);
-    playbackPositionRef.current = userSeekPosition;
-
-    if (isPlaying) {
-      pauseAudio();
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackSpeed;
     }
-    if (onPlaybackPositionChange) {
-      onPlaybackPositionChange(roundedPosition);
+  }, [playbackSpeed]);
+
+  // 시크 위치 변경 처리
+  useEffect(() => {
+    if (audioRef.current && userSeekPosition !== undefined) {
+      audioRef.current.currentTime = userSeekPosition;
+      const roundedPosition = roundToFrame(userSeekPosition);
+      if (onPlaybackPositionChange) {
+        onPlaybackPositionChange(roundedPosition);
+      }
     }
   }, [userSeekPosition]);
 
+  // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
       if (animationFrameRef.current) {
@@ -163,7 +107,14 @@ const AudioPlayer = ({
     };
   }, []);
 
-  return null;
+  return (
+    <audio
+      ref={audioRef}
+      onLoadedMetadata={handleLoadedMetadata}
+      onEnded={handleEnded}
+      style={{ display: 'none' }}
+    />
+  );
 };
 
 export default AudioPlayer;
