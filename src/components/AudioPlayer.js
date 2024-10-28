@@ -46,7 +46,7 @@ const AudioPlayer = ({
     };
   }, [audioBlob, setDuration, setAudioLoaded]);
 
-  const playAudio = (offset) => {
+  const playAudio = (offset, speed) => {
     const audioContext = audioContextRef.current;
     const audioBuffer = audioBufferRef.current;
     if (!audioBuffer || !audioContext) return;

@@ -1,0 +1,34 @@
+.multiPlay-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.multi-content {
+    display: flex;
+    flex-grow: 1;
+    /* justify-content: center; */
+    align-items: center;
+    width: 100%;
+}
+
+.players {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    height: calc(100vh - 300px); /* 화면 높이에서 TopBar 높이(50px)를 뺀 높이 */
+    border: 1px solid #ccc;
+}
+
+.player-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    height: calc(100% / 8); /* players 영역을 8등분하여 각각의 카드 높이 설정 */
+    border-bottom: 1px solid #eee;
+}
+
+.player-card:last-child {
+    border-bottom: none;
+}
