@@ -1,58 +1,76 @@
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+import io from 'socket.io-client';
+
+const socket = io('http://yourserver.com'); // 서버 URL
+const peerConnections = {}; // 각 피어에 대해 개별 연결 생성
+let localStream; // 마이크 스트림을 저장할 변수
+
+// 마이크 스트림 얻기
+const getLocalStream = async () => {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (error) {
+    console.error('마이크 스트림 오류:', error);
   }
+};
+
+// 피어 연결 생성 및 관리 함수
+const createPeerConnection = (peerId) => {
+  const peerConnection = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
+
+  // 로컬 스트림 추가
+  localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+  // ICE 후보 생성 시 서버로 전송
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+    }
+  };
+
+  // 상대방의 스트림을 오디오 태그에 연결
+  peerConnection.ontrack = (event) => {
+    const remoteStream = event.streams[0];
+    document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
+  };
+
+  peerConnections[peerId] = peerConnection;
+  return peerConnection;
+};
+
+// 서버에서 offer 수신 시 answer 생성 후 전송
+socket.on('offer', async ({ offer, from }) => {
+  const peerConnection = createPeerConnection(from);
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await peerConnection.createAnswer();
+  await peerConnection.setLocalDescription(answer);
+  socket.emit('answer', { answer, to: from });
 });
-// 룸별 클라이언트 지연시간을 저장할 객체
-const roomLatencies = new Map();
-io.on('connection', (socket) => {
-  console.log(`Client connected: ${socket.id}`);
-  // 룸 참가 처리
-  socket.on('join-room', (roomName) => {
-    socket.join(roomName);
-    console.log(`Client ${socket.id} joined room: ${roomName}`);
-    // 룸에 대한 초기 상태 설정
-    if (!roomLatencies.has(roomName)) {
-      roomLatencies.set(roomName, new Map());
-    }
-    // 현재 룸의 참가자 수를 클라이언트에게 전송
-    const roomSize = io.sockets.adapter.rooms.get(roomName)?.size || 0;
-    io.to(roomName).emit('room-update', {
-      participantCount: roomSize,
-      roomName
-    });
-  });
-  // 지연시간 측정 시작 요청 처리
-  socket.on('start-latency-check', (roomName) => {
-    console.log(`Starting latency check for room: ${roomName}`);
-    // 해당 룸의 모든 클라이언트에게 체크 시작 알림
-    io.to(roomName).emit('prepare-latency-check', { timestamp: Date.now() });
-  });
-  // 지연시간 측정 요청 처리
-  socket.on('latency-check', (roomName) => {
-    io.to(roomName).emit('check-latency', { timestamp: Date.now() });
-  })
-  // 클라이언트로부터 지연시간 응답 수신
-  socket.on('latency-result', ({ roomName, latency }) => {
-    const roomData = roomLatencies.get(roomName);
-    if (roomData) {
-      roomData.set(socket.id, latency);
-      // 모든 클라이언트가 응답했는지 확인
-      const room = io.sockets.adapter.rooms.get(roomName);
-      if (room && roomData.size >= room.size) {
-        // 모든 결과를 클라이언트들에게 전송
-        const results = Array.from(roomData.entries()).map(([clientId, latency]) => ({
-          clientId,
-          latency
-        }));
-        io.to(roomName).emit('all-latency-results', results);
-        roomData.clear(); // 결과 초기화
-      }
-    }
-  });
-  socket.on('disconnect', () => {
-    console.log(`Client disconnected: ${socket.id}`);
+
+// 서버에서 answer 수신 시 설정
+socket.on('answer', async ({ answer, from }) => {
+  const peerConnection = peerConnections[from];
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+});
+
+// 서버에서 ICE 후보 수신 시 설정
+socket.on('ice-candidate', async ({ candidate, from }) => {
+  const peerConnection = peerConnections[from];
+  await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+// 방에 입장
+socket.emit('join-room', roomId); // 방 입장
+
+// 방에 있는 기존 사용자 정보 수신 후 offer 전송
+socket.on('existing-users', async (users) => {
+  await getLocalStream(); // 마이크 스트림 준비
+
+  users.forEach(async (userId) => {
+    const peerConnection = createPeerConnection(userId);
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit('offer', { offer, to: userId });
   });
 });
