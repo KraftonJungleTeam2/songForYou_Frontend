@@ -4,6 +4,7 @@ import "../css/MultiPlay.css";
 import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from "../components/PitchGraph";
+
 function MultiPlay() {
     const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
@@ -73,7 +74,7 @@ function MultiPlay() {
                 calculateDelay(); // 지연 시간 측정 시작
             }
             else if (data.type === "Players"){
-                
+
             }
         };
 
@@ -230,14 +231,6 @@ function MultiPlay() {
                         // songState={song}
                         />
                     </div>
-                    {/* 시작 버튼 */}
-                    <button
-                        onClick={handleStartClick}
-                        disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
-                        className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
-                    >
-                        {audioLoaded ? "노래 시작" : "로딩 중..."}
-                    </button>
 
                     {/* Seek Bar */}
                     <div className="seek-bar-container">
@@ -255,6 +248,14 @@ function MultiPlay() {
                             {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
                         </div>
                     </div>
+                    {/* 시작 버튼 */}
+                    <button
+                        onClick={handleStartClick}
+                        disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                        className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
+                    >
+                        {audioLoaded ? "노래 시작" : "로딩 중..."}
+                    </button>
 
                     {/* AudioPlayer 컴포넌트 */}
                     <AudioPlayer
