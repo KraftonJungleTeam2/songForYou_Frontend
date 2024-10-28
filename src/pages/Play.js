@@ -5,10 +5,9 @@ import PitchGraph from '../components/PitchGraph';
 import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
-import '../css/Play.css'
+import '../css/Play.css';
 import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
-import Sidebar from '../components/SideBar';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -203,105 +202,59 @@ const Play = () => {
         }
       }
     }
-    if (segments[curr_idx-1])
-      setPrevLyric(segments[curr_idx-1].text);
-    else
-      setPrevLyric(' ');
+    if (segments[curr_idx - 1]) setPrevLyric(segments[curr_idx - 1].text);
+    else setPrevLyric(' ');
 
-    if (segments[curr_idx])
-      setCurrentLyric(segments[curr_idx].text);
-    else
-      setCurrentLyric(' ');
+    if (segments[curr_idx]) setCurrentLyric(segments[curr_idx].text);
+    else setCurrentLyric(' ');
 
-    if (segments[curr_idx+1])
-      setNextLyric(segments[curr_idx+1].text);
-    else
-      setNextLyric(' ');
+    if (segments[curr_idx + 1]) setNextLyric(segments[curr_idx + 1].text);
+    else setNextLyric(' ');
   }, [playbackPosition, lyricsData]);
 
   // Use the custom hook and pass necessary parameters
   usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
   // console.log(entireGraphData);
   return (
-    <div className="single-page">
-      <Sidebar />
-      <div className="main-content-play">
+    <div className='single-page'>
+      <div className='main-content-play'>
         <TopBar />
-        <div className="flex-col" ref={containerRef}>
-  
+        <div className='flex-col' ref={containerRef}>
           {/* Pitch Graph */}
-          <div className="pitch-graph">
-            <PitchGraph 
-              dimensions={dimensions}
-              realtimeData={entireGraphData}
-              referenceData={entireReferData}
-              dataPointCount={dataPointCount}
-              currentTimeIndex={playbackPosition * 40}
-              songState={song}
-            />
+          <div className='pitch-graph'>
+            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={song} />
           </div>
-  
+
           {/* 현재 재생 중인 가사 출력 */}
           <div className='karaoke-lyrics'>
-            <p className='prev-lyrics'>
-              {prevLyric}
-            </p>
-            <p className='curr-lyrics'>
-              {currentLyric}
-            </p>
-            <p className='next-lyrics'>
-              {nextLyric}
-            </p>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
           </div>
 
           {/* 오디오 플레이어 컨트롤 */}
-          <div className="audio-controls">
+          <div className='audio-controls'>
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input 
-              type="range" 
-              min="0" 
-              max={duration} 
-              step="0.025" 
-              value={playbackPosition} 
-              onChange={handlePlaybackPositionChange} 
-              className="range-slider" 
-              disabled={!dataLoaded} 
-            />
-            <div className="playback-info">
+            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
+            <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
-  
-            <div className="speed-control">
+
+            <div className='speed-control'>
               <label>속도 조절:</label>
-              <input 
-                type="range" 
-                min="25" 
-                max="300" 
-                step="1" 
-                value={dataPointCount} 
-                onChange={handleSpeedChange} 
-                className="range-slider" 
-              />
-              <div className="speed-control-value">렌더링 사이즈: {dataPointCount}</div>
+              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='range-slider' />
+              <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
             </div>
-            {!dataLoaded && <p className="loading-text">데이터 로딩 중...</p>}
+            {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
           </div>
-  
+
           {/* 오디오 플레이어 컴포넌트 */}
-          <AudioPlayer 
-            isPlaying={isPlaying}
-            setIsPlaying={setIsPlaying}
-            userSeekPosition={userSeekPosition}
-            setDuration={setDuration}
-            audioBlob={mrDataBlob}
-            setAudioLoaded={setAudioLoaded}
-            onPlaybackPositionChange={setPlaybackPosition}
-          />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} setDuration={setDuration} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} onPlaybackPositionChange={setPlaybackPosition} />
         </div>
       </div>
     </div>
   );
-}
+};
 export default Play;

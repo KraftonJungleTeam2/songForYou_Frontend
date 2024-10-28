@@ -50,9 +50,11 @@
 }
 
 .toggle-button.open {
+  top: 7px;
   left: 220px; /* 사이드바가 열렸을 때 버튼 위치 */
 }
 
 .toggle-button.closed {
+  top: 7px;
   left: 20px; /* 사이드바가 닫혔을 때 버튼 위치 */
 }
