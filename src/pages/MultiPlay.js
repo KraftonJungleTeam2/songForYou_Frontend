@@ -44,7 +44,7 @@ function MultiPlay() {
 
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("ws://192.168.1.152:5000");
+        socketRef.current = new WebSocket("wss://benmo.shop/ws");
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
@@ -91,19 +91,19 @@ function MultiPlay() {
         const untilStartAdjusted = untilStart - (roundTripTime / 2);
         pingTimes.current.push(receiveTime + untilStartAdjusted);
 
-        if (pingTimes.current.length >= 50) {
+        if (pingTimes.current.length >= 10) {
             const avgStarttime = pingTimes.current.reduce((acc, time) => acc + time, 0) / pingTimes.current.length;
             setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback();
+            handleStartPlayback(avgStarttime);
         } else {
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
         }
     };
 
     // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = () => {
+    const handleStartPlayback = (avgstartTime) => {
         const clientTime = Date.now();
-        const timeUntilStart = starttime - clientTime; // 지연 고려한 대기 시간 계산
+        const timeUntilStart = avgstartTime - clientTime; // 지연 고려한 대기 시간 계산
 
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
