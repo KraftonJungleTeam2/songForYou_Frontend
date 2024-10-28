@@ -3,9 +3,10 @@ import TopBar from "../components/TopBar";
 import "../css/MultiPlay.css";
 import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
+import PitchGraph from "../components/PitchGraph";
 
 function MultiPlay() {
-    const [players, setPlayers] = useState(Array(8).fill(null)); // 8자리 초기화
+    const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [isSocketOpen, setIsSocketOpen] = useState(false);
@@ -15,10 +16,23 @@ function MultiPlay() {
     const [audioBlob, setAudioBlob] = useState(null);
     const [playbackPosition, setPlaybackPosition] = useState(0);
     const [starttime, setStarttime] = useState(null);
-    const startTimeoutRef = useRef(null);
+    
     const socketRef = useRef(null); // 웹소켓 참조
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
-    // const avgStarttime = useRef(null);
+    
+    //화면 조정을 위한 state들
+    const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+    const containerRef = useRef(null);
+
+
+    // 서버에서 데이터 로딩 후 배열 생성
+    const [entireGraphData, setEntireGraphData] = useState([]);
+    const [entireReferData, setEntireReferData] = useState([]);
+
+    const [dataPointCount, setDataPointCount] = useState(200);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
+
+    const avgStarttime = useRef(null);
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
         const loadAudioBlob = async () => {
@@ -34,10 +48,6 @@ function MultiPlay() {
         loadAudioBlob();
 
         return () => {
-            if (startTimeoutRef.current) {
-                clearTimeout(startTimeoutRef.current);
-            }
-
             if (socketRef.current) {
                 socketRef.current.close(); // 컴포넌트가 언마운트될 때 소켓 닫기
             }
@@ -58,8 +68,13 @@ function MultiPlay() {
             const data = JSON.parse(event.data);
             if (data.type === "pingResponse") {
                 handlePingResponse(data.sendTime, data.untilStart, receiveTime);
-            } else if (data.type === "startTime") {
+            } 
+            else if (data.type === "startTime") {
+                // setServerStartTime(data.startTime); // 서버 기준 시간 설정
                 calculateDelay(); // 지연 시간 측정 시작
+            }
+            else if (data.type === "Players"){
+
             }
         };
 
@@ -128,79 +143,119 @@ function MultiPlay() {
         setPlaybackPosition(position);
     };
 
+    // 화면 비율 조정 감지
+    useEffect(() => {
+        function handleResize() {
+          if (containerRef.current) {
+            setDimensions({
+              width: containerRef.current.offsetWidth,
+              height: 500,
+            });
+          }
+        }
+    
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
     return (
         <div className="multiPlay-page">
             <TopBar className="top-bar" />
             <div className="multi-content">
-                <div className="players">
-                    {players.map((player, index) => (
-                        <div key={index} className="player-card">
-                            {player ? (
-                                <div>
-                                    <p>{player.name}</p>
-                                </div>
-                            ) : (
-                                <p>빈 자리</p>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                <div className="players-chat">
+                    <div className="players">
+                        {players.map((player, index) => (
+                            <div key={index} className="player-card">
+                                {player ? (
+                                    <div>
+                                        <p>{player.name}</p>
+                                    </div>
+                                ) : (
+                                    <p>빈 자리</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
 
-                {/* 오디오 상태 표시 */}
-                <div className="audio-status">
-                    {audioLoaded ? (
-                        <div>
-                            <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
-                            <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
-                            <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
-                            <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
-                        </div>
-                    ) : (
-                        <p>오디오 로딩 중...</p>
-                    )}
-                </div>
-
-                {/* 시작 버튼 */}
-                <button
-                    onClick={handleStartClick}
-                    disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
-                    className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
-                >
-                    {audioLoaded ? "노래 시작" : "로딩 중..."}
-                </button>
-                <button className={`button`} onClick={() => setStarttime(starttime - 100)}>뒤로</button>
-                <button className={`button`} onClick={() => setStarttime(starttime + 100)}>앞으로</button>
-
-                {/* Seek Bar */}
-                <div className="seek-bar-container">
-                    <input
-                        type="range"
-                        min="0"
-                        max={duration}
-                        step="0.025"
-                        value={playbackPosition}
-                        onChange={handlePlaybackPositionChange}
-                        className="range-slider"
-                        disabled={!audioLoaded}
-                    />
-                    <div className="playback-info">
-                        {playbackPosition.toFixed(2)} / {duration.toFixed(2)} 초
+                    <div className="chat-area">
+                        <p>chating area</p>
                     </div>
                 </div>
+                
+                <div className="sing-area" ref={containerRef}>
+                    <div className="information-area">
+                        <p>현재곡</p>
+                        <p>가수</p>
+                        <p>곡번호</p>
+                    </div>
+                    {/* 오디오 상태 표시 */}
+                    {/* <div className="audio-status">
+                        {audioLoaded ? (
+                            <div>
+                                <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
+                                <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
+                                <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
+                                <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
+                            </div>
+                        ) : (
+                            <p>오디오 로딩 중...</p>
+                        )}
+                    </div> */}
 
-                {/* AudioPlayer 컴포넌트 */}
-                <AudioPlayer
-                    isPlaying={isPlaying}
-                    setIsPlaying={setIsPlaying}
-                    userSeekPosition={userSeekPosition}
-                    audioBlob={audioBlob}
-                    setAudioLoaded={setAudioLoaded}
-                    setDuration={setDuration}
-                    onPlaybackPositionChange={handleAudioPlaybackPositionChange}
-                    starttime={starttime}
+                    <div className="pitch-graph-multi" style={{ height: "500px" }}>
+                        <PitchGraph
+                        dimensions={dimensions}
+                        realtimeData={entireGraphData}
+                        referenceData={entireReferData}
+                        dataPointCount={dataPointCount}
+                        currentTimeIndex={playbackPosition * 40}
+                        // songState={song}
+                        />
+                    </div>
+
+                    {/* Seek Bar */}
+                    <div className="seek-bar-container">
+                        <input
+                            type="range"
+                            min="0"
+                            max={duration}
+                            step="0.025"
+                            value={playbackPosition}
+                            onChange={handlePlaybackPositionChange}
+                            className="range-slider"
+                            disabled={!audioLoaded}
+                        />
+                        <div className="playback-info">
+                            {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
+                        </div>
+                    </div>
+                    {/* 시작 버튼 */}
+                    <button
+                        onClick={handleStartClick}
+                        disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                        className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
+                    >
+                        {audioLoaded ? "노래 시작" : "로딩 중..."}
+                    </button>
+
+                    {/* AudioPlayer 컴포넌트 */}
+                    <AudioPlayer
+                        isPlaying={isPlaying}
+                        setIsPlaying={setIsPlaying}
+                        userSeekPosition={userSeekPosition}
+                        audioBlob={audioBlob}
+                        setAudioLoaded={setAudioLoaded}
+                        setDuration={setDuration}
+                        onPlaybackPositionChange={handleAudioPlaybackPositionChange}
+                        starttime={starttime}
                     setStarttime={setStarttime}
                     setIsWaiting={setIsWaiting}
-                />
+                    />
+
+                </div>
+
             </div>
         </div>
     );
