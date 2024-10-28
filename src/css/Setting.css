@@ -49,10 +49,6 @@
     transition: background-color 0.3s;
   }
   
-  button:hover {
-    background-color: #0056b3;
-  }
-  
   .update-button {
     margin-top: 10px;
   }
