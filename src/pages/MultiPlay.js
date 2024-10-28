@@ -97,7 +97,7 @@ function MultiPlay() {
             const avgStarttime = pingTimes.current[10];
             console.log(pingTimes.current);
             setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback(avgStarttimeavgStarttime);
+            handleStartPlayback(avgStarttime);
         } else {
             console.log(["RTT", roundTripTime])
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
@@ -105,9 +105,9 @@ function MultiPlay() {
     };
 
     // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = (avgStarttimeavgstartTime) => {
+    const handleStartPlayback = (avgStartTime) => {
         const clientTime = Date.now();
-        const timeUntilStart = avgavgStartTime - clientTime; // 지연 고려한 대기 시간 계산
+        const timeUntilStart = avgStartTime - clientTime; // 지연 고려한 대기 시간 계산
         console.log(timeUntilStart);
         if (timeUntilStart > 0) {
             console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
