@@ -19,9 +19,10 @@ function MultiPlay() {
     const [isMicOn, setIsMicOn] = useState(false);
     
     //웹소켓 부분
-    const socketRef = useRef(null); // 웹소켓 참조
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
     const peerConnections = {}; // 개별 연결을 저장한 배열 생성
+    let localStream; // 마이크 로컬 스트림
+
 
     //화면 조정을 위한 state들
     const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
@@ -35,7 +36,11 @@ function MultiPlay() {
     const [dataPointCount, setDataPointCount] = useState(200);
     const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
-    const avgStarttime = useRef(null);
+   
+
+    // useRef로 관리하는 변수들
+    const socketRef = useRef(null); // 웹소켓 참조
+
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
         const loadAudioBlob = async () => {
@@ -173,6 +178,33 @@ function MultiPlay() {
         }
       };
     
+      // 피어 연결 생성 및 관리 함수
+    const createPeerConnection = (peerId) => {
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
+
+    // 로컬 스트림 추가
+    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+    // ICE 후보 생성 시 서버로 전송
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+        socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+        }
+    };
+
+    // 상대방의 스트림을 오디오 태그에 연결
+    peerConnection.ontrack = (event) => {
+        const remoteStream = event.streams[0];
+        document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
+    };
+
+    peerConnections[peerId] = peerConnection;
+    return peerConnection;
+    };
+
+
     return (
         <div className="multiPlay-page">
             <TopBar className="top-bar" />
