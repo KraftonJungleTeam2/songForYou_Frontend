@@ -16,6 +16,7 @@ function MultiPlay() {
     const [audioBlob, setAudioBlob] = useState(null);
     const [playbackPosition, setPlaybackPosition] = useState(0);
     const [starttime, setStarttime] = useState(null);
+    const [isMicOn, setIsMicOn] = useState(false);
     
     const socketRef = useRef(null); // 웹소켓 참조
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
@@ -232,14 +233,19 @@ function MultiPlay() {
                         </div>
                     </div>
                     {/* 시작 버튼 */}
-                    <button
-                        onClick={handleStartClick}
-                        disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
-                        className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
-                    >
-                        {audioLoaded ? "노래 시작" : "로딩 중..."}
-                    </button>
-
+                      <button
+                          onClick={handleStartClick}
+                          disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                          className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
+                      >
+                          {audioLoaded ? "노래 시작" : "로딩 중..."}
+                      </button>
+                      <button className="button"
+                        onClick={() => {
+                          setStarttime(isMicOn ? starttime+200 : starttime-200);
+                          setIsMicOn(!isMicOn);}}
+                        > {isMicOn?'마이크 끄기':'마이크 켜기'}
+                        </button>
                     {/* AudioPlayer 컴포넌트 */}
                     <AudioPlayer
                         isPlaying={isPlaying}
@@ -250,8 +256,8 @@ function MultiPlay() {
                         setDuration={setDuration}
                         onPlaybackPositionChange={handleAudioPlaybackPositionChange}
                         starttime={starttime}
-                    setStarttime={setStarttime}
-                    setIsWaiting={setIsWaiting}
+                        setStarttime={setStarttime}
+                        setIsWaiting={setIsWaiting}
                     />
 
                 </div>
