@@ -21,7 +21,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
         onClick={toggleSidebar}
         className={`toggle-button ${isOpen ? 'open' : 'closed'}`}
       >
-        {isOpen ? 'Close' : 'Open'}
+        {isOpen ? 'X' : '☰'}
       </button>
     </>
   );
