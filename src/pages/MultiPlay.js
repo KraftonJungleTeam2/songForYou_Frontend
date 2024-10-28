@@ -45,30 +45,40 @@ function MultiPlay() {
 
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("ws://localhost:8080");
+        if (!socketRef.current) {  // 소켓이 없을 때만 새로 연결
+            socketRef.current = new WebSocket("ws://localhost:5000");
 
-        socketRef.current.onopen = () => {
-            console.log("웹소켓 연결 성공");
-        };
+            socketRef.current.onopen = () => {
+                console.log("웹소켓 연결 성공");
+            };
 
-        socketRef.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === "pingResponse") {
-                handlePingResponse(data.sendTime);
-            } else if (data.type === "startTime") {
-                setServerStartTime(data.startTime); // 서버의 시작 시간 설정
-                calculateDelay(); // 지연 시간 측정 시작
+            socketRef.current.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "pingResponse") {
+                    handlePingResponse(data.sendTime);
+                } else if (data.type === "startTime") {
+                    setServerStartTime(data.startTime);
+                    calculateDelay();
+                }
+            };
+
+            socketRef.current.onerror = (error) => {
+                console.error("웹소켓 오류:", error);
+            };
+
+            socketRef.current.onclose = () => {
+                console.log("웹소켓 연결 종료");
+                socketRef.current = null;  // 연결이 끊어지면 ref를 null로 설정
+            };
+        }
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
             }
         };
-
-        socketRef.current.onerror = (error) => {
-            console.error("웹소켓 오류:", error);
-        };
-
-        socketRef.current.onclose = () => {
-            console.log("웹소켓 연결 종료");
-        };
-    }, []);
+    }, []); // 빈 의존성 배열
 
     // 지연 시간 측정을 위해 서버에 ping 메시지 전송
     const sendPing = () => {
@@ -163,7 +173,7 @@ function MultiPlay() {
                         </div>
                     ))}
                 </div>
-                
+
                 {/* 오디오 상태 표시 */}
                 <div className="audio-status">
                     {audioLoaded ? (
@@ -179,8 +189,8 @@ function MultiPlay() {
                 </div>
 
                 {/* 시작 버튼 */}
-                <button 
-                    onClick={handleStartClick} 
+                <button
+                    onClick={handleStartClick}
                     disabled={!audioLoaded}
                     className={`start-button ${!audioLoaded ? 'disabled' : ''}`}
                 >
@@ -189,15 +199,15 @@ function MultiPlay() {
 
                 {/* Seek Bar */}
                 <div className="seek-bar-container">
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max={duration} 
-                        step="0.025" 
-                        value={playbackPosition} 
-                        onChange={handlePlaybackPositionChange} 
-                        className="range-slider" 
-                        disabled={!audioLoaded} 
+                    <input
+                        type="range"
+                        min="0"
+                        max={duration}
+                        step="0.025"
+                        value={playbackPosition}
+                        onChange={handlePlaybackPositionChange}
+                        className="range-slider"
+                        disabled={!audioLoaded}
                     />
                     <div className="playback-info">
                         {playbackPosition.toFixed(2)} / {duration.toFixed(2)} 초
