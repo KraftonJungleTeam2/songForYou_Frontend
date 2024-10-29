@@ -360,7 +360,6 @@ function MultiPlay() {
           setNetworkLatency(networkLatency*0.9 + smre*0.1);
         }
       }
-      console.log("dsioghw");
       setInterval(measureLatency, 1000);
 
     }, []);
