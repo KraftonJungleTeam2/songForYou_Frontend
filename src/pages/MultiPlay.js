@@ -90,7 +90,8 @@ function MultiPlay() {
       path: '/wss',
       auth: {
         token: sessionStorage.getItem('userToken')
-      }
+      },
+      secure: true
     });
 
     // 연결 이벤트 리스너
