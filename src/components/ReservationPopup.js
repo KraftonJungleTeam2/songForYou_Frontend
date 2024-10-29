@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useSongs } from '../Context/SongContext';
+import { songlists, useSongs } from '../Context/SongContext';
 
-const ReservationPopup = ({ soket, onClose }) => {
+
+const ReservationPopup = ({ socket, onClose }) => {
   const { songLists, fetchSongLists } = useSongs();
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
+  const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
 
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
@@ -21,10 +23,14 @@ const ReservationPopup = ({ soket, onClose }) => {
 
   const handleReserve = (e, song) => {
     e.stopPropagation();
-    // 곡 예약 정보 소켓으로 전달하기
-    soket.emit('reserveSong', )
-    onClose();
+
+    // 예약된 곡 ID 추가
+    setReservedSongs((prev) => [...prev, song.id]);
+    // 예약 정보를 소켓으로 전달
+    socket.emit('reserveSong', song.id);
   };
+
+  const isReserved = (songId) => reservedSongs.includes(songId); // 예약 여부 확인
 
   function arrayBufferToBase64(buffer) {
     let binary = '';
@@ -91,13 +97,15 @@ const ReservationPopup = ({ soket, onClose }) => {
                             <p>{song.metadata.description}</p>
                             <span className='timestamp'>{song.timestamp}</span>
                         </div>
-                            <div 
-                                className='play-button has-text-success' 
-                                style={{ cursor: 'pointer' }} 
-                                onClick={(e) => handleReserve(e, song)}
-                                >
-                                <i className="fa-solid fa-plus"></i> {/* 플러스 아이콘 */}
-                            </div>
+
+
+                        <div
+                            className={`button ${isReserved(song.id) ? 'is-static has-text-grey-light' : 'is-dark'}`}
+                            style={{ cursor: isReserved(song.id) ? 'default' : 'pointer' }}
+                            onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
+                            >
+                            {isReserved(song.id) ? '예약됨!' : <i className="fa-solid fa-plus"></i>}
+                        </div>
 
                         </div>
                     ))
