@@ -8,15 +8,22 @@
     display: flex;
     flex-grow: 1;
     /* justify-content: center; */
-    align-items: center;
+    /* align-items: center; */
     width: 100%;
 }
+.players-chat {
+    display: flex;
+    flex-direction: column;
+    width: 20%; /* 좌측 영역 너비 설정 */
+}
+
 
 .players {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    height: calc(100vh - 300px); /* 화면 높이에서 TopBar 높이(50px)를 뺀 높이 */
+    flex-grow: 1;
+    width: 100%;
+    height: 50%;
     border: 1px solid #ccc;
 }
 
@@ -25,10 +32,38 @@
     align-items: center;
     justify-content: center;
     color: #333;
-    height: calc(100% / 8); /* players 영역을 8등분하여 각각의 카드 높이 설정 */
+    height: calc(100% / 4); /* players 영역을 8등분하여 각각의 카드 높이 설정 */
     border-bottom: 1px solid #eee;
 }
 
 .player-card:last-child {
     border-bottom: none;
+}
+
+.chat-area{
+    height: 50%;
+    color: #333;
+    border: 1px solid #000000; /* 모든 방향에 동일한 색상과 두께의 테두리를 설정 */
+}
+
+.sing-area{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: calc(100% - var(--top-bar-height) );
+}
+
+.information-area {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+    align-self: stretch; /* 상단에 고정되도록 설정 */
+}
+
+.information-area p {
+    flex: 1; /* 각 <p> 요소가 같은 너비를 차지하도록 설정 */
+    text-align: center;
+    margin: 0;
 }

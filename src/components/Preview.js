@@ -120,10 +120,10 @@ function Preview({ selectedSong }) {
       <p className='subtitle'>{selectedSong.metadata.description}</p>
       <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
       <div className='preview-buttons'>
-        <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{flex: 1}}>
+        <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{ flex: 1 }}>
           {isPlaying ? '멈추기' : '미리듣기'}
         </button>
-        <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{flex: 1}}>
+        <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{ flex: 1 }}>
           부르기
         </button>
       </div>

@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import TopBar from "../components/TopBar";
 import "../css/MultiPlay.css";
-import AudioPlayer from "../components/AudioPlayer";
+import AudioPlayer from "../components/SyncAudioPlayer";
 import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
-
+import PitchGraph from "../components/PitchGraph";
+import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 function MultiPlay() {
-    const [players, setPlayers] = useState(Array(8).fill(null)); // 8자리 초기화
+    const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
     const [isPlaying, setIsPlaying] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [isSocketOpen, setIsSocketOpen] = useState(false);
@@ -15,9 +16,30 @@ function MultiPlay() {
     const [audioBlob, setAudioBlob] = useState(null);
     const [playbackPosition, setPlaybackPosition] = useState(0);
     const [starttime, setStarttime] = useState(null);
-    const startTimeoutRef = useRef(null);
-    const socketRef = useRef(null); // 웹소켓 참조
+    const [isMicOn, setIsMicOn] = useState(false);
+    
+    //웹소켓 부분
     const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
+    const peerConnections = {}; // 개별 연결을 저장한 배열 생성
+    let localStream; // 마이크 로컬 스트림
+
+
+    //화면 조정을 위한 state들
+    const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+    const containerRef = useRef(null);
+
+
+    // 서버에서 데이터 로딩 후 배열 생성
+    const [entireGraphData, setEntireGraphData] = useState([]);
+    const [entireReferData, setEntireReferData] = useState([]);
+
+    const [dataPointCount, setDataPointCount] = useState(200);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
+
+   
+
+    // useRef로 관리하는 변수들
+    const socketRef = useRef(null); // 웹소켓 참조
 
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
@@ -34,19 +56,32 @@ function MultiPlay() {
         loadAudioBlob();
 
         return () => {
-            if (startTimeoutRef.current) {
-                clearTimeout(startTimeoutRef.current);
-            }
-
             if (socketRef.current) {
                 socketRef.current.close(); // 컴포넌트가 언마운트될 때 소켓 닫기
             }
         };
     }, []);
 
+
+    // 웹소켓 io 버전 (임시임)
+    useEffect(() => {
+        socketRef.current = io('http://yourserver.com'); // 웹소켓 초기화
+    
+        // 연결이 열렸을 때 처리
+        socketRef.current.on('connect', () => {
+            console.log("웹소켓 연결 성공");
+        });
+    
+        // 연결이 닫힐 때 처리
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect(); // 컴포넌트가 언마운트될 때 소켓 닫기
+            }
+        };
+    }, []);
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("wss://benmo.shop/ws");
+        socketRef.current = new WebSocket("ws://localhost:5000/ws");
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
@@ -58,9 +93,13 @@ function MultiPlay() {
             const data = JSON.parse(event.data);
             if (data.type === "pingResponse") {
                 handlePingResponse(data.sendTime, data.untilStart, receiveTime);
-            } else if (data.type === "startTime") {
+            } 
+            else if (data.type === "startTime") {
                 // setServerStartTime(data.startTime); // 서버 기준 시간 설정
                 calculateDelay(); // 지연 시간 측정 시작
+            }
+            else if (data.type === "Players"){
+
             }
         };
 
@@ -73,6 +112,25 @@ function MultiPlay() {
             setIsSocketOpen(false);
         };
     }, []);
+
+    // 화면 비율 조정 감지
+    useEffect(() => {
+        function handleResize() {
+          if (containerRef.current) {
+            setDimensions({
+              width: containerRef.current.offsetWidth,
+              height: 500,
+            });
+          }
+        }
+    
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+
 
     // 초기 지연 시간 계산 함수
     const calculateDelay = () => {
@@ -97,31 +155,10 @@ function MultiPlay() {
 
         if (pingTimes.current.length >= 20) {
             pingTimes.current.sort();
-            const avgStarttime = pingTimes.current[10];
-            console.log(pingTimes.current);
-            setStarttime(avgStarttime); // 지연 시간을 초 단위로 설정
-            handleStartPlayback(avgStarttime);
+            const avgStartTime = pingTimes.current[10];
+            setStarttime(avgStartTime);
         } else {
-            console.log(["RTT", roundTripTime])
             sendPing(); // 50번까지 반복하여 서버에 ping 요청
-        }
-    };
-
-    // 서버에서 받은 시작 시간에 따라 클라이언트에서 재생 시작 시각을 조정
-    const handleStartPlayback = (avgStartTime) => {
-        const clientTime = Date.now();
-        const timeUntilStart = avgStartTime - clientTime; // 지연 고려한 대기 시간 계산
-        console.log(timeUntilStart);
-        if (timeUntilStart > 0) {
-            console.log(`Starting playback in ${timeUntilStart.toFixed(2)} seconds based on server time.`);
-            while (Date.now() - avgStartTime < 0) {}
-            console.log("START NOW@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            setIsPlaying(true);
-            setIsWaiting(false);
-        } else {
-            console.log("Server start time has already passed. Starting playback immediately.");
-            setIsPlaying(true);
-            setIsWaiting(false);
         }
     };
 
@@ -150,74 +187,146 @@ function MultiPlay() {
         setPlaybackPosition(position);
     };
 
+    const getLocalStream = async () => {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        } catch (error) {
+          console.error('마이크 스트림 오류:', error);
+        }
+      };
+    
+      // 피어 연결 생성 및 관리 함수
+    const createPeerConnection = (peerId) => {
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
+
+    // 로컬 스트림 추가
+    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+    // ICE 후보 생성 시 서버로 전송
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+        socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+        }
+    };
+
+    // 상대방의 스트림을 오디오 태그에 연결
+    peerConnection.ontrack = (event) => {
+        const remoteStream = event.streams[0];
+        document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
+    };
+
+    peerConnections[peerId] = peerConnection;
+    return peerConnection;
+    };
+
+
     return (
         <div className="multiPlay-page">
             <TopBar className="top-bar" />
             <div className="multi-content">
-                <div className="players">
-                    {players.map((player, index) => (
-                        <div key={index} className="player-card">
-                            {player ? (
-                                <div>
-                                    <p>{player.name}</p>
-                                </div>
-                            ) : (
-                                <p>빈 자리</p>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                <div className="players-chat">
+                    <div className="players">
+                        {players.map((player, index) => (
+                            <div key={index} className="player-card">
+                                {player ? (
+                                    <div>
+                                        <p>{player.name}</p>
+                                    </div>
+                                ) : (
+                                    <p>빈 자리</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
 
-                {/* 오디오 상태 표시 */}
-                <div className="audio-status">
-                    {audioLoaded ? (
-                        <div>
-                            <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
-                            <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
-                            <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
-                            <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
-                        </div>
-                    ) : (
-                        <p>오디오 로딩 중...</p>
-                    )}
-                </div>
-
-                {/* 시작 버튼 */}
-                <button
-                    onClick={handleStartClick}
-                    disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
-                    className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
-                >
-                    {audioLoaded ? "노래 시작" : "로딩 중..."}
-                </button>
-
-                {/* Seek Bar */}
-                <div className="seek-bar-container">
-                    <input
-                        type="range"
-                        min="0"
-                        max={duration}
-                        step="0.025"
-                        value={playbackPosition}
-                        onChange={handlePlaybackPositionChange}
-                        className="range-slider"
-                        disabled={!audioLoaded}
-                    />
-                    <div className="playback-info">
-                        {playbackPosition.toFixed(2)} / {duration.toFixed(2)} 초
+                    <div className="chat-area">
+                        <p>chating area</p>
                     </div>
                 </div>
+                
+                <div className="sing-area" ref={containerRef}>
+                    <div className="information-area">
+                        <p>현재곡</p>
+                        <p>가수</p>
+                        <p>곡번호</p>
+                    </div>
+                    {/* 오디오 상태 표시 */}
+                    {/* <div className="audio-status">
+                        {audioLoaded ? (
+                            <div>
+                                <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
+                                <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
+                                <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
+                                <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
+                            </div>
+                        ) : (
+                            <p>오디오 로딩 중...</p>
+                        )}
+                    </div> */}
 
-                {/* AudioPlayer 컴포넌트 */}
-                <AudioPlayer
-                    isPlaying={isPlaying}
-                    setIsPlaying={setIsPlaying}
-                    userSeekPosition={userSeekPosition}
-                    audioBlob={audioBlob}
-                    setAudioLoaded={setAudioLoaded}
-                    setDuration={setDuration}
-                    onPlaybackPositionChange={handleAudioPlaybackPositionChange}
-                />
+                    <div className="pitch-graph-multi" style={{ height: "500px" }}>
+                        <PitchGraph
+                        dimensions={dimensions}
+                        realtimeData={entireGraphData}
+                        referenceData={entireReferData}
+                        dataPointCount={dataPointCount}
+                        currentTimeIndex={playbackPosition * 40}
+                        // songState={song}
+                        />
+                    </div>
+
+                    {/* Seek Bar */}
+                    <div className="seek-bar-container">
+                        <input
+                            type="range"
+                            min="0"
+                            max={duration}
+                            step="0.025"
+                            value={playbackPosition}
+                            onChange={handlePlaybackPositionChange}
+                            className="range-slider"
+                            disabled={!audioLoaded}
+                        />
+                        <div className="playback-info">
+                            {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
+                        </div>
+                    </div>
+                    {/* 시작 버튼 */}
+                      <button
+                          onClick={handleStartClick}
+                          disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen}
+                          className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen? 'is-loading' : ''}`}
+                      >
+                          {audioLoaded ? "노래 시작" : "로딩 중..."}
+                      </button>
+                      <button className="button"
+                        onClick={() => {
+                          if (isPlaying) {
+                            setStarttime(isMicOn ? starttime+200 : starttime-200);
+                            setIsMicOn(!isMicOn);
+                          }}
+                        }
+                        > {isMicOn?'마이크 끄기':'마이크 켜기'}
+                        </button>
+                    {/* AudioPlayer 컴포넌트 */}
+                    <AudioPlayer
+                        isPlaying={isPlaying}
+                        setIsPlaying={setIsPlaying}
+                        userSeekPosition={userSeekPosition}
+                        audioBlob={audioBlob}
+                        setAudioLoaded={setAudioLoaded}
+                        setDuration={setDuration}
+                        onPlaybackPositionChange={handleAudioPlaybackPositionChange}
+                        starttime={starttime}
+                        setStarttime={setStarttime}
+                        setIsWaiting={setIsWaiting}
+                        setIsMicOn={setIsMicOn}
+                    />
+
+                </div>
+
             </div>
         </div>
     );

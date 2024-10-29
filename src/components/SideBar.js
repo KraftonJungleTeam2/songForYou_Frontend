@@ -18,7 +18,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
 
       {/* 사이드바 열기/닫기 버튼을 화면에 고정 */}
       <button onClick={toggleSidebar} className={`toggle-button ${isOpen ? 'open' : 'closed'}`}>
-        {isOpen ? 'Close' : 'Open'}
+        {isOpen ? 'X' : '☰'}
       </button>
     </>
   );
