@@ -19,7 +19,7 @@ function MultiPlay() {
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [starttime, setStarttime] = useState(null);
   const [isMicOn, setIsMicOn] = useState(false);
-  const { id: roomid } = useParams(); // URL에서 songId 추출
+  const { roomId } = useParams(); // URL에서 songId 추출
 
   //웹소켓 부분
   const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
@@ -69,14 +69,149 @@ function MultiPlay() {
     });
 
     // 연결 이벤트 리스너
-    socketRef.current.on('connect', () => {
+    socketRef.current.on('connect', async () => {
       console.log('웹소켓 연결 성공');
+
+      await getLocalStream();
+      socketRef.current.emit('joinRoom', {
+        roomId: roomId,
+        nickname: 'nickname',
+      });
     });
 
+    // 2. joinedRoom 이벤트 수신 (방 입장 성공)
+    socketRef.current.on('joinedRoom', ({ roomId, roomInfo }) => {
+      console.log('방 입장 성공:', roomInfo);
+      console.log('roomid', roomId);
+      // 방 정보 처리 로직
+    });
+
+    // 3. initPeerConnection 이벤트 수신 (기존 참가자 정보)
+    socketRef.current.on('initPeerConnection', async (existingUsers) => {
+      // P2P 연결 초기화 로직
+      //1.마이크 접근 권한을 얻고, existingUsers들과 연결을 한 후, 내 peer를 준다 끝.
+      existingUsers.forEach(async (user) => {
+        console.log('user.id', user.id);
+        const peerConnection = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        });
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            socketRef.current.emit('ice-candidate', {
+              candidate: event.candidate,
+              targetId: user.id, // 또는 callerId
+            });
+          }
+        };
+        peerConnection.ontrack = (event) => {
+          const remoteStream = event.streams[0];
+          // 오디오 엘리먼트에 스트림 연결
+          const audioElement = document.getElementById(`remoteAudio_${user.id}`); // 또는 callerId
+          if (audioElement) {
+            audioElement.srcObject = remoteStream;
+          }
+        };
+        // 로컬 스트림 추가
+        localStream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, localStream);
+        });
+
+        // Offer 생성
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        // Offer 전송
+        socketRef.current.emit('offer', {
+          targetId: user.id,
+          offer: offer,
+        });
+
+        // peerConnections 객체에 저장
+        peerConnections[user.id] = peerConnection;
+      });
+    });
+
+    socketRef.current.on('offer', async ({ offer, callerId }) => {
+      console.log('getoffer', callerId);
+      const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketRef.current.emit('ice-candidate', {
+            candidate: event.candidate,
+            targetId: callerId,
+          });
+        }
+      };
+      console.log('first');
+      peerConnection.ontrack = (event) => {
+        const remoteStream = event.streams[0];
+        // 오디오 엘리먼트에 스트림 연결
+        const audioElement = document.getElementById(`remoteAudio_${callerId}`); // 또는 callerId
+        if (audioElement) {
+          audioElement.srcObject = remoteStream;
+        }
+      };
+
+      console.log('second');
+      // 로컬 스트림 추가
+      localStream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStream);
+      });
+
+      console.log('third');
+      // 받은 offer를 RemoteDescription으로 설정
+      await peerConnection.setRemoteDescription(offer);
+
+      // Answer 생성
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
+      // Answer 전송
+      socketRef.current.emit('answer', {
+        targetId: callerId,
+        answer: answer,
+      });
+
+      // peerConnections 객체에 저장
+      peerConnections[callerId] = peerConnection;
+    });
+
+    socketRef.current.on('answer', async ({ answer, callerId }) => {
+      console.log('getanswer', callerId);
+      const peerConnection = peerConnections[callerId];
+      if (peerConnection) {
+        await peerConnection.setRemoteDescription(answer);
+      }
+    });
+
+    socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
+      console.log('ice callerId', callerId);
+      const peerConnection = peerConnections[callerId];
+      if (peerConnection) {
+        await peerConnection.addIceCandidate(candidate);
+      }
+    });
     // Cleanup 함수
     return () => {
-      if (socketRef.current?.connected) {
-        // connected 상태 확인
+      // 모든 피어 연결 정리
+      Object.values(peerConnections).forEach((connection) => {
+        connection.close();
+      });
+
+      // 로컬 스트림 정리
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
+
+      // 소켓 이벤트 리스너 제거
+      if (socketRef.current) {
+        socketRef.current.off('joinedRoom');
+        socketRef.current.off('initPeerConnection');
+        socketRef.current.off('offer');
+        socketRef.current.off('answer');
+        socketRef.current.off('ice-candidate');
         socketRef.current.disconnect();
       }
     };
@@ -162,32 +297,6 @@ function MultiPlay() {
     } catch (error) {
       console.error('마이크 스트림 오류:', error);
     }
-  };
-
-  // 피어 연결 생성 및 관리 함수
-  const createPeerConnection = (peerId) => {
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
-
-    // 로컬 스트림 추가
-    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-    // ICE 후보 생성 시 서버로 전송
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.emit('ice-candidate', { candidate: event.candidate, to: peerId });
-      }
-    };
-
-    // 상대방의 스트림을 오디오 태그에 연결
-    peerConnection.ontrack = (event) => {
-      const remoteStream = event.streams[0];
-      document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
-    };
-
-    peerConnections[peerId] = peerConnection;
-    return peerConnection;
   };
 
   return (
