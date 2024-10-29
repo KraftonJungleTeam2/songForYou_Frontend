@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { songlists, useSongs } from '../Context/SongContext';
 
 
-const ReservationPopup = ({ socket, onClose }) => {
+const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) => {
   const { songLists, fetchSongLists } = useSongs();
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
-  const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
 
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
