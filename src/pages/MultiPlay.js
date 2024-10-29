@@ -24,10 +24,10 @@ function MultiPlay() {
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
 
   // 버튼 끄게 하는 state
-  const [isWaiting, setIsWaiting] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(true);
 
   // 지연시간 ping을 위한 state
-  const [serverTimeDiff, setServerTimeDiff] = useState(null);
+  const serverTimeDiff = useRef(null);
 
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState();
@@ -100,7 +100,13 @@ function MultiPlay() {
   const getLocalStream = async () => {
     try {
         localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
-            audio: true, 
+            audio: true,
+            // audio: {
+            //   autoGainControl: false, // 자동 게인 제어
+            //   echoCancellation: false,  // 에코 제거
+            //   noiseSuppression: false,   // 노이즈 억제
+            //   voiceIsolation: false,
+            //   }, 
             video: false 
         });
         const audioElement = document.getElementById('localAudio');
@@ -196,7 +202,7 @@ function MultiPlay() {
     socketRef.current.on('startTime', (data) => {
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
-      const clientStartTime = serverStartTime + serverTimeDiff;
+      const clientStartTime = serverStartTime + serverTimeDiff.current;
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
@@ -251,6 +257,24 @@ function MultiPlay() {
           });
       }
 
+
+
+
+      // 지연 시간 측정 함수
+      async function measureLatency() {
+        const stats = await peerConnection.getStats();
+        
+        stats.forEach((report) => {
+          if (report.type === "candidate-pair" && report.state === "succeeded") {
+            const rtt = report.currentRoundTripTime;
+            console.log(`RTT to peer ${userId}: ${rtt * 1000} ms`);
+          }
+        });
+      }
+
+      // 5초마다 해당 피어에 대해 지연 시간 측정
+      setInterval(measureLatency, 5000);
+
       peerConnectionsRef.current[userId] = peerConnection;
       return peerConnection;
   };
@@ -289,21 +313,6 @@ function MultiPlay() {
     setPlaybackPosition(newPosition);
   };
   
-  //웹소켓 로직들
-
-  // 웹소켓 데이터를 실제로 받는 부분. UseEffect
-  // Socket.IO 클라이언트 초기화
-  useEffect(() => {
-    // socket 열기
-    // socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-    //   path: '/wss',
-    //   auth: {
-    //     token: sessionStorage.getItem('userToken')
-    //   }
-    // });
-
-  }, []);
-
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
     const sendTime = Date.now();
@@ -325,7 +334,7 @@ function MultiPlay() {
     if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
       // 측정 완료시 서버시간차이를 저장 하고 종료
       const estTimeDiff = timeDiffSamplesRef.current[2 * q];
-      setServerTimeDiff(estTimeDiff);
+      serverTimeDiff.current = estTimeDiff;
       setIsWaiting(false);
     } else {
       // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
@@ -455,7 +464,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               예약하기
             </button>
-
+            <p>{debugtext}</p>
 
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
