@@ -1,9 +1,13 @@
+:root {
+    --sidebar-width: 12rem;
+}
+
 /* 기본 sidebar 스타일 */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
-  width: 200px;
+  width: var(--sidebar-width);
   height: 100%;
   background-color: #333;
   color: white;
@@ -20,7 +24,7 @@
   padding: 20px;
 }
 
-.sidebar-nav button {
+.sidebar-nav .nav-button {
   display: block;
   margin-bottom: 10px;
   padding: 10px;
@@ -38,7 +42,7 @@
 /* 토글 버튼 스타일 */
 .toggle-button {
   /* padding: 10px; */
-  width: 60px;
+  width: 3rem;
   background-color: #333;
   color: white;
   border: none;
@@ -46,12 +50,19 @@
   z-index: 200; /* Sidebar보다 위에 위치 */
   transform: translateX(0%);
   transition: transform 0.3s ease;
+  margin-left: 0.5rem;
 }
 
 .toggle-button.open {
-  transform: translateX(175px); /* 사이드바 열렸을 때 버튼 위치 */
+  transform: translateX(var(--sidebar-width)); /* 사이드바 열렸을 때 버튼 위치 */
 }
 
 .toggle-button.closed {
-  transform: translateX(-25px); /* 사이드바가 닫혔을 때 화면 왼쪽에 붙임 */
+  transform: translateX(0px); /* 사이드바가 닫혔을 때 화면 왼쪽에 붙임 */
+}
+
+.close-button {
+    margin-left: calc(var(--sidebar-width) - 80px);
+    margin-bottom: 0.5rem;
+    /* margin-right: 1rem; */
 }
