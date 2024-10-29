@@ -1,28 +1,42 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
 import audioFile from '../sample.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
-import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import ReservationPopup from '../components/ReservationPopup'
 
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
+
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
-  const [starttime, setStarttime] = useState(null);
+  const [connectedUsers, setConnectedUsers] = useState([]);
+
+  // 예약 popup에서 작업하는 부분
+  const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
+
+  // 버튼 끄게 하는 state
+  const [isWaiting, setIsWaiting] = useState(false);
+
+  // 지연시간 ping을 위한 state
+  const [serverTimeDiff, setServerTimeDiff] = useState(null);
+
+  //오디오 조절을 위한 state
+  const [starttime, setStarttime] = useState();
   const [isMicOn, setIsMicOn] = useState(false);
-  const { id: roomid } = useParams(); // URL에서 songId 추출
+  const { roomId } = useParams(); // URL에서 songId 추출
+  const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
   //웹소켓 부분
-  const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
+  const timeDiffSamplesRef = useRef([]); // 지연 시간 측정을 위한 배열
   const peerConnections = {}; // 개별 연결을 저장한 배열 생성
   let localStream; // 마이크 로컬 스트림
 
@@ -35,10 +49,23 @@ function MultiPlay() {
   const [entireReferData, setEntireReferData] = useState([]);
 
   const [dataPointCount, setDataPointCount] = useState(200);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
   // useRef로 관리하는 변수들
-  const socketRef = useRef(null); // 웹소켓 참조
+  const socketRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const peerConnectionsRef = useRef({});
+  const pingTimesRef = useRef([]);
+
+  // 서버시간 측정을 위해
+  // 최소/최대 핑 요청 횟수
+  const MAXPING = 50;
+  const MINPING = 10;
+  // 최대 허용 오차(ms)
+  const MAXERROR = 10;
+  const [latencyOffset, setLatencyOffset] = useState(0);
+
+
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 로컬 MP3 파일을 Blob으로 변환
   useEffect(() => {
@@ -56,31 +83,187 @@ function MultiPlay() {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.close(); // 컴포넌트가 언마운트될 때 소켓 닫기
+          socketRef.current.close();
       }
+      // 스트림 정리
+      if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      // Peer 연결 정리
+      Object.values(peerConnectionsRef.current).forEach(connection => {
+          connection.close();
+      });
     };
   }, []);
 
-  // 웹소켓 io 버전 (임시임)
-  useEffect(() => {
-    // Socket.IO 클라이언트 초기화
-    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-      path: '/wss',
+  // 마이크 스트림 획득
+  const getLocalStream = async () => {
+    try {
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
+            audio: true, 
+            video: false 
+        });
+        const audioElement = document.getElementById('localAudio');
+        if (audioElement) {
+            audioElement.srcObject = localStreamRef.current;
+        }
+    } catch (error) {
+        console.error('마이크 스트림 오류:', error);
+    }
+  };
+  
+    // WebSocket 연결 설정
+    useEffect(() => {
+      socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+          path: '/wss',
+          auth: {
+              token: sessionStorage.getItem('userToken')
+          }
+      });
+
+      socketRef.current.on('connect', async () => {
+          console.log('웹소켓 연결 성공');
+          setIsSocketOpen(true);
+          await getLocalStream();
+          socketRef.current.emit('joinRoom', {
+              roomId: roomId,
+              nickname: 'nickname',
+          });
+          
+          // 연결되면 바로 서버시간 측정
+          timeDiffSamplesRef.current = []; // 초기화
+          sendPing(); // 첫 번째 ping 전송
+      });
+
+      // Room 이벤트 핸들러
+      socketRef.current.on('joinedRoom', ({ roomId, roomInfo }) => {
+          console.log('방 입장 성공:', roomInfo);
+      });
+
+      // Peer Connection 초기화
+      socketRef.current.on('initPeerConnection', async (existingUsers) => {
+          existingUsers.forEach(async (user) => {
+              const peerConnection = await createPeerConnection(user.id);
+              
+              const offer = await peerConnection.createOffer();
+              await peerConnection.setLocalDescription(offer);
+
+              socketRef.current.emit('offer', {
+                  targetId: user.id,
+                  offer: offer,
+              });
+          });
+      });
+
+      // Offer 처리
+      socketRef.current.on('offer', async ({ offer, callerId }) => {
+          const peerConnection = await createPeerConnection(callerId);
+          await peerConnection.setRemoteDescription(offer);
+
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+
+          socketRef.current.emit('answer', {
+              targetId: callerId,
+              answer: answer,
+          });
+      });
+
+      // Answer 처리
+      socketRef.current.on('answer', async ({ answer, callerId }) => {
+          const peerConnection = peerConnectionsRef.current[callerId];
+          if (peerConnection) {
+              await peerConnection.setRemoteDescription(answer);
+          }
+      });
+
+      // ICE candidate 처리
+      socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
+          const peerConnection = peerConnectionsRef.current[callerId];
+          if (peerConnection) {
+              await peerConnection.addIceCandidate(candidate);
+          }
+      });
+
+    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
+    socketRef.current.on('pingResponse', (data) => {
+      const receiveTime = Date.now();
+      const { sendTime, serverTime } = data;
+
+      handlePingResponse(sendTime, serverTime, receiveTime);
     });
 
-    // 연결 이벤트 리스너
-    socketRef.current.on('connect', () => {
-      console.log('웹소켓 연결 성공');
-    });
+    socketRef.current.on('startTime', (data) => {
+      // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
+      const serverStartTime = data.startTime;
+      const clientStartTime = serverStartTime + serverTimeDiff;
 
-    // Cleanup 함수
-    return () => {
-      if (socketRef.current?.connected) {
-        // connected 상태 확인
-        socketRef.current.disconnect();
-      }
-    };
+      // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
+      setStarttime(clientStartTime);
+    })
+
+      return () => {
+          Object.values(peerConnectionsRef.current).forEach(connection => {
+              connection.close();
+          });
+          
+          if (socketRef.current?.connected) {
+              socketRef.current.disconnect();
+          }
+      };
   }, []);
+
+    // Peer Connection 생성 함수
+    const createPeerConnection = async (userId) => {
+      const peerConnection = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+
+      peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+              socketRef.current.emit('ice-candidate', {
+                  candidate: event.candidate,
+                  targetId: userId,
+              });
+          }
+      };
+
+      peerConnection.ontrack = (event) => {
+          setConnectedUsers(prev => {
+              if (!prev.includes(userId)) {
+                  return [...prev, userId];
+              }
+              return prev;
+          });
+
+          setTimeout(() => {
+              const audioElement = document.getElementById(`remoteAudio_${userId}`);
+              if (audioElement && event.streams[0]) {
+                  audioElement.srcObject = event.streams[0];
+              }
+          }, 100);
+      };
+
+      // 로컬 스트림 추가
+      if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+              peerConnection.addTrack(track, localStreamRef.current);
+          });
+      }
+
+      peerConnectionsRef.current[userId] = peerConnection;
+      return peerConnection;
+  };
+
+
+
+
+
+
+  
+  
+  
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -99,39 +282,58 @@ function MultiPlay() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 초기 지연 시간 계산 함수
-  const calculateDelay = () => {
-    pingTimes.current = []; // 초기화
-    sendPing(); // 첫 번째 ping 전송
+  // 재생 위치 변경 핸들러 (seek bar)
+  const handlePlaybackPositionChange = (e) => {
+    const newPosition = parseFloat(e.target.value);
+    setUserSeekPosition(newPosition);
+    setPlaybackPosition(newPosition);
   };
+  
+  //웹소켓 로직들
 
-  // 지연 시간 측정을 위해 서버에 ping 메시지 전송
+  // 웹소켓 데이터를 실제로 받는 부분. UseEffect
+  // Socket.IO 클라이언트 초기화
+  useEffect(() => {
+    // socket 열기
+    // socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+    //   path: '/wss',
+    //   auth: {
+    //     token: sessionStorage.getItem('userToken')
+    //   }
+    // });
+
+  }, []);
+
+  // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
     const sendTime = Date.now();
-    socketRef.current.send(
-      JSON.stringify({
-        type: 'ping',
-        sendTime,
-      })
-    );
+    socketRef.current.emit('ping', {
+      sendTime,
+    });
   };
 
-  // 서버의 ping 응답을 처리하여 지연 시간 계산
-  const handlePingResponse = (sendTime, untilStart, receiveTime) => {
+  // 서버의 ping 응답을 처리하여 지연 시간 계산 함수
+  const handlePingResponse = (sendTime, serverTime, receiveTime) => {
     const roundTripTime = receiveTime - sendTime;
-    const untilStartAdjusted = untilStart - roundTripTime / 2;
-    pingTimes.current.push(receiveTime + untilStartAdjusted);
-
-    if (pingTimes.current.length >= 20) {
-      pingTimes.current.sort();
-      const avgStartTime = pingTimes.current[10];
-      setStarttime(avgStartTime);
+    const serverTimeAdjusted = serverTime + roundTripTime / 2;
+    timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
+    timeDiffSamplesRef.current.sort();
+    const nSamples = timeDiffSamplesRef.current.length;
+    const q = Math.floor(nSamples / 4);
+    const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples - 1 - q];
+    // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
+    if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
+      // 측정 완료시 서버시간차이를 저장 하고 종료
+      const estTimeDiff = timeDiffSamplesRef.current[2 * q];
+      setServerTimeDiff(estTimeDiff);
+      setIsWaiting(false);
     } else {
-      sendPing(); // 50번까지 반복하여 서버에 ping 요청
+      // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
+      sendPing();
     }
   };
 
-  // 시작 버튼 클릭 핸들러
+  // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
     setIsWaiting(true);
     if (!audioLoaded) {
@@ -140,59 +342,43 @@ function MultiPlay() {
       return;
     }
 
-    // 서버에 시작 요청 보내기
-    socketRef.current.send(JSON.stringify({ type: 'requestStartTimeWithDelay' }));
-  };
-
-  // 재생 위치 변경 핸들러 (seek bar)
-  const handlePlaybackPositionChange = (e) => {
-    const newPosition = parseFloat(e.target.value);
-    setUserSeekPosition(newPosition);
-    setPlaybackPosition(newPosition);
-  };
-
-  // AudioPlayer에서 전달받은 재생 위치 업데이트 핸들러
-  const handleAudioPlaybackPositionChange = (position) => {
-    setPlaybackPosition(position);
-  };
-
-  const getLocalStream = async () => {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    } catch (error) {
-      console.error('마이크 스트림 오류:', error);
-    }
-  };
-
-  // 피어 연결 생성 및 관리 함수
-  const createPeerConnection = (peerId) => {
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    // 서버에 시작 요청 보내기 임시임
+    socketRef.current.emit('requestStartTimeWithDelay', {
+      roomId: roomId
     });
-
-    // 로컬 스트림 추가
-    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-    // ICE 후보 생성 시 서버로 전송
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.emit('ice-candidate', { candidate: event.candidate, to: peerId });
-      }
-    };
-
-    // 상대방의 스트림을 오디오 태그에 연결
-    peerConnection.ontrack = (event) => {
-      const remoteStream = event.streams[0];
-      document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
-    };
-
-    peerConnections[peerId] = peerConnection;
-    return peerConnection;
   };
+
+
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  const OnPopup = () => {
+    setshowPopup(true);
+  }
+
+  const closePopup = () => {
+    setshowPopup(false);
+  }
+
+  const micOn = () => {
+    if (isMicOn) return;
+
+    if (isPlaying)
+      setLatencyOffset(-200);
+    setIsMicOn(true);
+  }
+  const micOff = () => {
+    if (!isMicOn) return;
+
+    if (isPlaying)
+      setLatencyOffset(0);
+    setIsMicOn(false);
+  }
+
 
   return (
     <div className='multiPlay-page'>
       <TopBar className='top-bar' />
+      
       <div className='multi-content'>
         <div className='players-chat'>
           <div className='players'>
@@ -213,7 +399,6 @@ function MultiPlay() {
             <p>chating area</p>
           </div>
         </div>
-
         <div className='sing-area' ref={containerRef}>
           <div className='information-area'>
             <p>현재곡</p>
@@ -241,7 +426,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+            // songState={song}
             />
           </div>
 
@@ -252,27 +437,65 @@ function MultiPlay() {
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
           </div>
-          {/* 시작 버튼 */}
-          <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen} className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen ? 'is-loading' : ''}`}>
-            {audioLoaded ? '노래 시작' : '로딩 중...'}
-          </button>
-          <button
-            className='button'
-            onClick={() => {
-              if (isPlaying) {
-                setStarttime(isMicOn ? starttime + 200 : starttime - 200);
-                setIsMicOn(!isMicOn);
-              }
-            }}>
-            {' '}
-            {isMicOn ? '마이크 끄기' : '마이크 켜기'}
-          </button>
+
+          <div className='button-area'>
+            {/* 시작 버튼 */}
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+              {audioLoaded ? '노래 시작' : '로딩 중...'}
+            </button>
+
+            {/* 마이크 토글 버튼 */}
+            <button
+              className='button mic-button'
+              onClick={isMicOn ? micOff : micOn}>
+              {' '}
+              {isMicOn ? '마이크 끄기' : '마이크 켜기'}
+            </button>
+
+            <button className='button reservation-button' onClick={OnPopup}>
+              예약하기
+            </button>
+
+
+            {/* 오디오 엘리먼트들 */}
+            <audio id='localAudio' autoPlay muted />
+            <div className="remote-audios" style={{ display: 'none' }}>
+                {connectedUsers.map(userId => (
+                    <audio
+                        key={userId}
+                        id={`remoteAudio_${userId}`}
+                        autoPlay
+                    />
+                ))}
+            </div>
+          </div>
+
+          {/* 조건부 렌더링 부분 popup */}
+          {showPopup && (
+            <ReservationPopup socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} />
+          )}
+
+
+
+
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={audioBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handleAudioPlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} />
+          <AudioPlayer
+            isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
+            userSeekPosition={userSeekPosition}
+            audioBlob={audioBlob}
+            setAudioLoaded={setAudioLoaded}
+            setDuration={setDuration}
+            onPlaybackPositionChange={handlePlaybackPositionChange}
+            starttime={starttime}
+            setStarttime={setStarttime}
+            setIsWaiting={setIsWaiting}
+            setIsMicOn={setIsMicOn}
+            latencyOffset={latencyOffset} />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default MultiPlay;
