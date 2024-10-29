@@ -70,6 +70,9 @@ const AudioPlayer = ({
     const offset = (Date.now()-starttime)/1000;
     // while (Date.now() < starttime) {}
     // source.start();
+    console.log(audioContext.currentTime);
+    console.log(starttime);
+    console.log(offset);
     if (offset < 0) {
       source.start(audioContext.currentTime-offset);
     } else {
@@ -84,7 +87,7 @@ const AudioPlayer = ({
     source.onended = () => {
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       playbackPositionRef.current = 0; // 재생 위치를 초기화
-      setStarttime(0);
+      setStarttime(null);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
