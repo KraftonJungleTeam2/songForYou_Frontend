@@ -7,9 +7,9 @@ function SongList({ onSongSelect, searchTerm, songs }) {
   const handlePlay = (e, song) => {
     e.stopPropagation();
 
-    navigate(`/play/${song.id}`, { state: { song } }); // 상태와 함께 네비게이션
+    navigate(`/play/${song.id}`, { state: { song }, replace: true }); // 상태와 함께 네비게이션
   };
-
+  
   function arrayBufferToBase64(buffer) {
     let binary = '';
     const bytes = new Uint8Array(buffer);
