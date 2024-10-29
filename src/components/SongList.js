@@ -38,13 +38,14 @@ function SongList({ onSongSelect, searchTerm, songs }) {
       ) : (
         filteredSongs.map((song) => (
           <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
-            <div className='song-icon'
+            <div
+              className='song-icon'
               style={{
                 backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
-                width: '3rem',          // 원하는 크기로 설정
-                height: '3rem'
+                width: '3rem', // 원하는 크기로 설정
+                height: '3rem',
               }}
               alt={song.metadata.title}
             />
@@ -56,7 +57,7 @@ function SongList({ onSongSelect, searchTerm, songs }) {
               <span className='timestamp'>{song.timestamp}</span>
             </div>
             <div className='play-button has-text-dark' onClick={(e) => handlePlay(e, song)}>
-            <i class="fa-solid fa-play"></i>
+              <i class='fa-solid fa-play'></i>
             </div>
           </div>
         ))
