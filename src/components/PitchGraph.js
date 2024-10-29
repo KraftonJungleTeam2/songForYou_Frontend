@@ -22,6 +22,37 @@ const PitchGraph = ({
   const dataCanvasRef = useRef(null);
   const cFrequencies = getCFrequencies();
   const graphWidth = dimensions.width;
+
+  // 가이드 그리는 함수
+  const drawGuidelinesAndLabels = (ctx) => {
+    ctx.beginPath();
+    ctx.strokeStyle = '#EEEEEE';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
+    ctx.shadowBlur = 10;
+    ctx.moveTo(graphWidth / 3, 0);
+    ctx.lineTo(graphWidth / 3, dimensions.height);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+
+    cFrequencies.forEach((freq, index) => {
+      const y = logScale(freq, dimensions, cFrequencies);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.moveTo(0, y);
+      ctx.lineTo(dimensions.width, y);
+      ctx.stroke();
+
+      ctx.fillStyle = 'white';
+      ctx.font = '10px Arial';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`C${index + 2}`, 15, y);
+    });
+  };
+
   // 배경 그리기
   useEffect(() => {
     const canvas = backgroundCanvasRef.current;
@@ -37,12 +68,26 @@ const PitchGraph = ({
     // 이미지가 있는 경우와 없는 경우를 분기
     if (hasImage) {
       image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
+      image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
       image.onload = () => {
         ctx.filter = 'blur(15px)';
         const imgHeight = image.height;
         const imgWidth = image.width;
+  
+        ctx.drawImage(
+          image,
+          0,
+          -(imgHeight + dimensions.height) / 2,
+          graphWidth,
+          (imgHeight / imgWidth) * dimensions.width
+        );
         ctx.drawImage(image, 0, -(imgHeight + dimensions.height) / 2, graphWidth, (imgHeight / imgWidth) * dimensions.width);
         ctx.filter = 'none';
+  
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+
+        drawGuidelinesAndLabels(ctx);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
         drawGuidelinesAndLabels(ctx);
@@ -125,31 +170,8 @@ const PitchGraph = ({
     // 실시간 피치 데이터 그리기
     drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true); // 주황색
   }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeIndex, graphWidth]);
-  const drawGuidelinesAndLabels = (ctx) => {
-    ctx.beginPath();
-    ctx.strokeStyle = '#EEEEEE';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-    ctx.shadowBlur = 10;
-    ctx.moveTo(graphWidth / 3, 0);
-    ctx.lineTo(graphWidth / 3, dimensions.height);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
-    cFrequencies.forEach((freq, index) => {
-      const y = logScale(freq, dimensions, cFrequencies);
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.moveTo(0, y);
-      ctx.lineTo(dimensions.width, y);
-      ctx.stroke();
-      ctx.fillStyle = 'white';
-      ctx.font = '10px Arial';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 2}`, 15, y);
-    });
-  };
+  
+  
   return (
     <>
       <canvas ref={dataCanvasRef} width={dimensions.width} height={dimensions.height} style={{ position: 'absolute', zIndex: 2 }} />

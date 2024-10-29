@@ -2,11 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (
-  isPlaying = true,
-  playbackPositionRef,
-  setEntireGraphData,
-) => {
+export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -50,9 +46,7 @@ export const usePitchDetection = (
 
     const sorted = [...validPitches].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-      ? (sorted[mid - 1] + sorted[mid]) / 2
-      : sorted[mid];
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   };
 
   const calculateMovingAverage = (newPitch) => {
@@ -114,9 +108,11 @@ export const usePitchDetection = (
   };
 
   useEffect(() => {
+    let stopStreamFunction;
     async function setupAudio() {
       try {
-        const { audioContext, analyser, source } = await setupAudioContext();
+        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext();
+        stopStreamFunction = stopStream;
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
         analyserRef.current.fftSize = 2 ** 13;
@@ -125,7 +121,6 @@ export const usePitchDetection = (
 
         const bufferLength = analyserRef.current.fftSize;
         detectorRef.current = PitchDetector.forFloat32Array(bufferLength);
-
       } catch (error) {
         console.error('Error accessing the microphone', error);
       }
@@ -139,6 +134,10 @@ export const usePitchDetection = (
       }
       if (audioContextRef.current) {
         audioContextRef.current.close();
+      }
+      if (stopStreamFunction) {
+        // 저장된 함수가 있을 때만 실행
+        stopStreamFunction();
       }
     };
   }, []);
@@ -158,16 +157,9 @@ export const usePitchDetection = (
       const currentTime = Date.now();
 
       if (newDecibel > PITCH_CONFIG.MIN_DECIBEL) {
-        const [pitchResult, clarityResult] = detectorRef.current.findPitch(
-          input,
-          audioContextRef.current.sampleRate
-        );
+        const [pitchResult, clarityResult] = detectorRef.current.findPitch(input, audioContextRef.current.sampleRate);
 
-        if (
-          clarityResult > PITCH_CONFIG.MIN_CLARITY &&
-          pitchResult >= PITCH_CONFIG.MIN_VALID_PITCH &&
-          pitchResult <= PITCH_CONFIG.MAX_VALID_PITCH
-        ) {
+        if (clarityResult > PITCH_CONFIG.MIN_CLARITY && pitchResult >= PITCH_CONFIG.MIN_VALID_PITCH && pitchResult <= PITCH_CONFIG.MAX_VALID_PITCH) {
           // 피치 변화 검증
           if (validatePitchChange(pitchResult, pitchRef.current, currentTime)) {
             const smoothedPitch = calculateMovingAverage(pitchResult);
