@@ -3,14 +3,21 @@ export const setupAudioContext = async () => {
     audio: {
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: false
-    }
+      autoGainControl: false,
+    },
   });
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const analyser = audioContext.createAnalyser();
   const source = audioContext.createMediaStreamSource(stream);
   source.connect(analyser);
-  return { audioContext, analyser, source };
+  // 스트림 중지 함수
+  const stopStream = () => {
+    stream.getTracks().forEach((track) => track.stop());
+    if (audioContext && audioContext.state !== 'closed') {
+      audioContext.close();
+    }
+  };
+  return { audioContext, analyser, source, stopStream, stream };
 };
 
 export const calculateRMS = (buffer) => {

@@ -39,7 +39,7 @@ function App() {
               <Route path='/setting' element={<ProtectedRoute element={<Setting />} />} />
               <Route path='/play/:id' element={<Play />} />
               <Route path='/add' element={<Add />} />
-              <Route path='/multiplay/:roomid' element={<MultiPlay />} />
+              <Route path='/multiplay/:roomId' element={<MultiPlay />} />
               <Route path='/' element={<Navigate to='/login' replace />} />
             </Routes>
           </SongProvider>

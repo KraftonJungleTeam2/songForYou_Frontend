@@ -3,6 +3,7 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 import RoomCreation from '../components/RoomCreation';
+import { useNavigate } from 'react-router-dom';
 import '../css/Multi.css';
 
 function Multi() {
@@ -11,6 +12,7 @@ function Multi() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false); // 방 생성 상태
   const roomsPerPage = 10;
 
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -48,6 +50,12 @@ function Multi() {
     fetchRooms();
   }, [fetchRooms]);
 
+  const handlePlay = (e, roomId) => {
+    e.stopPropagation();
+
+    navigate(`/multiplay/${roomId}`, { replace: true }); // 상태와 함께 네비게이션
+  };
+
   const handlePreviousPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
@@ -81,10 +89,12 @@ function Multi() {
                       <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
                       <>
-                        <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.name}`} />
-                        <div className='room-info'>
-                          <h3>{room.name}</h3>
-                          <p>Players: {room.users.length}/4</p>
+                        <div onClick={(e) => handlePlay(e, room.id)}>
+                          <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
+                          <div className='room-info'>
+                            <h3>{room.roomTitle}</h3>
+                            <p>Players: {room.users.length}/4</p>
+                          </div>
                         </div>
                       </>
                     )}
