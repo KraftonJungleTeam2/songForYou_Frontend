@@ -106,9 +106,21 @@ function MultiPlay() {
         peerConnection.ontrack = (event) => {
           const remoteStream = event.streams[0];
           // 오디오 엘리먼트에 스트림 연결
-          const audioElement = document.getElementById(`remoteAudio_${user.id}`); // 또는 callerId
+          const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
           if (audioElement) {
             audioElement.srcObject = remoteStream;
+          } else {
+            console.log('fuck');
+          }
+        };
+        peerConnection.ontrack = (event) => {
+          const remoteStream = event.streams[0];
+          // 오디오 엘리먼트에 스트림 연결
+          const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
+          if (audioElement) {
+            audioElement.srcObject = remoteStream;
+          } else {
+            console.log('fuck');
           }
         };
         // 로컬 스트림 추가
@@ -144,23 +156,22 @@ function MultiPlay() {
           });
         }
       };
-      console.log('first');
       peerConnection.ontrack = (event) => {
         const remoteStream = event.streams[0];
         // 오디오 엘리먼트에 스트림 연결
-        const audioElement = document.getElementById(`remoteAudio_${callerId}`); // 또는 callerId
+        const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
         if (audioElement) {
           audioElement.srcObject = remoteStream;
+        } else {
+          console.log('fuck');
         }
       };
 
-      console.log('second');
       // 로컬 스트림 추가
       localStream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, localStream);
       });
 
-      console.log('third');
       // 받은 offer를 RemoteDescription으로 설정
       await peerConnection.setRemoteDescription(offer);
 
@@ -294,6 +305,10 @@ function MultiPlay() {
   const getLocalStream = async () => {
     try {
       localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const audioElement = document.getElementById('localAudio');
+      if (audioElement) {
+        audioElement.srcObject = localStream;
+      }
     } catch (error) {
       console.error('마이크 스트림 오류:', error);
     }
@@ -322,7 +337,8 @@ function MultiPlay() {
             <p>chating area</p>
           </div>
         </div>
-
+        <audio id='localAudio' autoPlay controls />
+        <audio id='remoteAudio' autoPlay controls />
         <div className='sing-area' ref={containerRef}>
           <div className='information-area'>
             <p>현재곡</p>
