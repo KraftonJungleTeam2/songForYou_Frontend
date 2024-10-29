@@ -11,14 +11,22 @@ import ReservationPopup from '../components/ReservationPopup'
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
+  
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
-  const [starttime, setStarttime] = useState(null);
+
+  // 버튼 끄게 하는 state
+  const [isWaiting, setIsWaiting] = useState(false);
+  
+  // 지연시간 ping을 위한 state
+  const [delaytime, setdelaytime] = useState(null);
+
+  //오디오 조절을 위한 state
+  const [starttime, setStarttime] = useState();
   const [isMicOn, setIsMicOn] = useState(false);
   const { id: roomid } = useParams(); // URL에서 songId 추출
   const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
@@ -94,7 +102,52 @@ function MultiPlay() {
     setPlaybackPosition(newPosition);
   };
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  // Socket.IO 클라이언트 초기화
+//웹소켓 로직들
+
+// 초기 지연 시간 계산 함수
+const calculateDelay = () => {
+  pingTimes.current = []; // 초기화
+  sendPing(); // 첫 번째 ping 전송
+};
+
+ // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
+ const sendPing = () => {
+  const sendTime = Date.now();
+  socketRef.current.emit('ping', {
+    sendTime,
+  });
+};
+
+// 서버의 ping 응답을 처리하여 지연 시간 계산 함수
+const handlePingResponse = (sendTime, serverTime, receiveTime) => {
+  const roundTripTime = receiveTime - sendTime;
+  const serverTimeAdjusted = serverTime - roundTripTime / 2;
+  pingTimes.current.push(receiveTime + serverTimeAdjusted);
+
+  if (pingTimes.current.length >= 20) {
+    pingTimes.current.sort();
+    const avgStartTime = pingTimes.current[10];
+    setdelaytime(avgStartTime);
+  } else {
+    sendPing(); // 50번까지 반복하여 서버에 ping 요청
+  }
+};
+
+ // 시작 버튼 누르면 곡 시작하게 하는 부분.
+ const handleStartClick = () => {
+  setIsWaiting(true);
+  if (!audioLoaded) {
+    alert('오디오가 아직 로딩되지 않았습니다.');
+    setIsWaiting(false);
+    return;
+  }
+
+  // 서버에 시작 요청 보내기 임시임
+  socketRef.current.emit('출발함 ㅋㅋ');
+};
+
+// 웹소켓 데이터를 실제로 받는 부분. UseEffect
+// Socket.IO 클라이언트 초기화
   useEffect(() => {
     
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
@@ -104,6 +157,21 @@ function MultiPlay() {
     // 연결 이벤트 리스너
     socketRef.current.on('connect', () => {
       console.log('웹소켓 연결 성공');
+
+
+      // 연결되면 바로 시작하도록 하는 함수
+      calculateDelay();
+    });
+    
+
+    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
+    socketRef.current.on('pong-response', (data) => {
+    // 현재 응답을 받은 시간을 구함.
+    const receiveTime = Date.now();
+    // 요청 받았던 서버의 시간을 받음.
+    const { sendTime, serverTime} = data;
+    // 계산 로직 수행
+    handlePingResponse(sendTime, serverTime, receiveTime);
     });
 
     // Cleanup 함수
@@ -115,53 +183,8 @@ function MultiPlay() {
     };
   }, []);
 
-
-  // 초기 지연 시간 계산 함수
-  const calculateDelay = () => {
-    pingTimes.current = []; // 초기화
-    sendPing(); // 첫 번째 ping 전송
-  };
-
-  // 지연 시간 측정을 위해 서버에 ping 메시지 전송
-  const sendPing = () => {
-    const sendTime = Date.now();
-    socketRef.current.send(
-      JSON.stringify({
-        type: 'ping',
-        sendTime,
-      })
-    );
-  };
-
-  // 서버의 ping 응답을 처리하여 지연 시간 계산
-  const handlePingResponse = (sendTime, untilStart, receiveTime) => {
-    const roundTripTime = receiveTime - sendTime;
-    const untilStartAdjusted = untilStart - roundTripTime / 2;
-    pingTimes.current.push(receiveTime + untilStartAdjusted);
-
-    if (pingTimes.current.length >= 20) {
-      pingTimes.current.sort();
-      const avgStartTime = pingTimes.current[10];
-      setStarttime(avgStartTime);
-    } else {
-      sendPing(); // 50번까지 반복하여 서버에 ping 요청
-    }
-  };
-
-  // 시작 버튼 클릭 핸들러
-  const handleStartClick = () => {
-    setIsWaiting(true);
-    if (!audioLoaded) {
-      alert('오디오가 아직 로딩되지 않았습니다.');
-      setIsWaiting(false);
-      return;
-    }
-
-    // 서버에 시작 요청 보내기
-    socketRef.current.send(JSON.stringify({ type: 'requestStartTimeWithDelay' }));
-  };
-
-
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// RTC 부분
   const getLocalStream = async () => {
     try {
       localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -182,7 +205,7 @@ function MultiPlay() {
     // ICE 후보 생성 시 서버로 전송
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        socketRef.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+        socketRef.current.emit('ice-candidate', { candidate: event.candidate, to: peerId });
       }
     };
 

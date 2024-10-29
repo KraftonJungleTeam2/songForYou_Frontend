@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongListArea.css';
-import ReservationPopup from './ReservationPopup';
 
 function ReservationList({ onSongSelect, publicSongs, privateSongs }) {
-  const navigate = useNavigate();
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
 
