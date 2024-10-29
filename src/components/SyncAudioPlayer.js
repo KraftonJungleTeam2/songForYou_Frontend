@@ -25,6 +25,7 @@ const AudioPlayer = ({
   const FRAME_RATE = 0.025; // 프레임 속도, 25ms 단위로 업데이트하여 일정한 타이밍으로 재생 위치를 업데이트
   const SPEEDFORWARD = 2.0;
   const SPEEDBACKWARD = 0.5;
+  const TOLERANCE = 10; // ms단위로 허용 overrun을 설정
   // 현재 시간을 프레임 단위에 맞춰 반올림하는 함수
   const roundToFrame = (time) => {
     return Math.round(time / FRAME_RATE) * FRAME_RATE;
@@ -120,6 +121,8 @@ const AudioPlayer = ({
 
     const targetTime = Date.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime()*1000 - targetTime; //실제보다 앞서나간 시간
+    if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
+
     const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log("target: "+targetTime +"overrun:" +overrun);
     

@@ -62,6 +62,9 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 10;
+  const [audioLatency, setAudioLatency] = useState(0);
+  const [networkLatency, setNetworkLatency] = useState(0);
+  const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
 
@@ -263,17 +266,25 @@ function MultiPlay() {
       // 지연 시간 측정 함수
       async function measureLatency() {
         const stats = await peerConnection.getStats();
-        
+        let sqrtRTTs = 0;
+        let nUsers = 0;
+
         stats.forEach((report) => {
           if (report.type === "candidate-pair" && report.state === "succeeded") {
             const rtt = report.currentRoundTripTime;
+            sqrtRTTs += Math.sqrt(rtt*1000);
+            nUsers += 1;
             console.log(`RTT to peer ${userId}: ${rtt * 1000} ms`);
           }
         });
+        if (nUsers) {
+          const smre = (sqrtRTTs/nUsers) ** 2;
+          setNetworkLatency(networkLatency*0.7 + smre*0.3);
+        }
       }
 
       // 5초마다 해당 피어에 대해 지연 시간 측정
-      setInterval(measureLatency, 5000);
+      setInterval(measureLatency, 1000);
 
       peerConnectionsRef.current[userId] = peerConnection;
       return peerConnection;
@@ -372,17 +383,20 @@ function MultiPlay() {
     if (isMicOn) return;
 
     if (isPlaying)
-      setLatencyOffset(-200);
+      setAudioLatency(200);
     setIsMicOn(true);
   }
   const micOff = () => {
     if (!isMicOn) return;
 
     if (isPlaying)
-      setLatencyOffset(0);
+      setAudioLatency(0);
     setIsMicOn(false);
   }
 
+  useEffect(() => {
+    setLatencyOffset(-audioLatency-networkLatency-optionLatency);
+  }, [audioLatency, networkLatency, optionLatency]);
 
   return (
     <div className='multiPlay-page'>
@@ -464,7 +478,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               예약하기
             </button>
-
+            <h3>{networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className="remote-audios" style={{ display: 'none' }}>
