@@ -464,7 +464,6 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               예약하기
             </button>
-            <p>{debugtext}</p>
 
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
