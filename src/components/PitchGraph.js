@@ -44,14 +44,12 @@ const PitchGraph = ({
   
     // 이미지가 있는 경우와 없는 경우를 분기
     if (hasImage) {
-      // 이미지 로드 후 그리기
+      image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
       image.onload = () => {
-        // 블러 필터 설정
         ctx.filter = 'blur(15px)';
         const imgHeight = image.height;
         const imgWidth = image.width;
   
-        // 이미지 그리기
         ctx.drawImage(
           image,
           0,
@@ -59,51 +57,18 @@ const PitchGraph = ({
           graphWidth,
           (imgHeight / imgWidth) * dimensions.width
         );
-  
-        // 블러 필터 초기화 (이미지만 블러 처리)
         ctx.filter = 'none';
   
-        // 이미지 위에 어둡게 덮는 반투명한 사각형
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 어둡게 할 색상 설정
-        ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 이미지 전체에 덮기
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+
+        drawGuidelinesAndLabels(ctx);
       };
     } else {
-      // 이미지가 없는 경우 배경만 그리기
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 어두운 배경색 설정
-      ctx.fillRect(0, 0, dimensions.width, dimensions.height); // 캔버스 전체를 덮음
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+      drawGuidelinesAndLabels(ctx);
     }
-  
-    // 기준 선 그리기
-    ctx.beginPath();
-    ctx.strokeStyle = '#EEEEEE';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-    ctx.shadowBlur = 10;
-    ctx.moveTo(graphWidth / 3, 0);
-    ctx.lineTo(graphWidth / 3, dimensions.height);
-    ctx.stroke();
-  
-    // 그림자 설정 초기화
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
-  
-    // 수평선과 레이블 그리기
-    cFrequencies.forEach((freq, index) => {
-      const y = logScale(freq, dimensions, cFrequencies);
-  
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.moveTo(0, y);
-      ctx.lineTo(dimensions.width, y);
-      ctx.stroke();
-  
-      // 레이블 글자 설정
-      ctx.fillStyle = 'white'; // 글자 색깔 하얀색으로 설정
-      ctx.font = '10px Arial';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`C${index + 2}`, 15, y);
-    });
   }, [dimensions, songState, graphWidth]);
 
   // 실시간 및 참조 데이터 그리기
@@ -201,7 +166,35 @@ const PitchGraph = ({
 
 
   }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeIndex, graphWidth]);
+  
+  const drawGuidelinesAndLabels = (ctx) => {
+    ctx.beginPath();
+    ctx.strokeStyle = '#EEEEEE';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
+    ctx.shadowBlur = 10;
+    ctx.moveTo(graphWidth / 3, 0);
+    ctx.lineTo(graphWidth / 3, dimensions.height);
+    ctx.stroke();
 
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+
+    cFrequencies.forEach((freq, index) => {
+      const y = logScale(freq, dimensions, cFrequencies);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.moveTo(0, y);
+      ctx.lineTo(dimensions.width, y);
+      ctx.stroke();
+
+      ctx.fillStyle = 'white';
+      ctx.font = '10px Arial';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`C${index + 2}`, 15, y);
+    });
+  };
   return (
     <>
       <canvas
