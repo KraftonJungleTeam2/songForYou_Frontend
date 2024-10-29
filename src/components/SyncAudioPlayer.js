@@ -69,13 +69,13 @@ const AudioPlayer = ({
 
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
     const offset = (Date.now()-starttime)/1000;
-    // while (Date.now() < starttime) {}
-    // source.start();
-    if (offset < 0) {
-      source.start(audioContext.currentTime-offset);
-    } else {
-      source.start(0, offset);
-    }
+    while (Date.now() < starttime) {}
+    source.start();
+    // if (offset < 0) {
+    //   source.start(audioContext.currentTime-offset);
+    // } else {
+    //   source.start(0, offset);
+    // }
     setIsPlaying(true);
     setIsWaiting(false);
     setTimeout(()=>{setIsMicOn(false);}, -offset*1000);
