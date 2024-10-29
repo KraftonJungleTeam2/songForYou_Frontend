@@ -206,13 +206,11 @@ function MultiPlay() {
 
     socketRef.current.on('playSong', async (data) => {
       try {
-        // 소켓 이벤트에서 받은 data를 바로 FormData로 처리
-        const formData = data instanceof FormData ? data : new FormData(data);
-        const result = Object.fromEntries(formData.entries());
-    
+        
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
-        const fileUrl = result.file;
+        const fileUrl = data.mrUrl;
         if (fileUrl) {
+          console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
           setMrDataBlob(fileBlob);  // Blob 데이터 저장
@@ -220,7 +218,7 @@ function MultiPlay() {
           console.error('Error: file URL not found in the response');
         }
     
-        const pitchString = result.pitch;
+        const pitchString = data.pitch;
         if (typeof pitchString === 'string') {
           try {
             const pitchArray = JSON.parse(pitchString);
@@ -249,7 +247,7 @@ function MultiPlay() {
           setPitchLoaded(true);
         }
     
-        const lyricsString = result.lyrics;
+        const lyricsString = data.lyrics;
         if (typeof lyricsString === 'string') {
           try {
             const lyrics = JSON.parse(lyricsString);
@@ -549,7 +547,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} />
           )}
 
 
