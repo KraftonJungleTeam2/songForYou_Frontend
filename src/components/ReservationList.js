@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SongListArea.css';
 
-function ReservationList({ onSongSelect, publicSongs, privateSongs }) {
+function ReservationList({publicSongs, privateSongs }) {
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
+  
 
   const handleTabClick = (view) => {
     setViewType(view);
@@ -14,7 +15,7 @@ function ReservationList({ onSongSelect, publicSongs, privateSongs }) {
     setSearchTerm(event.target.value);
   };
 
-  const handlePlay = (e, song) => {
+  const handleReserve = (e, song) => {
     e.stopPropagation();
     
     // 곡 예약 정보 소켓으로 전달하기
@@ -58,7 +59,7 @@ function ReservationList({ onSongSelect, publicSongs, privateSongs }) {
           <p>노래가 없습니다.</p>
         ) : (
           filteredSongs.map((song) => (
-            <div key={song.id} className='song-item' onClick={() => onSongSelect(song)}>
+            <div key={song.id} className='song-item'>
               <div
                 className='song-icon'
                 style={{
@@ -76,7 +77,7 @@ function ReservationList({ onSongSelect, publicSongs, privateSongs }) {
                 <p>{song.metadata.description}</p>
                 <span className='timestamp'>{song.timestamp}</span>
               </div>
-              <div className='play-button has-text-dark' onClick={(e) => handlePlay(e, song)}>
+              <div className='play-button has-text-dark' onClick={(e) => handleReserve(e, song)}>
                 <i className='fa-solid fa-play'></i>
               </div>
             </div>
