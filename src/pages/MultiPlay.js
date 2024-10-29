@@ -5,6 +5,8 @@ import AudioPlayer from '../components/SyncAudioPlayer';
 import audioFile from '../sample.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
+import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
@@ -17,6 +19,7 @@ function MultiPlay() {
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [starttime, setStarttime] = useState(null);
   const [isMicOn, setIsMicOn] = useState(false);
+  const { id: roomid } = useParams(); // URL에서 songId 추출
 
   //웹소켓 부분
   const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
@@ -61,7 +64,6 @@ function MultiPlay() {
   // 웹소켓 io 버전 (임시임)
   useEffect(() => {
     // Socket.IO 클라이언트 초기화
-    console.log('asd', `${process.env.REACT_APP_EXPRESS_APP}`);
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
       path: '/wss',
     });
