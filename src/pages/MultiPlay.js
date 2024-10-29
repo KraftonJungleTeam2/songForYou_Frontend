@@ -61,7 +61,6 @@ function MultiPlay() {
     };
   }, []);
 
-  // 웹소켓 io 버전 (임시임)
   useEffect(() => {
     // Socket.IO 클라이언트 초기화
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
