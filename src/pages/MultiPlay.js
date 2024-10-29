@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
 import audioFile from '../sample.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
-import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import ReservationPopup from '../components/ReservationPopup'
 
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
@@ -20,6 +21,7 @@ function MultiPlay() {
   const [starttime, setStarttime] = useState(null);
   const [isMicOn, setIsMicOn] = useState(false);
   const { id: roomid } = useParams(); // URL에서 songId 추출
+  const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
   //웹소켓 부분
   const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
@@ -35,11 +37,13 @@ function MultiPlay() {
   const [entireReferData, setEntireReferData] = useState([]);
 
   const [dataPointCount, setDataPointCount] = useState(200);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null); // 웹소켓 참조
 
+
+ //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  
   // 로컬 MP3 파일을 Blob으로 변환
   useEffect(() => {
     const loadAudioBlob = async () => {
@@ -61,8 +65,38 @@ function MultiPlay() {
     };
   }, []);
 
+  // AudioPlayer에서 전달받은 재생 위치 업데이트 핸들러
+  const handleAudioPlaybackPositionChange = (position) => {
+    setPlaybackPosition(position);
+  };
+
+  // 화면 비율 조정 감지
   useEffect(() => {
-    // Socket.IO 클라이언트 초기화
+    function handleResize() {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: 500,
+        });
+      }
+    }
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 재생 위치 변경 핸들러 (seek bar)
+  const handlePlaybackPositionChange = (e) => {
+    const newPosition = parseFloat(e.target.value);
+    setUserSeekPosition(newPosition);
+    setPlaybackPosition(newPosition);
+  };
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  // Socket.IO 클라이언트 초기화
+  useEffect(() => {
+    
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
       path: '/wss',
     });
@@ -81,22 +115,6 @@ function MultiPlay() {
     };
   }, []);
 
-  // 화면 비율 조정 감지
-  useEffect(() => {
-    function handleResize() {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: 500,
-        });
-      }
-    }
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // 초기 지연 시간 계산 함수
   const calculateDelay = () => {
@@ -143,17 +161,6 @@ function MultiPlay() {
     socketRef.current.send(JSON.stringify({ type: 'requestStartTimeWithDelay' }));
   };
 
-  // 재생 위치 변경 핸들러 (seek bar)
-  const handlePlaybackPositionChange = (e) => {
-    const newPosition = parseFloat(e.target.value);
-    setUserSeekPosition(newPosition);
-    setPlaybackPosition(newPosition);
-  };
-
-  // AudioPlayer에서 전달받은 재생 위치 업데이트 핸들러
-  const handleAudioPlaybackPositionChange = (position) => {
-    setPlaybackPosition(position);
-  };
 
   const getLocalStream = async () => {
     try {
@@ -188,6 +195,16 @@ function MultiPlay() {
     peerConnections[peerId] = peerConnection;
     return peerConnection;
   };
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  const OnPopup = () => {
+      setshowPopup(true);
+    }
+
+  const closePopup = () => {
+      setshowPopup(false);
+    }
+
 
   return (
     <div className='multiPlay-page'>
@@ -251,27 +268,47 @@ function MultiPlay() {
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
           </div>
-          {/* 시작 버튼 */}
-          <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen} className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen ? 'is-loading' : ''}`}>
-            {audioLoaded ? '노래 시작' : '로딩 중...'}
-          </button>
-          <button
-            className='button'
-            onClick={() => {
-              if (isPlaying) {
-                setStarttime(isMicOn ? starttime + 200 : starttime - 200);
-                setIsMicOn(!isMicOn);
-              }
-            }}>
-            {' '}
-            {isMicOn ? '마이크 끄기' : '마이크 켜기'}
-          </button>
+
+          <div className='button-area'>
+            {/* 시작 버튼 */}
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen} className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen ? 'is-loading' : ''}`}>
+              {audioLoaded ? '노래 시작' : '로딩 중...'}
+            </button>
+            
+            {/* 마이크 토글 버튼 */}
+            <button
+              className='button mic-button'
+              onClick={() => {
+                if (isPlaying) {
+                  setStarttime(isMicOn ? starttime + 200 : starttime - 200);
+                  setIsMicOn(!isMicOn);
+                }
+              }}>
+              {' '}
+              {isMicOn ? '마이크 끄기' : '마이크 켜기'}
+            </button>
+
+            <button className='button reservation-button' onClick={OnPopup}>
+              예약하기
+            </button>
+
+            
+          </div>
+            
+          {/* 조건부 렌더링 부분 popup */}
+          {showPopup && (
+                <ReservationPopup onClose={closePopup}/>
+              )}
+
+
+
+
           {/* AudioPlayer 컴포넌트 */}
           <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={audioBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handleAudioPlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default MultiPlay;
