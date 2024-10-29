@@ -130,10 +130,14 @@ useEffect(() => {
     handlePingResponse(sendTime, serverTime, receiveTime);
   });
 
-  socketRef.current.on('starttime', (data) => {
-    const severstartTime = data;
+  socketRef.current.on('starttime', (serverStartTime) => {
+    // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
+    const clientStartTime = serverStartTime + serverTimeDiff; 
+   
+    // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
+    setStarttime(clientStartTime);
   })
-  
+
   // Cleanup 함수
   return () => {
     if (socketRef.current?.connected) {
