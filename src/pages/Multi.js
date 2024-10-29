@@ -82,9 +82,13 @@ function Multi() {
               <button className='button page-button is-white' onClick={handlePreviousPage}>
                 <i className='fa-solid fa-circle-chevron-left'></i>
               </button>
+              
               <div className='grid is-col-min-20 room-list'>
                 {roomCards.map((room, index) => (
-                  <div className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`} key={room.roomId}>
+                  <div
+                    className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`}
+                    key={room.empty ? `empty-${index}` : room.id} // 고유한 key 설정
+                  >
                     {room.empty ? (
                       <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
@@ -101,6 +105,7 @@ function Multi() {
                   </div>
                 ))}
               </div>
+
               <button className='button page-button is-white' onClick={handleNextPage}>
                 <i className='fa-solid fa-circle-chevron-right'></i>
               </button>
