@@ -70,9 +70,6 @@ const AudioPlayer = ({
     const offset = (Date.now()-starttime)/1000;
     // while (Date.now() < starttime) {}
     // source.start();
-    console.log(audioContext.currentTime);
-    console.log(starttime);
-    console.log(offset);
     if (offset < 0) {
       source.start(audioContext.currentTime-offset);
     } else {
@@ -120,26 +117,15 @@ const AudioPlayer = ({
   const transition = () => {
     const targetTime = Date.now() - starttime;
     const overrun = getPlaybackTime()*1000 - targetTime; //실제보다 앞서나간 시간
+    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log("target: "+targetTime +"overrun:" +overrun);
     
-    if (overrun < 0) {
-      setPlaybackRate(SPEEDFORWARD);
-      clearTimeout(rateTimeoutRef.current);
-
-      rateTimeoutRef.current = setTimeout(() => {
-        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
-        setPlaybackRate(1);
-      }, -overrun/(SPEEDFORWARD-1));
-    } 
-    else {
-      setPlaybackRate(SPEEDBACKWARD);
-      clearTimeout(rateTimeoutRef.current);
-
-      rateTimeoutRef.current = setTimeout(() => {
-        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
-        setPlaybackRate(1);
-      }, overrun/(1-SPEEDBACKWARD));
-    }
+    setPlaybackRate(transitionSpeed);
+    clearTimeout(rateTimeoutRef.current);
+    rateTimeoutRef.current = setTimeout(() => {
+      console.log("default rate!, overrun: " +((Date.now() - starttime) - getPlaybackTime()*1000));
+      setPlaybackRate(1);
+    }, overrun/(1-transitionSpeed));
   }
 
   // 재생 및 일시정지 상태, 속도 변경 시 처리
