@@ -8,10 +8,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url('https://placehold.co/600x400'); /* 배경 이미지 경로 설정 */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: #ccc;
   }
   
   /* 로그인 컨테이너 스타일 */
