@@ -119,7 +119,7 @@ const Play = () => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+        // http 통신에서 전달받은 reponse 패킷? 같은 것을 다 뜯어서 formData로 파싱하는 것임.
         const formData = await response.formData();
         const result = Object.fromEntries(formData.entries());
 
