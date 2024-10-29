@@ -318,11 +318,11 @@ useEffect(() => {
     handlePingResponse(sendTime, serverTime, receiveTime);
   });
 
-  socketRef.current.on('startTime', (serverStartTime) => {
+  socketRef.current.on('startTime', (data) => {
     // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
-    console.log('received starttime');
+    const serverStartTime = data.startTime;
     const clientStartTime = serverStartTime + serverTimeDiff; 
-   
+    
     // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
     setStarttime(clientStartTime);
   })
@@ -456,7 +456,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
 
           <div className='button-area'>
             {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime!=null} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
               {audioLoaded ? '노래 시작' : '로딩 중...'}
             </button>
             
