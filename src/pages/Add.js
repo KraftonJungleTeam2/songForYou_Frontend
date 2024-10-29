@@ -4,7 +4,7 @@ import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 import { v4 as uuidv4 } from 'uuid';
 import '../css/Add.css';
-import { SongProvider, useSongs } from '../Context/SongContext';
+import { useSongs } from '../Context/SongContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -19,13 +19,11 @@ function Add() {
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState('jazz');
 
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -150,11 +148,7 @@ function Add() {
           <form onSubmit={handleSubmit}>
             <label>
               파일 vs 유투브 URL:
-              <input
-                type='checkbox'
-                checked={ischeckBox}
-                onChange={(e) => setischeckBox(e.target.checked)}
-              />
+              <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
               {ischeckBox ? ' File Upload' : ' URL Upload'}
             </label>
             <br />

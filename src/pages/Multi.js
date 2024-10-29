@@ -17,7 +17,6 @@ function Multi() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-
   const fetchRooms = useCallback(async () => {
     try {
       const token = sessionStorage.getItem('userToken');
@@ -28,7 +27,7 @@ function Multi() {
       }
 
       const response = await axios.post(
-        `${process.env.REACT_APP_API_ENDPOINT}/rooms/getlist`,
+        `${process.env.REACT_APP_API_ENDPOINT}/rooms/getList`,
         { offset: (currentPage - 1) * roomsPerPage },
         {
           headers: {
@@ -37,8 +36,8 @@ function Multi() {
           },
         }
       );
-
-      setRooms(response.data);
+      console.log('response.data.rooms', response.data.rooms);
+      setRooms(response.data.rooms);
     } catch (error) {
       alert('Error fetching rooms:');
       console.error('Error fetching rooms:', error);
@@ -72,35 +71,42 @@ function Multi() {
             <RoomCreation onCancel={() => setIsCreatingRoom(false)} /> // 방 생성 화면
           ) : (
             <div className='main-area'>
-              <button className="button page-button is-white" onClick={handlePreviousPage}><i class="fa-solid fa-circle-chevron-left"></i></button>
-              <div className="grid is-col-min-20 room-list">
+              <button className='button page-button is-white' onClick={handlePreviousPage}>
+                <i className='fa-solid fa-circle-chevron-left'></i>
+              </button>
+              <div className='grid is-col-min-20 room-list'>
                 {roomCards.map((room, index) => (
                   <div className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`} key={room.roomId}>
                     {room.empty ? (
-                      <div className="room-info-empty has-text-light-invert">빈 방</div>
+                      <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
                       <>
-                        <img className="thumbnail" src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
-                        <div className="room-info">
-                          <h3>{room.roomTitle}</h3>
-                          <p>Players: {room.players}/5</p>
-                          <p>Song: {room.playingsongTitle}</p>
+                        <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.name}`} />
+                        <div className='room-info'>
+                          <h3>{room.name}</h3>
+                          <p>Players: {room.users.length}/4</p>
                         </div>
                       </>
                     )}
                   </div>
                 ))}
               </div>
-              <button className="button page-button is-white" onClick={handleNextPage}><i class="fa-solid fa-circle-chevron-right"></i></button>
+              <button className='button page-button is-white' onClick={handleNextPage}>
+                <i className='fa-solid fa-circle-chevron-right'></i>
+              </button>
             </div>
           )}
-          
-          {/* <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
-            <button className="quick-join">빠른 입장</button>
+
+          <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
+            <button className='quick-join'>빠른 입장</button>
             <button className='sort-by'> 정렬 조건</button>
-            <button className="create-room" onClick={() => setIsCreatingRoom(true)}>방 생성</button>
-            <button className="refresh" onClick={fetchRooms}>새로고침</button>
-          </div> */}
+            <button className='create-room' onClick={() => setIsCreatingRoom(true)}>
+              방 생성
+            </button>
+            <button className='refresh' onClick={fetchRooms}>
+              새로고침
+            </button>
+          </div>
         </div>
       </div>
     </div>
