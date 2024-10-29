@@ -85,6 +85,9 @@ function MultiPlay() {
     // Socket.IO 클라이언트 초기화
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
       path: '/wss',
+      auth: {
+        token: sessionStorage.getItem('userToken')
+      }
     });
 
     // 연결 이벤트 리스너
