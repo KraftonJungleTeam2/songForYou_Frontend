@@ -142,7 +142,6 @@ function Add() {
   return (
     <div className='single-page'>
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
