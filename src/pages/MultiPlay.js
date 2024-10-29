@@ -18,6 +18,7 @@ function MultiPlay() {
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const [connectedUsers, setConnectedUsers] = useState([]);
 
   // 예약 popup에서 작업하는 부분
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
@@ -50,7 +51,10 @@ function MultiPlay() {
   const [dataPointCount, setDataPointCount] = useState(200);
 
   // useRef로 관리하는 변수들
-  const socketRef = useRef(null); // 웹소켓 참조
+  const socketRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const peerConnectionsRef = useRef({});
+  const pingTimesRef = useRef([]);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -79,181 +83,187 @@ function MultiPlay() {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.close(); // 컴포넌트가 언마운트될 때 소켓 닫기
+          socketRef.current.close();
       }
+      // 스트림 정리
+      if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      // Peer 연결 정리
+      Object.values(peerConnectionsRef.current).forEach(connection => {
+          connection.close();
+      });
     };
   }, []);
 
-  // 웹소켓 io 버전 (임시임)
-  useEffect(() => {
-    // Socket.IO 클라이언트 초기화
-    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-      path: '/wss',
-      auth: {
-        token: sessionStorage.getItem('userToken')
-      },
-      secure: true
-    });
-
-    // 연결 이벤트 리스너
-    socketRef.current.on('connect', async () => {
-      console.log('웹소켓 연결 성공');
-
-      await getLocalStream();
-      socketRef.current.emit('joinRoom', {
-        roomId: roomId,
-        nickname: 'nickname',
-      });
-    });
-
-    // 2. joinedRoom 이벤트 수신 (방 입장 성공)
-    socketRef.current.on('joinedRoom', ({ roomId, roomInfo }) => {
-      console.log('방 입장 성공:', roomInfo);
-      console.log('roomid', roomId);
-      // 방 정보 처리 로직
-    });
-
-    // 3. initPeerConnection 이벤트 수신 (기존 참가자 정보)
-    socketRef.current.on('initPeerConnection', async (existingUsers) => {
-      // P2P 연결 초기화 로직
-      //1.마이크 접근 권한을 얻고, existingUsers들과 연결을 한 후, 내 peer를 준다 끝.
-      existingUsers.forEach(async (user) => {
-        console.log('user.id', user.id);
-        const peerConnection = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  // 마이크 스트림 획득
+  const getLocalStream = async () => {
+    try {
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
+            audio: true, 
+            video: false 
         });
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            socketRef.current.emit('ice-candidate', {
-              candidate: event.candidate,
-              targetId: user.id, // 또는 callerId
-            });
-          }
-        };
-        peerConnection.ontrack = (event) => {
-          const remoteStream = event.streams[0];
-          // 오디오 엘리먼트에 스트림 연결
-          const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
-          if (audioElement) {
-            audioElement.srcObject = remoteStream;
-          } else {
-            console.log('fuck');
-          }
-        };
-        peerConnection.ontrack = (event) => {
-          const remoteStream = event.streams[0];
-          // 오디오 엘리먼트에 스트림 연결
-          const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
-          if (audioElement) {
-            audioElement.srcObject = remoteStream;
-          } else {
-            console.log('fuck');
-          }
-        };
-        // 로컬 스트림 추가
-        localStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, localStream);
-        });
-
-        // Offer 생성
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        // Offer 전송
-        socketRef.current.emit('offer', {
-          targetId: user.id,
-          offer: offer,
-        });
-
-        // peerConnections 객체에 저장
-        peerConnections[user.id] = peerConnection;
-      });
-    });
-
-    socketRef.current.on('offer', async ({ offer, callerId }) => {
-      console.log('getoffer', callerId);
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-      });
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socketRef.current.emit('ice-candidate', {
-            candidate: event.candidate,
-            targetId: callerId,
-          });
-        }
-      };
-      peerConnection.ontrack = (event) => {
-        const remoteStream = event.streams[0];
-        // 오디오 엘리먼트에 스트림 연결
-        const audioElement = document.getElementById('remoteAudio'); // 또는 callerId
+        const audioElement = document.getElementById('localAudio');
         if (audioElement) {
-          audioElement.srcObject = remoteStream;
-        } else {
-          console.log('fuck');
+            audioElement.srcObject = localStreamRef.current;
         }
+    } catch (error) {
+        console.error('마이크 스트림 오류:', error);
+    }
+  };
+  
+    // WebSocket 연결 설정
+    useEffect(() => {
+      socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+          path: '/wss',
+          auth: {
+              token: sessionStorage.getItem('userToken')
+          }
+      });
+
+      socketRef.current.on('connect', async () => {
+          console.log('웹소켓 연결 성공');
+          setIsSocketOpen(true);
+          await getLocalStream();
+          socketRef.current.emit('joinRoom', {
+              roomId: roomId,
+              nickname: 'nickname',
+          });
+          
+          // 연결되면 바로 서버시간 측정
+          timeDiffSamplesRef.current = []; // 초기화
+          sendPing(); // 첫 번째 ping 전송
+      });
+
+      // Room 이벤트 핸들러
+      socketRef.current.on('joinedRoom', ({ roomId, roomInfo }) => {
+          console.log('방 입장 성공:', roomInfo);
+      });
+
+      // Peer Connection 초기화
+      socketRef.current.on('initPeerConnection', async (existingUsers) => {
+          existingUsers.forEach(async (user) => {
+              const peerConnection = await createPeerConnection(user.id);
+              
+              const offer = await peerConnection.createOffer();
+              await peerConnection.setLocalDescription(offer);
+
+              socketRef.current.emit('offer', {
+                  targetId: user.id,
+                  offer: offer,
+              });
+          });
+      });
+
+      // Offer 처리
+      socketRef.current.on('offer', async ({ offer, callerId }) => {
+          const peerConnection = await createPeerConnection(callerId);
+          await peerConnection.setRemoteDescription(offer);
+
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+
+          socketRef.current.emit('answer', {
+              targetId: callerId,
+              answer: answer,
+          });
+      });
+
+      // Answer 처리
+      socketRef.current.on('answer', async ({ answer, callerId }) => {
+          const peerConnection = peerConnectionsRef.current[callerId];
+          if (peerConnection) {
+              await peerConnection.setRemoteDescription(answer);
+          }
+      });
+
+      // ICE candidate 처리
+      socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
+          const peerConnection = peerConnectionsRef.current[callerId];
+          if (peerConnection) {
+              await peerConnection.addIceCandidate(candidate);
+          }
+      });
+
+    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
+    socketRef.current.on('pingResponse', (data) => {
+      const receiveTime = Date.now();
+      const { sendTime, serverTime } = data;
+
+      handlePingResponse(sendTime, serverTime, receiveTime);
+    });
+
+    socketRef.current.on('startTime', (data) => {
+      // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
+      const serverStartTime = data.startTime;
+      const clientStartTime = serverStartTime + serverTimeDiff;
+
+      // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
+      setStarttime(clientStartTime);
+    })
+
+      return () => {
+          Object.values(peerConnectionsRef.current).forEach(connection => {
+              connection.close();
+          });
+          
+          if (socketRef.current?.connected) {
+              socketRef.current.disconnect();
+          }
+      };
+  }, []);
+
+    // Peer Connection 생성 함수
+    const createPeerConnection = async (userId) => {
+      const peerConnection = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+
+      peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+              socketRef.current.emit('ice-candidate', {
+                  candidate: event.candidate,
+                  targetId: userId,
+              });
+          }
+      };
+
+      peerConnection.ontrack = (event) => {
+          setConnectedUsers(prev => {
+              if (!prev.includes(userId)) {
+                  return [...prev, userId];
+              }
+              return prev;
+          });
+
+          setTimeout(() => {
+              const audioElement = document.getElementById(`remoteAudio_${userId}`);
+              if (audioElement && event.streams[0]) {
+                  audioElement.srcObject = event.streams[0];
+              }
+          }, 100);
       };
 
       // 로컬 스트림 추가
-      localStream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, localStream);
-      });
-
-      // 받은 offer를 RemoteDescription으로 설정
-      await peerConnection.setRemoteDescription(offer);
-
-      // Answer 생성
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
-      // Answer 전송
-      socketRef.current.emit('answer', {
-        targetId: callerId,
-        answer: answer,
-      });
-
-      // peerConnections 객체에 저장
-      peerConnections[callerId] = peerConnection;
-    });
-
-    socketRef.current.on('answer', async ({ answer, callerId }) => {
-      console.log('getanswer', callerId);
-      const peerConnection = peerConnections[callerId];
-      if (peerConnection) {
-        await peerConnection.setRemoteDescription(answer);
-      }
-    });
-
-    socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
-      console.log('ice callerId', callerId);
-      const peerConnection = peerConnections[callerId];
-      if (peerConnection) {
-        await peerConnection.addIceCandidate(candidate);
-      }
-    });
-    // Cleanup 함수
-    return () => {
-      // 모든 피어 연결 정리
-      Object.values(peerConnections).forEach((connection) => {
-        connection.close();
-      });
-
-      // 로컬 스트림 정리
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
+      if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+              peerConnection.addTrack(track, localStreamRef.current);
+          });
       }
 
-      // 소켓 이벤트 리스너 제거
-      if (socketRef.current) {
-        socketRef.current.off('joinedRoom');
-        socketRef.current.off('initPeerConnection');
-        socketRef.current.off('offer');
-        socketRef.current.off('answer');
-        socketRef.current.off('ice-candidate');
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
+      peerConnectionsRef.current[userId] = peerConnection;
+      return peerConnection;
+  };
+
+
+
+
+
+
+  
+  
+  
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -278,64 +288,20 @@ function MultiPlay() {
     setUserSeekPosition(newPosition);
     setPlaybackPosition(newPosition);
   };
-  // 
-  const getLocalStream = async () => {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      const audioElement = document.getElementById('localAudio');
-      if (audioElement) {
-        audioElement.srcObject = localStream;
-      }
-    } catch (error) {
-      console.error('마이크 스트림 오류:', error);
-    }
-  };
-  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  
   //웹소켓 로직들
 
   // 웹소켓 데이터를 실제로 받는 부분. UseEffect
   // Socket.IO 클라이언트 초기화
   useEffect(() => {
     // socket 열기
-    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-      path: '/wss',
-      auth: {
-        token: sessionStorage.getItem('userToken')
-      }
-    });
+    // socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+    //   path: '/wss',
+    //   auth: {
+    //     token: sessionStorage.getItem('userToken')
+    //   }
+    // });
 
-    // 연결 이벤트 리스너
-    socketRef.current.on('connect', () => {
-      console.log('웹소켓 연결 성공');
-      // 연결되면 바로 서버시간 측정
-      timeDiffSamplesRef.current = []; // 초기화
-      sendPing(); // 첫 번째 ping 전송
-    });
-
-    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
-    socketRef.current.on('pingResponse', (data) => {
-      const receiveTime = Date.now();
-      const { sendTime, serverTime } = data;
-
-      handlePingResponse(sendTime, serverTime, receiveTime);
-    });
-
-    socketRef.current.on('startTime', (data) => {
-      // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
-      const serverStartTime = data.startTime;
-      const clientStartTime = serverStartTime + serverTimeDiff;
-
-      // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
-      setStarttime(clientStartTime);
-    })
-
-    // Cleanup 함수
-    return () => {
-      if (socketRef.current?.connected) {
-        // connected 상태 확인
-        socketRef.current.disconnect();
-      }
-    };
   }, []);
 
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
@@ -412,6 +378,7 @@ function MultiPlay() {
   return (
     <div className='multiPlay-page'>
       <TopBar className='top-bar' />
+      
       <div className='multi-content'>
         <div className='players-chat'>
           <div className='players'>
@@ -489,9 +456,18 @@ function MultiPlay() {
               예약하기
             </button>
 
-            <audio id='localAudio' autoPlay muted />
-            <audio id='remoteAudio' autoPlay controls />
 
+            {/* 오디오 엘리먼트들 */}
+            <audio id='localAudio' autoPlay muted />
+            <div className="remote-audios" style={{ display: 'none' }}>
+                {connectedUsers.map(userId => (
+                    <audio
+                        key={userId}
+                        id={`remoteAudio_${userId}`}
+                        autoPlay
+                    />
+                ))}
+            </div>
           </div>
 
           {/* 조건부 렌더링 부분 popup */}
