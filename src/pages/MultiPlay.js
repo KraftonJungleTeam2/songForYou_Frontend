@@ -251,6 +251,24 @@ function MultiPlay() {
           });
       }
 
+
+
+
+      // 지연 시간 측정 함수
+      async function measureLatency() {
+        const stats = await peerConnection.getStats();
+        
+        stats.forEach((report) => {
+          if (report.type === "candidate-pair" && report.state === "succeeded") {
+            const rtt = report.currentRoundTripTime;
+            console.log(`RTT to peer ${userId}: ${rtt * 1000} ms`);
+          }
+        });
+      }
+
+      // 5초마다 해당 피어에 대해 지연 시간 측정
+      setInterval(measureLatency, 5000);
+
       peerConnectionsRef.current[userId] = peerConnection;
       return peerConnection;
   };
