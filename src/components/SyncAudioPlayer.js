@@ -12,6 +12,7 @@ const AudioPlayer = ({
   setStarttime,
   setIsWaiting,
   setIsMicOn,
+  latencyOffset,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -112,10 +113,12 @@ const AudioPlayer = ({
 
     return playbackPositionRef.current + timePassed * prevRate; // in seconds
   }
+  
+  // transition
+  useEffect(() => {
+    if (!isPlaying) return;
 
-  // starttime을 기준으로한 목표 재생시간으로 이동(재생속도를 변경하여)
-  const transition = () => {
-    const targetTime = Date.now() - starttime;
+    const targetTime = Date.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime()*1000 - targetTime; //실제보다 앞서나간 시간
     const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log("target: "+targetTime +"overrun:" +overrun);
@@ -123,19 +126,17 @@ const AudioPlayer = ({
     setPlaybackRate(transitionSpeed);
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
-      console.log("default rate!, overrun: " +((Date.now() - starttime) - getPlaybackTime()*1000));
+      console.log("default rate!, overrun: " +((Date.now() - (starttime + latencyOffset)) - getPlaybackTime()*1000));
       setPlaybackRate(1);
     }, overrun/(1-transitionSpeed));
-  }
+  }, [latencyOffset])
 
   // 재생 및 일시정지 상태, 속도 변경 시 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
 
     if (starttime) {
-      if (isPlaying) {
-        transition();
-      } else {
+      if (!isPlaying) {
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
       }
     }
