@@ -143,7 +143,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   }
 
   // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('출발함ㅋㅋ');
+  socketRef.current.emit('starttime');
 };
 
 // 웹소켓 데이터를 실제로 받는 부분. UseEffect
@@ -169,10 +169,14 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
     // 현재 응답을 받은 시간을 구함.
     const receiveTime = Date.now();
     // 요청 받았던 서버의 시간을 받음.
-    const { sendTime, serverTime} = data;
+    const {sendTime, serverTime} = data;
     // 계산 로직 수행
     handlePingResponse(sendTime, serverTime, receiveTime);
     });
+
+    socketRef.current.on('starttime', (data) => {
+      const severstartTime = data;
+    })
 
     // Cleanup 함수
     return () => {
