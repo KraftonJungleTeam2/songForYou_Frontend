@@ -8,18 +8,45 @@ import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup'
 
+
+
+// 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
+function doubleDataFrequency(dataArray) {
+  const doubledData = [];
+  const referdelay = 175;
+  const appendnullnum = referdelay / 25;
+
+  for (let j = 0; j < appendnullnum; j++) {
+    doubledData.push(null);
+  }
+
+  for (let i = 0; i < dataArray.length; i++) {
+    doubledData.push(dataArray[i]); // 첫 번째 복사
+    doubledData.push(dataArray[i]); // 두 번째 복사
+  }
+
+  return doubledData;
+}
+
+
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
-  const [audioLoaded, setAudioLoaded] = useState(false);
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
+  //데이터 로딩되었는지 확인하는거
+  const [pitchLoaded, setPitchLoaded] = useState(false);
+  const [lyricsLoaded, setLyricsLoaded] = useState(false);
+  const [audioLoaded, setAudioLoaded] = useState(false);
+
+  const [mrDataBlob, setMrDataBlob] = useState(null);
+  const [lyricsData, setLyricsData] = useState(null);
   // 예약 popup에서 작업하는 부분
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
 
@@ -64,35 +91,6 @@ function MultiPlay() {
 
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-  // 로컬 MP3 파일을 Blob으로 변환
-  useEffect(() => {
-    const loadAudioBlob = async () => {
-      try {
-        const response = await fetch(audioFile);
-        const blob = await response.blob();
-        setAudioBlob(blob);
-      } catch (error) {
-        console.error('오디오 파일 로드 실패:', error);
-      }
-    };
-
-    loadAudioBlob();
-
-    return () => {
-      if (socketRef.current) {
-          socketRef.current.close();
-      }
-      // 스트림 정리
-      if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-      // Peer 연결 정리
-      Object.values(peerConnectionsRef.current).forEach(connection => {
-          connection.close();
-      });
-    };
-  }, []);
 
   // 마이크 스트림 획득
   const getLocalStream = async () => {
@@ -273,6 +271,7 @@ function MultiPlay() {
 
 
       return () => {
+        // Peer 연결 정리
           Object.values(peerConnectionsRef.current).forEach(connection => {
               connection.close();
           });
@@ -280,6 +279,16 @@ function MultiPlay() {
           if (socketRef.current?.connected) {
               socketRef.current.disconnect();
           }
+
+          if (socketRef.current) {
+            socketRef.current.close();
+          }
+          
+          // 스트림 정리
+          if (localStreamRef.current) {
+              localStreamRef.current.getTracks().forEach(track => track.stop());
+          }
+        
       };
   }, []);
 
@@ -551,7 +560,7 @@ function MultiPlay() {
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
             userSeekPosition={userSeekPosition}
-            audioBlob={audioBlob}
+            audioBlob={mrDataBlob}
             setAudioLoaded={setAudioLoaded}
             setDuration={setDuration}
             onPlaybackPositionChange={handlePlaybackPositionChange}
