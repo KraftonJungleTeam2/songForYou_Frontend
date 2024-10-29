@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import TopBar from "../components/TopBar";
 import "../css/MultiPlay.css";
 import AudioPlayer from "../components/SyncAudioPlayer";
-import audioFile from "../sample.mp3"; // 임시 MP3 파일 경로 가져오기
+import audioFile from "../sample2.mp3"; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from "../components/PitchGraph";
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 function MultiPlay() {
@@ -39,7 +39,8 @@ function MultiPlay() {
    
 
     // useRef로 관리하는 변수들
-    const socketRef = useRef(null); // 웹소켓 참조
+    const socketRef = useRef(null); 
+    // 웹소켓 참조
 
     // 로컬 MP3 파일을 Blob으로 변환
     useEffect(() => {
@@ -62,26 +63,67 @@ function MultiPlay() {
         };
     }, []);
 
-
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     // 웹소켓 io 버전 (임시임)
-    useEffect(() => {
-        socketRef.current = io('http://yourserver.com'); // 웹소켓 초기화
+    // useEffect(() => {
+    //     socketRef.current = io('http://yourserver.com'); // 웹소켓 초기화
     
-        // 연결이 열렸을 때 처리
-        socketRef.current.on('connect', () => {
-            console.log("웹소켓 연결 성공");
-        });
+    //     // 연결이 열렸을 때 처리
+    //     socketRef.current.on('connect', () => {
+    //         console.log("웹소켓 연결 성공");
+    //     });
     
-        // 연결이 닫힐 때 처리
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect(); // 컴포넌트가 언마운트될 때 소켓 닫기
-            }
-        };
-    }, []);
+    //     // 연결이 닫힐 때 처리
+    //     return () => {
+    //         if (socketRef.current) {
+    //             socketRef.current.disconnect(); // 컴포넌트가 언마운트될 때 소켓 닫기
+    //         }
+    //     };
+    // }, []);
+
+    // const getLocalStream = async () => {
+    //     try {
+    //       localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    //     } catch (error) {
+    //       console.error('마이크 스트림 오류:', error);
+    //     }
+    //   };
+    
+    //   // 피어 연결 생성 및 관리 함수
+    // const createPeerConnection = (peerId) => {
+    // const peerConnection = new RTCPeerConnection({
+    //     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    // });
+
+    // // 로컬 스트림 추가
+    // localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+    // // ICE 후보 생성 시 서버로 전송
+    // peerConnection.onicecandidate = (event) => {
+    //     if (event.candidate) {
+    //     socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
+    //     }
+    // };
+
+    // // 상대방의 스트림을 오디오 태그에 연결
+    // peerConnection.ontrack = (event) => {
+    //     const remoteStream = event.streams[0];
+    //     document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
+    // };
+
+    // peerConnections[peerId] = peerConnection;
+    // return peerConnection;
+    // };
+
+
+
+
+
+
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     // 웹소켓 연결 및 지연 시간 계산
     useEffect(() => {
-        socketRef.current = new WebSocket("ws://localhost:5000/ws");
+        socketRef.current = new WebSocket("ws://192.168.1.42:5000/ws");
 
         socketRef.current.onopen = () => {
             console.log("웹소켓 연결 성공");
@@ -185,40 +227,6 @@ function MultiPlay() {
     // AudioPlayer에서 전달받은 재생 위치 업데이트 핸들러
     const handleAudioPlaybackPositionChange = (position) => {
         setPlaybackPosition(position);
-    };
-
-    const getLocalStream = async () => {
-        try {
-          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        } catch (error) {
-          console.error('마이크 스트림 오류:', error);
-        }
-      };
-    
-      // 피어 연결 생성 및 관리 함수
-    const createPeerConnection = (peerId) => {
-    const peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
-
-    // 로컬 스트림 추가
-    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-    // ICE 후보 생성 시 서버로 전송
-    peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-        socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
-        }
-    };
-
-    // 상대방의 스트림을 오디오 태그에 연결
-    peerConnection.ontrack = (event) => {
-        const remoteStream = event.streams[0];
-        document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
-    };
-
-    peerConnections[peerId] = peerConnection;
-    return peerConnection;
     };
 
 
