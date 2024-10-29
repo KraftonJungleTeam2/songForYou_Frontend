@@ -36,8 +36,7 @@ function Multi() {
           },
         }
       );
-      console.log('response.data', response.data);
-      setRooms(response.data);
+      setRooms(response.data.rooms);
     } catch (error) {
       alert('Error fetching rooms:');
       console.error('Error fetching rooms:', error);
@@ -84,9 +83,7 @@ function Multi() {
                         <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.name}`} />
                         <div className='room-info'>
                           <h3>{room.name}</h3>
-                          <p>
-                            Players: {room.con_peers}/{room.max_peers}
-                          </p>
+                          <p>Players: {room.users.length}/4</p>
                         </div>
                       </>
                     )}
