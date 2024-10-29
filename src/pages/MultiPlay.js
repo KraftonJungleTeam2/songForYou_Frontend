@@ -11,7 +11,7 @@ import ReservationPopup from '../components/ReservationPopup'
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -24,7 +24,7 @@ function MultiPlay() {
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(false);
-  
+
   // 지연시간 ping을 위한 state
   const [serverTimeDiff, setServerTimeDiff] = useState(null);
 
@@ -60,8 +60,8 @@ function MultiPlay() {
   const MAXERROR = 10;
 
 
- //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
   // 로컬 MP3 파일을 Blob으로 변환
   useEffect(() => {
     const loadAudioBlob = async () => {
@@ -288,108 +288,108 @@ function MultiPlay() {
       console.error('마이크 스트림 오류:', error);
     }
   };
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-//웹소켓 로직들
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  //웹소켓 로직들
 
-// 웹소켓 데이터를 실제로 받는 부분. UseEffect
-// Socket.IO 클라이언트 초기화
-useEffect(() => {
-  // socket 열기
-  socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-    path: '/wss',
-    auth: {
+  // 웹소켓 데이터를 실제로 받는 부분. UseEffect
+  // Socket.IO 클라이언트 초기화
+  useEffect(() => {
+    // socket 열기
+    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+      path: '/wss',
+      auth: {
         token: sessionStorage.getItem('userToken')
-    }
-  });
+      }
+    });
 
-  // 연결 이벤트 리스너
-  socketRef.current.on('connect', () => {
-    console.log('웹소켓 연결 성공');
-    // 연결되면 바로 서버시간 측정
-    timeDiffSamplesRef.current = []; // 초기화
-    sendPing(); // 첫 번째 ping 전송
-  });
-  
-  // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
-  socketRef.current.on('pingResponse', (data) => {
-    const receiveTime = Date.now();
-    const {sendTime, serverTime} = data;
+    // 연결 이벤트 리스너
+    socketRef.current.on('connect', () => {
+      console.log('웹소켓 연결 성공');
+      // 연결되면 바로 서버시간 측정
+      timeDiffSamplesRef.current = []; // 초기화
+      sendPing(); // 첫 번째 ping 전송
+    });
 
-    handlePingResponse(sendTime, serverTime, receiveTime);
-  });
+    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
+    socketRef.current.on('pingResponse', (data) => {
+      const receiveTime = Date.now();
+      const { sendTime, serverTime } = data;
 
-  socketRef.current.on('startTime', (data) => {
-    // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
-    const serverStartTime = data.startTime;
-    const clientStartTime = serverStartTime + serverTimeDiff; 
-    
-    // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
-    setStarttime(clientStartTime);
-  })
+      handlePingResponse(sendTime, serverTime, receiveTime);
+    });
 
-  // Cleanup 함수
-  return () => {
-    if (socketRef.current?.connected) {
-      // connected 상태 확인
-      socketRef.current.disconnect();
+    socketRef.current.on('startTime', (data) => {
+      // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
+      const serverStartTime = data.startTime;
+      const clientStartTime = serverStartTime + serverTimeDiff;
+
+      // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
+      setStarttime(clientStartTime);
+    })
+
+    // Cleanup 함수
+    return () => {
+      if (socketRef.current?.connected) {
+        // connected 상태 확인
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
+  const sendPing = () => {
+    const sendTime = Date.now();
+    socketRef.current.emit('ping', {
+      sendTime,
+    });
+  };
+
+  // 서버의 ping 응답을 처리하여 지연 시간 계산 함수
+  const handlePingResponse = (sendTime, serverTime, receiveTime) => {
+    const roundTripTime = receiveTime - sendTime;
+    const serverTimeAdjusted = serverTime + roundTripTime / 2;
+    timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
+    timeDiffSamplesRef.current.sort();
+    const nSamples = timeDiffSamplesRef.current.length;
+    const q = Math.floor(nSamples / 4);
+    const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples - 1 - q];
+    // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
+    if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
+      // 측정 완료시 서버시간차이를 저장 하고 종료
+      const estTimeDiff = timeDiffSamplesRef.current[2 * q];
+      setServerTimeDiff(estTimeDiff);
+      setIsWaiting(false);
+    } else {
+      // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
+      sendPing();
     }
   };
-}, []);
 
- // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
- const sendPing = () => {
-  const sendTime = Date.now();
-  socketRef.current.emit('ping', {
-    sendTime,
-  });
-};
+  // 시작 버튼 누르면 곡 시작하게 하는 부분.
+  const handleStartClick = () => {
+    setIsWaiting(true);
+    if (!audioLoaded) {
+      alert('오디오가 아직 로딩되지 않았습니다.');
+      setIsWaiting(false);
+      return;
+    }
 
-// 서버의 ping 응답을 처리하여 지연 시간 계산 함수
-const handlePingResponse = (sendTime, serverTime, receiveTime) => {
-  const roundTripTime = receiveTime - sendTime;
-  const serverTimeAdjusted = serverTime + roundTripTime / 2;
-  timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
-  timeDiffSamplesRef.current.sort();
-  const nSamples = timeDiffSamplesRef.current.length;
-  const q = Math.floor(nSamples/4);
-  const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples-1-q];
-  // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
-  if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
-    // 측정 완료시 서버시간차이를 저장 하고 종료
-    const estTimeDiff = timeDiffSamplesRef.current[2*q];
-    setServerTimeDiff(estTimeDiff);
-    setIsWaiting(false);
-  } else {
-    // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
-    sendPing();
-  }
-};
-
- // 시작 버튼 누르면 곡 시작하게 하는 부분.
- const handleStartClick = () => {
-  setIsWaiting(true);
-  if (!audioLoaded) {
-    alert('오디오가 아직 로딩되지 않았습니다.');
-    setIsWaiting(false);
-    return;
-  }
-
-  // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('requestStartTimeWithDelay', {
-    roomId: roomId
-  });
-};
+    // 서버에 시작 요청 보내기 임시임
+    socketRef.current.emit('requestStartTimeWithDelay', {
+      roomId: roomId
+    });
+  };
 
 
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   const OnPopup = () => {
-      setshowPopup(true);
-    }
+    setshowPopup(true);
+  }
 
   const closePopup = () => {
-      setshowPopup(false);
-    }
+    setshowPopup(false);
+  }
 
 
   return (
@@ -442,7 +442,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+            // songState={song}
             />
           </div>
 
@@ -456,10 +456,10 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
 
           <div className='button-area'>
             {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime!=null} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
               {audioLoaded ? '노래 시작' : '로딩 중...'}
             </button>
-            
+
             {/* 마이크 토글 버튼 */}
             <button
               className='button mic-button'
@@ -477,15 +477,15 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
               예약하기
             </button>
 
-            <audio id='localAudio' autoPlay controls />
-        <audio id='remoteAudio' autoPlay controls />
-            
+            <audio id='localAudio' autoPlay muted />
+            <audio id='remoteAudio' autoPlay controls />
+
           </div>
-            
+
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-                <ReservationPopup socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs}/>
-              )}
+            <ReservationPopup socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} />
+          )}
 
 
 
