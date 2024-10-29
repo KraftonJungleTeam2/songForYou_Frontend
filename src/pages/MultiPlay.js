@@ -409,8 +409,6 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
             <p>chating area</p>
           </div>
         </div>
-        <audio id='localAudio' autoPlay controls />
-        <audio id='remoteAudio' autoPlay controls />
         <div className='sing-area' ref={containerRef}>
           <div className='information-area'>
             <p>현재곡</p>
@@ -473,6 +471,8 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
               예약하기
             </button>
 
+            <audio id='localAudio' autoPlay controls />
+        <audio id='remoteAudio' autoPlay controls />
             
           </div>
             
