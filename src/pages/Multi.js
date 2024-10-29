@@ -71,7 +71,7 @@ function Multi() {
           ) : (
             <div className='main-area'>
               <button className='button page-button is-white' onClick={handlePreviousPage}>
-                <i class='fa-solid fa-circle-chevron-left'></i>
+                <i className='fa-solid fa-circle-chevron-left'></i>
               </button>
               <div className='grid is-col-min-20 room-list'>
                 {roomCards.map((room, index) => (
@@ -91,7 +91,7 @@ function Multi() {
                 ))}
               </div>
               <button className='button page-button is-white' onClick={handleNextPage}>
-                <i class='fa-solid fa-circle-chevron-right'></i>
+                <i className='fa-solid fa-circle-chevron-right'></i>
               </button>
             </div>
           )}
