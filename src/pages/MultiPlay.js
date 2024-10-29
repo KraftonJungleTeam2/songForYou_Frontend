@@ -130,6 +130,10 @@ useEffect(() => {
     handlePingResponse(sendTime, serverTime, receiveTime);
   });
 
+  socketRef.current.on('starttime', (data) => {
+    const severstartTime = data;
+  })
+  
   // Cleanup 함수
   return () => {
     if (socketRef.current?.connected) {
@@ -154,7 +158,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
 
   const nSamples = timeDiffSamplesRef.current.length;
-  const IQR = 
+  
   if (timeDiffSamplesRef.current.length >= 20) {
     timeDiffSamplesRef.current.sort();
     const avgStartTime = timeDiffSamplesRef.current[10];
