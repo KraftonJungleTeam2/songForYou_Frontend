@@ -260,37 +260,40 @@ function MultiPlay() {
           });
       }
 
-
-
-
-      // 지연 시간 측정 함수
-      async function measureLatency() {
-        const stats = await peerConnection.getStats();
-        let sqrtRTTs = 0;
-        let nUsers = 0;
-
-        stats.forEach((report) => {
-          if (report.type === "candidate-pair" && report.state === "succeeded") {
-            const rtt = report.currentRoundTripTime;
-            sqrtRTTs += Math.sqrt(rtt*1000);
-            nUsers += 1;
-            console.log(`RTT to peer ${userId}: ${rtt * 1000} ms`);
-          }
-        });
-        if (nUsers) {
-          const smre = (sqrtRTTs/nUsers) ** 2;
-          setNetworkLatency(networkLatency*0.7 + smre*0.3);
-        }
-      }
-
-      // 1초마다 각 피어에 대해 지연 시간 측정
-      setInterval(measureLatency, 1000);
-
       peerConnectionsRef.current[userId] = peerConnection;
       return peerConnection;
-  };
+    };
+    
+    useEffect( ()=> {
+      // 지연 시간 측정 함수
+      async function measureLatency() {
+        let sqrtRTTs = 0;
+        let nUsers = 0;
+  
+        for (let key in peerConnectionsRef.current) {
+          const peerConnection = peerConnectionsRef.current[key];
+          const stats = await peerConnection.getStats();
+  
+          stats.forEach((report) => {
+            if (report.type === "candidate-pair" && report.state === "succeeded") {
+              const rtt = report.currentRoundTripTime;
+              sqrtRTTs += Math.sqrt(rtt*1000);
+              nUsers += 1;
+              console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
+            }
+          });
+        }
+        if (nUsers) {
+          const smre = (sqrtRTTs/nUsers) ** 2;
+          console.log(`set network latency as: ${networkLatency*0.9 + smre*0.1}`)
+          setNetworkLatency(networkLatency*0.9 + smre*0.1);
+        }
+      }
+      console.log("dsioghw");
+      setInterval(measureLatency, 1000);
 
-
+    }, []);
+    
 
 
 
@@ -482,7 +485,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               예약하기
             </button>
-            <h3>{networkLatency}</h3>
+            <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className="remote-audios" style={{ display: 'none' }}>
