@@ -117,16 +117,17 @@ useEffect(() => {
   // socket 열기
   socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
     path: '/wss',
+    auth: {
+        token: sessionStorage.getItem('userToken')
+    }
   });
 
   // 연결 이벤트 리스너
   socketRef.current.on('connect', () => {
     console.log('웹소켓 연결 성공');
     // 연결되면 바로 서버시간 측정
-    if (serverTimeDiff == null) {
-      timeDiffSamplesRef.current = []; // 초기화
-      sendPing(); // 첫 번째 ping 전송
-    }
+    timeDiffSamplesRef.current = []; // 초기화
+    sendPing(); // 첫 번째 ping 전송
   });
   
   // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
@@ -167,7 +168,6 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   const roundTripTime = receiveTime - sendTime;
   const serverTimeAdjusted = serverTime + roundTripTime / 2;
   timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
-  
   timeDiffSamplesRef.current.sort();
   const nSamples = timeDiffSamplesRef.current.length;
   const q = Math.floor(nSamples/4);
@@ -177,6 +177,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
     // 측정 완료시 서버시간차이를 저장 하고 종료
     const estTimeDiff = timeDiffSamplesRef.current[2*q];
     setServerTimeDiff(estTimeDiff);
+    setIsWaiting(false);
   } else {
     // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
     sendPing();
@@ -193,7 +194,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   }
 
   // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('requestStartTimeWithDelay');
+  socketRef.current.emit('requestStartTimeWithDelay', {});
 };
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -307,7 +308,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
 
           <div className='button-area'>
             {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || !isSocketOpen} className={`button start-button ${!audioLoaded || isWaiting || !isSocketOpen ? 'is-loading' : ''}`}>
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
               {audioLoaded ? '노래 시작' : '로딩 중...'}
             </button>
             
