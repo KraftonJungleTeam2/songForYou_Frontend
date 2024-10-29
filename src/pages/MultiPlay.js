@@ -23,7 +23,7 @@ function MultiPlay() {
   const [isWaiting, setIsWaiting] = useState(false);
   
   // 지연시간 ping을 위한 state
-  const [delay, setdelay] = useState(null);
+  const [serverTimeDiff, setServerTimeDiff] = useState(null);
 
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState();
@@ -32,7 +32,7 @@ function MultiPlay() {
   const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
   //웹소켓 부분
-  const pingTimes = useRef([]); // 지연 시간 측정을 위한 배열
+  const timeDiffSamplesRef = useRef([]); // 지연 시간 측정을 위한 배열
   const peerConnections = {}; // 개별 연결을 저장한 배열 생성
   let localStream; // 마이크 로컬 스트림
 
@@ -104,11 +104,40 @@ function MultiPlay() {
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //웹소켓 로직들
 
-// 초기 지연 시간 계산 함수
-const calculateDelay = () => {
-  pingTimes.current = []; // 초기화
-  sendPing(); // 첫 번째 ping 전송
-};
+// 웹소켓 데이터를 실제로 받는 부분. UseEffect
+// Socket.IO 클라이언트 초기화
+useEffect(() => {
+  // socket 열기
+  socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+    path: '/wss',
+  });
+
+  // 연결 이벤트 리스너
+  socketRef.current.on('connect', () => {
+    console.log('웹소켓 연결 성공');
+    // 연결되면 바로 서버시간 측정
+    if (serverTimeDiff == null) {
+      timeDiffSamplesRef.current = []; // 초기화
+      sendPing(); // 첫 번째 ping 전송
+    }
+  });
+  
+  // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
+  socketRef.current.on('pong-response', (data) => {
+    const receiveTime = Date.now();
+    const {sendTime, serverTime} = data;
+
+    handlePingResponse(sendTime, serverTime, receiveTime);
+  });
+
+  // Cleanup 함수
+  return () => {
+    if (socketRef.current?.connected) {
+      // connected 상태 확인
+      socketRef.current.disconnect();
+    }
+  };
+}, []);
 
  // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
  const sendPing = () => {
@@ -122,12 +151,14 @@ const calculateDelay = () => {
 const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   const roundTripTime = receiveTime - sendTime;
   const serverTimeAdjusted = serverTime + roundTripTime / 2;
-  pingTimes.current.push(receiveTime - serverTimeAdjusted);
+  timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
 
-  if (pingTimes.current.length >= 20) {
-    pingTimes.current.sort();
-    const avgStartTime = pingTimes.current[10];
-    setdelay(avgStartTime);
+  const nSamples = timeDiffSamplesRef.current.length;
+  const IQR = 
+  if (timeDiffSamplesRef.current.length >= 20) {
+    timeDiffSamplesRef.current.sort();
+    const avgStartTime = timeDiffSamplesRef.current[10];
+    setServerTimeDiff(avgStartTime);
   } else {
     sendPing(); // 50번까지 반복하여 서버에 ping 요청
   }
@@ -145,43 +176,6 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   // 서버에 시작 요청 보내기 임시임
   socketRef.current.emit('출발함ㅋㅋ');
 };
-
-// 웹소켓 데이터를 실제로 받는 부분. UseEffect
-// Socket.IO 클라이언트 초기화
-  useEffect(() => {
-    
-    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-      path: '/wss',
-    });
-
-    // 연결 이벤트 리스너
-    socketRef.current.on('connect', () => {
-      console.log('웹소켓 연결 성공');
-
-
-      // 연결되면 바로 시작하도록 하는 함수
-      calculateDelay();
-    });
-    
-
-    // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
-    socketRef.current.on('pong-response', (data) => {
-    // 현재 응답을 받은 시간을 구함.
-    const receiveTime = Date.now();
-    // 요청 받았던 서버의 시간을 받음.
-    const { sendTime, serverTime} = data;
-    // 계산 로직 수행
-    handlePingResponse(sendTime, serverTime, receiveTime);
-    });
-
-    // Cleanup 함수
-    return () => {
-      if (socketRef.current?.connected) {
-        // connected 상태 확인
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // RTC 부분
