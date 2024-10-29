@@ -19,8 +19,6 @@ const ReservationPopup = ({ onClose }) => {
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
-        <h2>예약 정보</h2>
-        <p>여기에 예약 정보를 입력하거나 확인할 수 있습니다.</p>
         <ReservationList onSongSelect={handleSongSelect} publicSongs={songLists.public} privateSongs={songLists.private}></ReservationList>
         <button className='button' onClick={onClose}>닫기</button>
       </div>
@@ -46,7 +44,7 @@ const styles = {
     padding: '20px',
     borderRadius: '8px',
     width: '50rem',
-    height: '90%',
+    height: '80%',
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
