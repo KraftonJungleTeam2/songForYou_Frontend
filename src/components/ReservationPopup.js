@@ -22,7 +22,7 @@ const ReservationPopup = ({ soket, onClose }) => {
   const handleReserve = (e, song) => {
     e.stopPropagation();
     // 곡 예약 정보 소켓으로 전달하기
-
+    soket.emit('reserveSong', )
     onClose();
   };
 
