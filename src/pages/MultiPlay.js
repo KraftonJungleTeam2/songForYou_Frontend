@@ -130,14 +130,14 @@ useEffect(() => {
   });
   
   // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
-  socketRef.current.on('pong-response', (data) => {
+  socketRef.current.on('pingResponse', (data) => {
     const receiveTime = Date.now();
     const {sendTime, serverTime} = data;
 
     handlePingResponse(sendTime, serverTime, receiveTime);
   });
 
-  socketRef.current.on('starttime', (serverStartTime) => {
+  socketRef.current.on('startTime', (serverStartTime) => {
     // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
     const clientStartTime = serverStartTime + serverTimeDiff; 
    
@@ -193,7 +193,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   }
 
   // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('starttime');
+  socketRef.current.emit('requestStartTimeWithDelay');
 };
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
