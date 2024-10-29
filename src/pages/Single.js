@@ -22,7 +22,7 @@ function Single() {
 
   useEffect(() => {
     fetchSongLists();
-  }, []); 
+  }, []);
 
   return (
     <div className='single-page'>
