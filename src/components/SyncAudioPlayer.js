@@ -71,6 +71,8 @@ const AudioPlayer = ({
     const offset = (Date.now()-starttime)/1000;
     // while (Date.now() < starttime) {}
     // source.start();
+
+    //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
     if (offset < 0) {
       source.start(audioContext.currentTime-offset);
     } else {
