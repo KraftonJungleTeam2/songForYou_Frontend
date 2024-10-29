@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import '../css/RoomCreation.css';
+import { useNavigate } from 'react-router-dom';
 
 function RoomCreation({ onCancel }) {
   const [roomTitle, setRoomTitle] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
   const [max_peers, setMax_peers] = useState(2);
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -23,7 +24,7 @@ function RoomCreation({ onCancel }) {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_ENDPOINT}/rooms/create`,
-        { name: roomTitle, password: roomPassword, max_peers, is_public: true }, // data
+        { roomTitle: roomTitle, password: roomPassword, max_peers, is_public: true }, // data
         {
           headers: {
             Authorization: `Bearer ${token}`, // 가져온 토큰을 헤더에 추가
@@ -35,7 +36,7 @@ function RoomCreation({ onCancel }) {
       if (response.status === 200) {
         const { roomId } = response.data;
         alert(`Room created successfully! Room ID: ${roomId}`);
-
+        navigate(`/multiplay/${roomId}`, { replace: true }); // 상태와 함께 네비게이션
         // 해당 방으로 이동
       } else {
         alert('Failed to create room');
