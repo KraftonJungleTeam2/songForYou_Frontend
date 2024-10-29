@@ -270,6 +270,18 @@ function MultiPlay() {
     setUserSeekPosition(newPosition);
     setPlaybackPosition(newPosition);
   };
+  // 
+  const getLocalStream = async () => {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const audioElement = document.getElementById('localAudio');
+      if (audioElement) {
+        audioElement.srcObject = localStream;
+      }
+    } catch (error) {
+      console.error('마이크 스트림 오류:', error);
+    }
+  };
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //웹소켓 로직들
 
@@ -362,45 +374,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   });
 };
 
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// RTC 부분
-  const getLocalStream = async () => {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      const audioElement = document.getElementById('localAudio');
-      if (audioElement) {
-        audioElement.srcObject = localStream;
-      }
-    } catch (error) {
-      console.error('마이크 스트림 오류:', error);
-    }
-  };
 
-  // 피어 연결 생성 및 관리 함수
-  const createPeerConnection = (peerId) => {
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
-
-    // 로컬 스트림 추가
-    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-    // ICE 후보 생성 시 서버로 전송
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current.emit('ice-candidate', { candidate: event.candidate, to: peerId });
-      }
-    };
-
-    // 상대방의 스트림을 오디오 태그에 연결
-    peerConnection.ontrack = (event) => {
-      const remoteStream = event.streams[0];
-      document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
-    };
-
-    peerConnections[peerId] = peerConnection;
-    return peerConnection;
-  };
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   const OnPopup = () => {
@@ -511,7 +485,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
 
 
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={audioBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handleAudioPlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={audioBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handlePlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} />
         </div>
       </div>
     </div>
