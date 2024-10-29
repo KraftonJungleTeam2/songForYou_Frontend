@@ -28,7 +28,7 @@ function MultiPlay() {
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState();
   const [isMicOn, setIsMicOn] = useState(false);
-  const { id: roomid } = useParams(); // URL에서 songId 추출
+  const { id: roomId } = useParams(); // URL에서 songId 추출
   const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
   //웹소켓 부분
@@ -141,6 +141,7 @@ useEffect(() => {
   socketRef.current.on('startTime', (serverStartTime) => {
     // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
     const clientStartTime = serverStartTime + serverTimeDiff; 
+    console.log('received starttime');
    
     // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
     setStarttime(clientStartTime);
@@ -194,7 +195,9 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   }
 
   // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('requestStartTimeWithDelay', {});
+  socketRef.current.emit('requestStartTimeWithDelay', {
+    roomId
+  });
 };
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
