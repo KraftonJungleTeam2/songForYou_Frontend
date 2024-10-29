@@ -58,6 +58,7 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 10;
+  const [latencyOffset, setLatencyOffset] = useState(0);
 
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -90,7 +91,8 @@ function MultiPlay() {
       path: '/wss',
       auth: {
         token: sessionStorage.getItem('userToken')
-      }
+      },
+      secure: true
     });
 
     // 연결 이벤트 리스너
@@ -395,14 +397,14 @@ function MultiPlay() {
     if (isMicOn) return;
 
     if (isPlaying)
-      setStarttime(starttime - 200);
-    setIsMicOn(!isMicOn);
+      setLatencyOffset(-200);
+    setIsMicOn(true);
   }
   const micOff = () => {
     if (!isMicOn) return;
 
     if (isPlaying)
-      setStarttime(starttime + 200);
+      setLatencyOffset(0);
     setIsMicOn(false);
   }
 
@@ -502,7 +504,19 @@ function MultiPlay() {
 
 
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={audioBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handlePlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} />
+          <AudioPlayer
+            isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
+            userSeekPosition={userSeekPosition}
+            audioBlob={audioBlob}
+            setAudioLoaded={setAudioLoaded}
+            setDuration={setDuration}
+            onPlaybackPositionChange={handlePlaybackPositionChange}
+            starttime={starttime}
+            setStarttime={setStarttime}
+            setIsWaiting={setIsWaiting}
+            setIsMicOn={setIsMicOn}
+            latencyOffset={latencyOffset} />
         </div>
       </div>
     </div>
