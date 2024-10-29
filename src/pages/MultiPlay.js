@@ -283,7 +283,7 @@ function MultiPlay() {
         }
       }
 
-      // 5초마다 해당 피어에 대해 지연 시간 측정
+      // 1초마다 각 피어에 대해 지연 시간 측정
       setInterval(measureLatency, 1000);
 
       peerConnectionsRef.current[userId] = peerConnection;
@@ -381,22 +381,26 @@ function MultiPlay() {
 
   const micOn = () => {
     if (isMicOn) return;
+    setIsMicOn(true);
 
     if (isPlaying)
       setAudioLatency(200);
-    setIsMicOn(true);
   }
   const micOff = () => {
     if (!isMicOn) return;
+    setIsMicOn(false);
 
     if (isPlaying)
       setAudioLatency(0);
-    setIsMicOn(false);
   }
 
   useEffect(() => {
-    setLatencyOffset(-audioLatency-networkLatency-optionLatency);
-  }, [audioLatency, networkLatency, optionLatency]);
+    if (isMicOn) {
+      setLatencyOffset(-audioLatency-networkLatency-optionLatency);
+    } else {
+      setLatencyOffset(0);
+    }
+  }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
   return (
     <div className='multiPlay-page'>
