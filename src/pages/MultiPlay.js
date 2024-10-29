@@ -49,6 +49,13 @@ function MultiPlay() {
   // useRef로 관리하는 변수들
   const socketRef = useRef(null); // 웹소켓 참조
 
+  // 서버시간 측정을 위해
+  // 최소/최대 핑 요청 횟수
+  const MAXPING = 50;
+  const MINPING = 10;
+  // 최대 허용 오차(ms)
+  const MAXERROR = 10;
+
 
  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   
@@ -160,15 +167,19 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   const roundTripTime = receiveTime - sendTime;
   const serverTimeAdjusted = serverTime + roundTripTime / 2;
   timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
-
-  const nSamples = timeDiffSamplesRef.current.length;
   
-  if (timeDiffSamplesRef.current.length >= 20) {
-    timeDiffSamplesRef.current.sort();
-    const avgStartTime = timeDiffSamplesRef.current[10];
-    setServerTimeDiff(avgStartTime);
+  timeDiffSamplesRef.current.sort();
+  const nSamples = timeDiffSamplesRef.current.length;
+  const q = Math.floor(nSamples/4);
+  const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples-1-q];
+  // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
+  if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
+    // 측정 완료시 서버시간차이를 저장 하고 종료
+    const estTimeDiff = timeDiffSamplesRef.current[2*q];
+    setServerTimeDiff(estTimeDiff);
   } else {
-    sendPing(); // 50번까지 반복하여 서버에 ping 요청
+    // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
+    sendPing();
   }
 };
 
