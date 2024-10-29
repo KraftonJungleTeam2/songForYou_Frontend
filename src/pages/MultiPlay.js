@@ -391,6 +391,21 @@ function MultiPlay() {
     setshowPopup(false);
   }
 
+  const micOn = () => {
+    if (isMicOn) return;
+
+    if (isPlaying)
+      setStarttime(starttime - 200);
+    setIsMicOn(!isMicOn);
+  }
+  const micOff = () => {
+    if (!isMicOn) return;
+
+    if (isPlaying)
+      setStarttime(starttime + 200);
+    setIsMicOn(false);
+  }
+
 
   return (
     <div className='multiPlay-page'>
@@ -463,12 +478,7 @@ function MultiPlay() {
             {/* 마이크 토글 버튼 */}
             <button
               className='button mic-button'
-              onClick={() => {
-                if (isPlaying) {
-                  setStarttime(isMicOn ? starttime + 200 : starttime - 200);
-                  setIsMicOn(!isMicOn);
-                }
-              }}>
+              onClick={isMicOn ? micOff : micOn}>
               {' '}
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
