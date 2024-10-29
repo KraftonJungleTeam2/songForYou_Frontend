@@ -19,6 +19,9 @@ function MultiPlay() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
 
+  // 예약 popup에서 작업하는 부분
+  const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
+
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(false);
   
@@ -481,7 +484,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
             
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-                <ReservationPopup soket={socketRef.current} onClose={closePopup}/>
+                <ReservationPopup socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs}/>
               )}
 
 
