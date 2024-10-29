@@ -29,10 +29,10 @@ function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
         </div>
         <div className='search-bar'>
           <input type='text' placeholder='노래 검색' value={searchTerm} onChange={handleSearch} />
-          <button className='button is-dark'><i class="fa-solid fa-magnifying-glass"></i></button>
+          <button className='button is-dark'><i className="fa-solid fa-magnifying-glass"></i></button>
         </div>
         <button className='button is-link add-song-button' onClick={() => navigate('/add')}>
-        <i class="fa-solid fa-upload"></i>   노래 올리기
+        <i className="fa-solid fa-upload"></i>   노래 올리기
         </button>
       </div>
       <SongList searchTerm={searchTerm} onSongSelect={onSongSelect} songs={viewType === 'public' ? publicSongs : privateSongs} />
