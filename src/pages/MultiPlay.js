@@ -23,7 +23,7 @@ function MultiPlay() {
   const [isWaiting, setIsWaiting] = useState(false);
   
   // 지연시간 ping을 위한 state
-  const [delaytime, setdelaytime] = useState(null);
+  const [delay, setdelay] = useState(null);
 
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState();
@@ -121,13 +121,13 @@ const calculateDelay = () => {
 // 서버의 ping 응답을 처리하여 지연 시간 계산 함수
 const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   const roundTripTime = receiveTime - sendTime;
-  const serverTimeAdjusted = serverTime - roundTripTime / 2;
-  pingTimes.current.push(receiveTime + serverTimeAdjusted);
+  const serverTimeAdjusted = serverTime + roundTripTime / 2;
+  pingTimes.current.push(receiveTime - serverTimeAdjusted);
 
   if (pingTimes.current.length >= 20) {
     pingTimes.current.sort();
     const avgStartTime = pingTimes.current[10];
-    setdelaytime(avgStartTime);
+    setdelay(avgStartTime);
   } else {
     sendPing(); // 50번까지 반복하여 서버에 ping 요청
   }
@@ -143,7 +143,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
   }
 
   // 서버에 시작 요청 보내기 임시임
-  socketRef.current.emit('출발함 ㅋㅋ');
+  socketRef.current.emit('출발함ㅋㅋ');
 };
 
 // 웹소켓 데이터를 실제로 받는 부분. UseEffect

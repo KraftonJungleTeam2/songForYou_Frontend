@@ -15,7 +15,7 @@ const ReservationPopup = ({ onClose }) => {
     const handleSongSelect = (song) => {
         setSelectedSong(song);
       };
-      
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
@@ -45,7 +45,8 @@ const styles = {
     backgroundColor: '#fff',
     padding: '20px',
     borderRadius: '8px',
-    width: '300px',
+    width: '50rem',
+    height: '90%',
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
