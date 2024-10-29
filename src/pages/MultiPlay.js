@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
@@ -37,8 +37,6 @@ function MultiPlay() {
 
   //웹소켓 부분
   const timeDiffSamplesRef = useRef([]); // 지연 시간 측정을 위한 배열
-  const peerConnections = {}; // 개별 연결을 저장한 배열 생성
-  let localStream; // 마이크 로컬 스트림
 
   //화면 조정을 위한 state들
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
@@ -202,6 +200,72 @@ function MultiPlay() {
       setStarttime(clientStartTime);
     })
 
+    socketRef.current.on('playSong', async (data) => {
+      try {
+        // 소켓 이벤트에서 받은 data를 바로 FormData로 처리
+        const formData = data instanceof FormData ? data : new FormData(data);
+        const result = Object.fromEntries(formData.entries());
+    
+        // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
+        const fileUrl = result.file;
+        if (fileUrl) {
+          const fileResponse = await fetch(fileUrl);
+          const fileBlob = await fileResponse.blob();
+          setMrDataBlob(fileBlob);  // Blob 데이터 저장
+        } else {
+          console.error('Error: file URL not found in the response');
+        }
+    
+        const pitchString = result.pitch;
+        if (typeof pitchString === 'string') {
+          try {
+            const pitchArray = JSON.parse(pitchString);
+            const processedPitchArray = doubleDataFrequency(pitchArray);
+            setEntireReferData(
+              processedPitchArray.map((pitch, index) => ({
+                time: index * 25,
+                pitch,
+              }))
+            );
+    
+            setEntireGraphData(
+              processedPitchArray.map((_, index) => ({
+                time: index * 25,
+                pitch: null,
+              }))
+            );
+    
+            setPitchLoaded(true);
+          } catch (parseError) {
+            console.error('Error parsing pitch data:', parseError);
+            setPitchLoaded(true);
+          }
+        } else {
+          console.warn('Warning: pitch data not found or invalid in the response');
+          setPitchLoaded(true);
+        }
+    
+        const lyricsString = result.lyrics;
+        if (typeof lyricsString === 'string') {
+          try {
+            const lyrics = JSON.parse(lyricsString);
+            setLyricsData(lyrics);
+            setLyricsLoaded(true);
+          } catch (parseError) {
+            console.error('Error parsing lyrics data:', parseError);
+            setLyricsLoaded(true);
+          }
+        } else {
+          console.warn('Warning: lyrics data not found or invalid in the response');
+          setLyricsLoaded(true);
+        }
+      } catch (error) {
+        console.error('Error handling data:', error);
+      }
+    });
+
+
+
       return () => {
           Object.values(peerConnectionsRef.current).forEach(connection => {
               connection.close();
@@ -257,11 +321,6 @@ function MultiPlay() {
 
 
 
-
-
-
-  
-  
   
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -454,7 +513,7 @@ function MultiPlay() {
             </button>
 
             <button className='button reservation-button' onClick={OnPopup}>
-              예약하기
+              시작하기 or 예약하기
             </button>
 
 

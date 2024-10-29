@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { songlists, useSongs } from '../Context/SongContext';
-
+import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 
 const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) => {
   const { songLists, fetchSongLists } = useSongs();
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
+  const { roomid } = useParams(); // URL에서 songId 추출
 
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
@@ -26,7 +27,18 @@ const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) =
     // 예약된 곡 ID 추가
     setReservedSongs((prev) => [...prev, song.id]);
     // 예약 정보를 소켓으로 전달
-    socket.emit('reserveSong', song.id);
+    socket.emit('reserveSong', {songId: song.id});
+  };
+
+  const handlePlay = (e, song) => {
+    e.stopPropagation();
+
+    // 예약된 곡 ID 추가 (임시임 일단)
+    setReservedSongs((prev) => [...prev, song.id]);
+    // 예약 정보를 소켓으로 전달 + 방번호
+    socket.emit('playSong', {songId: song.id, roomId: roomid});
+
+    onClose();
   };
 
   const isReserved = (songId) => reservedSongs.includes(songId); // 예약 여부 확인
@@ -80,33 +92,40 @@ const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) =
                     filteredSongs.map((song) => (
                         <div key={song.id} className='song-item'>
                             <div
-                                className='song-icon'
-                                style={{
-                                backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
-                                backgroundSize: 'cover',
-                                backgroundRepeat: 'no-repeat',
-                                width: '4rem',
-                                height: '4rem',
-                                }}
-                                alt={song.metadata.title}
+                              className='song-icon'
+                              style={{
+                              backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
+                              backgroundSize: 'cover',
+                              backgroundRepeat: 'no-repeat',
+                              width: '4rem',
+                              height: '4rem',
+                              }}
+                              alt={song.metadata.title}
                             />
 
                         <div className='song-info'>
-                            <h3>{song.metadata.title}</h3>
-                            <p>{song.metadata.description}</p>
-                            <span className='timestamp'>{song.timestamp}</span>
+                          <h3>{song.metadata.title}</h3>
+                          <p>{song.metadata.description}</p>
+                          <span className='timestamp'>{song.timestamp}</span>
                         </div>
-
 
                         <div
-                            className={`button ${isReserved(song.id) ? 'is-static has-text-grey-light' : 'is-dark'}`}
-                            style={{ cursor: isReserved(song.id) ? 'default' : 'pointer' }}
-                            onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
-                            >
-                            {isReserved(song.id) ? '예약됨!' : <i className="fa-solid fa-plus"></i>}
+                          className={`button ${isReserved(song.id) ? 'is-static has-text-grey-light' : 'is-dark'}`}
+                          style={{ cursor: isReserved(song.id) ? 'default' : 'pointer' }}
+                          onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
+                          >
+                          {isReserved(song.id) ? '예약됨!' : <i className="fa-solid fa-plus"></i>}
                         </div>
-
+                        
+                        <div 
+                          className='play-button has-text-link' 
+                          style={{ cursor: 'pointer', marginLeft: '20px'}} 
+                          onClick={(e) => handlePlay(e, song)}
+                          >
+                          <i className="fa-solid fa-play"></i>
                         </div>
+                        
+                </div>
                     ))
                     )}
                 </div>
