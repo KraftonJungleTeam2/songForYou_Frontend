@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID �
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
-import audioFile from '../sample.mp3'; // 임시 MP3 파일 경로 가져오기
+import audioFile from '../sample1.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup'
