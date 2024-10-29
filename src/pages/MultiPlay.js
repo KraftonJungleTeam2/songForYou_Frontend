@@ -334,7 +334,7 @@ const handlePingResponse = (sendTime, serverTime, receiveTime) => {
             
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-                <ReservationPopup soket={socketRef.current} onClose={closePopup}/>
+                <ReservationPopup socket={socketRef.current} onClose={closePopup}/>
               )}
 
 
