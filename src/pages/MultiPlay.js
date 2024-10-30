@@ -53,8 +53,10 @@ function MultiPlay() {
 
   const [mrDataBlob, setMrDataBlob] = useState(null);
   const [lyricsData, setLyricsData] = useState(null);
+
   // 예약 popup에서 작업하는 부분
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
+  const [songDatas, setsongDatas] = useState([]); //현재곡 0, 다음곡 1 (mr, pitch lyrics 데이터를 담음)
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(true);
@@ -253,12 +255,9 @@ function MultiPlay() {
       setStarttime(clientStartTime);
     })
 
-
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // 데이터 받는 부분 (마운트 작업)
+    // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
     socketRef.current.on('playSong', async (data) => {
       try {
-        
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
@@ -428,13 +427,6 @@ function MultiPlay() {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // 재생 위치 변경 핸들러 (seek bar)
-  const handlePlaybackPositionChange = (e) => {
-    const newPosition = parseFloat(e.target.value);
-    setUserSeekPosition(newPosition);
-    setPlaybackPosition(newPosition);
-  };
   
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
@@ -476,7 +468,7 @@ function MultiPlay() {
 
     // 서버에 시작 요청 보내기 임시임
     socketRef.current.emit('requestStartTimeWithDelay', {
-      roomId: roomId, getNow: true
+      roomId: roomId
     });
   };
 
@@ -580,7 +572,7 @@ function MultiPlay() {
 
           <div className='button-area'>
             {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
               {audioLoaded ? '노래 시작' : '로딩 중...'}
             </button>
 
@@ -615,7 +607,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} songDatas={songDatas} setsongDatas={setsongDatas}   />
           )}
 
           {/* AudioPlayer 컴포넌트 */}
