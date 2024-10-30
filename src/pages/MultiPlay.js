@@ -718,7 +718,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={currentData}
+              songState={reservedSongs[0]}
             />
           </div>
 
