@@ -82,7 +82,7 @@ const AudioPlayer = ({
     }
     setIsPlaying(true);
     setIsWaiting(false);
-    setTimeout(() => { setIsMicOn(false); }, -offset * 1000);
+
     resumeTimeRef.current = audioContext.currentTime - offset;
 
     // 재생 완료 시 호출되는 콜백 설정
@@ -102,12 +102,12 @@ const AudioPlayer = ({
     const source = sourceRef.current;
     const prevRate = source.playbackRate.value;
     const timePassed = audioContext.currentTime - resumeTimeRef.current;
-    
+
     playbackPositionRef.current += timePassed * prevRate;
     resumeTimeRef.current += timePassed;
     source.playbackRate.value = rate;
-  }
-  
+  };
+
   // 현재 재생시간을 초단위로 가져옴 예: getPlaybackTime() == 36.1 -> 현재 36.1초 플레이 중
   const getPlaybackTime = () => {
     const audioContext = audioContextRef.current;
@@ -117,8 +117,8 @@ const AudioPlayer = ({
     const timePassed = audioContext.currentTime - resumeTimeRef.current;
 
     return playbackPositionRef.current + timePassed * prevRate; // 초 단위
-  }
-  
+  };
+
   // 지연 시간에 따른 재생 속도 조절 (transition)
   useEffect(() => {
     if (!isPlaying) return;
@@ -128,18 +128,15 @@ const AudioPlayer = ({
     if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
 
     const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
-    console.log("target: " + targetTime + " overrun:" + overrun);
-    
+    console.log('target: ' + targetTime + ' overrun:' + overrun);
+
     setPlaybackRate(transitionSpeed);
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
-      console.log("default rate!, overrun: " + ((Date.now() - (starttime + latencyOffset)) - getPlaybackTime() * 1000));
+      console.log('default rate!, overrun: ' + (Date.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
-
-
-
 
   // 재생 및 일시정지 상태, 속도 변경 시 처리
   useEffect(() => {
@@ -150,7 +147,7 @@ const AudioPlayer = ({
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
       }
     }
-    
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -158,8 +155,6 @@ const AudioPlayer = ({
     };
   }, [starttime]);
 
-
-  
   // playback position 업데이트: isPlaying이 true일 때 25ms마다 호출
   useEffect(() => {
     if (!isPlaying) return;
@@ -172,7 +167,8 @@ const AudioPlayer = ({
       const now = Date.now();
       const elapsed = now - lastUpdateTime;
 
-      if (elapsed >= FRAME_RATE * 1000) { // 25ms 이상 경과 시 업데이트
+      if (elapsed >= FRAME_RATE * 1000) {
+        // 25ms 이상 경과 시 업데이트
         const currentTime = getPlaybackTime();
         const roundedTime = roundToFrame(currentTime);
         if (onPlaybackPositionChange) {

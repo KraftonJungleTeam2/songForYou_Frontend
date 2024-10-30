@@ -665,7 +665,6 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
-
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
@@ -735,7 +734,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-            // songState={currentData}
+              // songState={currentData}
             />
           </div>
 
@@ -764,7 +763,7 @@ function MultiPlay() {
             <button
               className={`button mic-button ${!isPlaying ? 'is-disabled' : ''}`} // 버튼 스타일 변경
               onClick={isMicOn ? micOff : micOn}
-            //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
+              //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
             >
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
