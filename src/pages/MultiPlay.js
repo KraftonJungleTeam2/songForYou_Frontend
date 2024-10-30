@@ -92,6 +92,8 @@ function MultiPlay() {
   const peerConnectionsRef = useRef({});
   const pingTimesRef = useRef([]);
 
+  const targetStreamRef = useRef(null);
+
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
   const MAXPING = 50;
@@ -161,6 +163,8 @@ function MultiPlay() {
   };
   const updatePlayerMic = (userId, micBool) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
+    const audioElement = document.getElementById(`remoteAudio_${userId}`);
+    targetStreamRef.current = audioElement.srcObject;
   };
   // 마이크 스트림 획득
   const getLocalStream = async () => {
@@ -411,6 +415,7 @@ function MultiPlay() {
           roomId: roomId,
         });
         setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
+        targetStreamRef.current = localStreamRef.current;
       }
     }
     if (isPlaying) setAudioLatency(200);
@@ -606,7 +611,7 @@ function MultiPlay() {
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
 
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
     <div className='multiPlay-page'>
