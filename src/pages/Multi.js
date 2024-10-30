@@ -82,17 +82,14 @@ function Multi() {
               <button className='button page-button is-white' onClick={handlePreviousPage}>
                 <i className='fa-solid fa-circle-chevron-left'></i>
               </button>
-              
+
               <div className='grid is-col-min-20 room-list'>
                 {roomCards.map((room, index) => (
-                  <div
-                    className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`}
-                    key={room.empty ? `empty-${index}` : room.id}
-                  >
+                  <div className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`} key={room.empty ? `empty-${index}` : room.id}>
                     {room.empty ? (
                       <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
-                      <div onClick={(e) => handlePlay(e, room.id)} className="room-content">
+                      <div onClick={(e) => handlePlay(e, room.id)} className='room-content'>
                         <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
                         <div className='room-info'>
                           <h3>{room.roomTitle}</h3>

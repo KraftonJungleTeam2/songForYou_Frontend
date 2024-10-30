@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect} from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists}) => {
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, currentData, nextData}) => {
 
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
+  // Data를 추적하기 위해 사용하는 Ref(참조)
+  const currentDataRef = useRef(currentData);
+  const nextDataRef = useRef(nextData); 
   // const { roomid } = useParams(); // URL에서 songId 추출
+
+  // songDatas를 추적하기 위한 useEffect
+  useEffect(() => {
+    currentDataRef.current = currentData;
+    nextDataRef.current = nextData;
+  }, [currentData, nextData]);
 
   const handleTabClick = (view) => {
     setViewType(view);
@@ -26,10 +35,15 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
   const handlePlay = (e, song) => {
     e.stopPropagation();
 
-    // 예약된 곡 ID 추가 (임시임 일단)
+    // 예약된 곡 정보 추가 (섬네일 그리기 위해)
     setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달 + 방번호
-    socket.emit('playSong', {songId: song.id, roomId: roomid, getNow: true});
+    // nextData가 비었다는 것은 곡의 갯수가 1개 이하라는 뜻, 무조건 current먼저 채워짐.
+    if (nextDataRef.current === null) {
+      socket.emit('playSong', { songId: song.id, roomId: roomid, getNow: true });
+    } else {
+      socket.emit('playSong', { songId: song.id, roomId: roomid });
+    }
 
     onClose();
   };
