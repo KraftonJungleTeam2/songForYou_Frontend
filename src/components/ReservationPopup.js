@@ -1,6 +1,6 @@
 import React, { useState} from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, nextData}) => {
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, nextData, currentData}) => {
 
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +30,9 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
     setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달 + 방번호
     // nextData가 비었다는 것은 곡의 갯수가 1개 이하라는 뜻, 무조건 current먼저 채워짐.
+    // console.log(currentData);
+    // console.log(nextData);
+
     if (nextData === null) {
       socket.emit('playSong', { songId: song.id, roomId: roomid, getNow: true });
     } else {
