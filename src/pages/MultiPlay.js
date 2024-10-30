@@ -51,8 +51,7 @@ function MultiPlay() {
   //데이터 로딩되었는지 확인하는거
   const [pitchLoaded, setPitchLoaded] = useState(false);
   const [lyricsLoaded, setLyricsLoaded] = useState(false);
-  const [audioLoaded, setAudioLoaded] = useState(false);
-
+  
   const [mrDataBlob, setMrDataBlob] = useState(null);
   const [lyricsData, setLyricsData] = useState(null);
 
@@ -60,6 +59,16 @@ function MultiPlay() {
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
   const [currentData, setcurrentData] = useState(null); //현재곡 데이터를 담음
   const [nextData, setnextData] = useState(null);
+  // Data를 추적하기 위해 사용하는 Ref(참조)
+  // const currentDataRef = useRef(currentData);
+  // currentDataRef.current = currentData;
+  // const nextDataRef = useRef(nextData);
+  // nextDataRef.current = nextData; 
+
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  // const audioLoadedRef = useRef(audioLoaded);
+  // audioLoadedRef.current = audioLoaded;
+
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(true);
@@ -91,9 +100,7 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
 
-  // Data를 추적하기 위해 사용하는 Ref(참조)
-  const currentDataRef = useRef(currentData);
-  const nextDataRef = useRef(nextData); 
+ 
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -109,7 +116,7 @@ function MultiPlay() {
    // 섬네일 업데이트 로직 (미완)
     useEffect(() => {
       if (reservedSongs.length > 0) {
-        setcurrentData(reservedSongs[0]);
+        
       }
     }, [reservedSongs]);
 
@@ -139,9 +146,79 @@ function MultiPlay() {
 
     // songDatas를 추적하기 위한 useEffect
     useEffect(() => {
-      currentDataRef.current = currentData;
-      nextDataRef.current = nextData;
-    }, [currentData, nextData]);
+      // currentDataRef.current = currentData;
+    
+      if (currentData) {
+        loadData(currentData);
+      }
+    }, [currentData]);
+
+
+    // songDatas를 추적하기 위한 useEffect
+    // useEffect(() => {
+    //   // nextDataRef.current = nextData;
+    //   // audioLoadedRef.current = audioLoaded;
+    // }, [nextData, audioLoaded]);
+
+
+    // loadaudio 함수 정의
+    const loadData = async (data) => {
+      try {
+        // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
+        const fileUrl = data.mrUrl;
+        if (fileUrl) {
+          const fileResponse = await fetch(fileUrl);
+          const fileBlob = await fileResponse.blob();
+          setMrDataBlob(fileBlob);  // Blob 데이터 저장
+        } else {
+          console.error('Error: file URL not found in the response');
+        }
+
+        // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
+        const pitchArray = data.pitch;
+
+        console.log(data.mrUrl);
+        console.log(data.pitch);
+        console.log(data.lyrics);
+        if (Array.isArray(pitchArray)) {
+          try {
+            const processedPitchArray = doubleDataFrequency(pitchArray);
+
+            setEntireReferData(
+              processedPitchArray.map((pitch, index) => ({
+                time: index * 25,
+                pitch,
+              }))
+            );
+
+            setEntireGraphData(
+              processedPitchArray.map((_, index) => ({
+                time: index * 25,
+                pitch: null,
+              }))
+            );
+
+            setPitchLoaded(true);
+          } catch (error) {
+            console.error('Error processing pitch data:', error);
+            setPitchLoaded(true);
+          }
+        } else {
+          console.error('Error: Expected pitch data to be an array');
+          setPitchLoaded(true);
+        }
+
+        // 가사 데이터 업로드
+        setLyricsData(data.lyrics);
+        setLyricsLoaded(true);
+
+        // setcurrentData(nextDataRef.current);
+        setnextData(null);
+
+      } catch (error) {
+        console.error('Error handling data:', error);
+      }
+    };
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -329,17 +406,17 @@ function MultiPlay() {
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
     socketRef.current.on('playSong', (data) => {
       try{
-        if(currentDataRef.current === null){
-          setcurrentData(data);
-        }
-        else{
-          if(nextDataRef.current === null){
-            setnextData(data);
-          }
-          else{
-            console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ')
-          }
-        }
+        // if(currentDataRef.current === null){
+        //   setcurrentData(data);
+        // }
+        // else{
+        //   if(nextDataRef.current === null){
+        //     setnextData(data);
+        //   }
+        //   else{
+        //     console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ')
+        //   }
+        // }
 
 
       }
@@ -348,61 +425,6 @@ function MultiPlay() {
       }
     });
 
-    socketRef.current.on('playSong', async (data) => {
-      try {
-        // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
-        const fileUrl = data.mrUrl;
-        if (fileUrl) {
-          const fileResponse = await fetch(fileUrl);
-          const fileBlob = await fileResponse.blob();
-          setMrDataBlob(fileBlob);  // Blob 데이터 저장
-        } else {
-          console.error('Error: file URL not found in the response');
-        }
-        
-        // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
-        const pitchArray = data.pitch;
-
-        console.log(data.mrUrl);
-        console.log(data.pitch);
-        console.log(data.lyrics);
-        if (Array.isArray(pitchArray)) {
-          try {
-            // console.log(pitchArray);
-            const processedPitchArray = doubleDataFrequency(pitchArray);
-            
-            setEntireReferData(
-              processedPitchArray.map((pitch, index) => ({
-                time: index * 25,
-                pitch,
-              }))
-            );
-        
-            setEntireGraphData(
-              processedPitchArray.map((_, index) => ({
-                time: index * 25,
-                pitch: null,
-              }))
-            );
-        
-            setPitchLoaded(true);
-          } catch (error) {
-            console.error('Error processing pitch data:', error);
-            setPitchLoaded(true);
-          }
-        } else {
-          console.error('Error: Expected pitch data to be an array');
-          setPitchLoaded(true);
-        }
-         
-        // 가사 데이터 업로드
-        setLyricsData(data.lyrics);
-        setLyricsLoaded(true);
-        
-      } catch (error) {
-        console.error('Error handling data:', error);
-      }
-    });
 
     return () => {
       // Peer 연결 정리
@@ -737,7 +759,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextData.current}  />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists}  />
           )}
 
           {/* AudioPlayer 컴포넌트 */}
