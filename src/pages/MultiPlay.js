@@ -415,8 +415,8 @@ function MultiPlay() {
           roomId: roomId,
         });
         setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
-        targetStreamRef.current = localStreamRef.current;
       }
+      targetStreamRef.current = localStreamRef.current;
     }
     if (isPlaying) setAudioLatency(200);
   };
