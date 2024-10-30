@@ -35,6 +35,7 @@ const Play = () => {
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const containerRef = useRef(null);
+  const targetStreamRef = useRef(null);
 
   // 재생 제어
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,7 +53,7 @@ const Play = () => {
   playbackPositionRef.current = playbackPosition;
 
   const [userSeekPosition, setUserSeekPosition] = useState(0);
-  
+
   const [duration, setDuration] = useState(0);
   const [prevLyric, setPrevLyric] = useState(' ');
   const [currentLyric, setCurrentLyric] = useState(' ');
@@ -203,8 +204,21 @@ const Play = () => {
     setNextLyric(segments[curr_idx + 1]?.text || ' ');
   }, [playbackPosition, lyricsData]);
 
+  useEffect(() => {
+    async function setUpMediaStream() {
+      targetStreamRef.current =  await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false,
+        },
+      });
+    };
+    setUpMediaStream();
+  }, []);
+
   // Use the custom hook and pass necessary parameters
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
     <div className='single-page'>
