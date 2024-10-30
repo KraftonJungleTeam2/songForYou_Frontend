@@ -476,7 +476,7 @@ function MultiPlay() {
 
     // 서버에 시작 요청 보내기 임시임
     socketRef.current.emit('requestStartTimeWithDelay', {
-      roomId: roomId
+      roomId: roomId, getNow: true
     });
   };
 
