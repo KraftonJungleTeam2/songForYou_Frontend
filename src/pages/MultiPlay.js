@@ -542,18 +542,18 @@ function MultiPlay() {
             />
           </div>
 
-          {/* Seek Bar */}
+          {/* Seek Bar
           <div className='seek-bar-container' style={{marginTop :'75px'}}>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {duration.toFixed(0)} 초
             </div>
-          </div>
+          </div> */}
           
 
 
           {/* 현재 재생 중인 가사 출력 */}
-          <div className='karaoke-lyrics'>
+          <div className='karaoke-lyrics' style={{marginTop :'75px'}}>
             <p className='prev-lyrics'>{prevLyric}</p>
             <p className='curr-lyrics'>{currentLyric}</p>
             <p className='next-lyrics'>{nextLyric}</p>
@@ -579,7 +579,9 @@ function MultiPlay() {
               노래 올리기 or 예약하기
             </button>
 
-            <h3>networkLatency: {networkLatency}</h3>
+            {/* <h3>networkLatency: {networkLatency}</h3> */}
+
+
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className="remote-audios" style={{ display: 'none' }}>
@@ -598,14 +600,11 @@ function MultiPlay() {
             <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} />
           )}
 
-
-
-
           {/* AudioPlayer 컴포넌트 */}
           <AudioPlayer
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
-            userSeekPosition={userSeekPosition}
+            userSeekPosition={playbackPosition}
             audioBlob={mrDataBlob}
             setAudioLoaded={setAudioLoaded}
             setDuration={setDuration}
