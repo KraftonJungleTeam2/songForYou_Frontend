@@ -35,10 +35,12 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-  const [isSocketOpen, setIsSocketOpen] = useState(false);
-  const [userSeekPosition, setUserSeekPosition] = useState(0);
+  // 가사 렌더링 하는 state
+  const [prevLyric, setPrevLyric] = useState(' ');
+  const [currentLyric, setCurrentLyric] = useState(' ');
+  const [nextLyric, setNextLyric] = useState(' ');
+
   const [duration, setDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
@@ -78,7 +80,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
 
-  const [dataPointCount, setDataPointCount] = useState(200);
+  const [dataPointCount, setDataPointCount] = useState(50);
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
@@ -97,10 +99,36 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-  // songContext에서 노래 정보를 불러옴
-  useEffect(() => {
+   // 섬네일 업데이트 로직 (미완)
+   useEffect(() => {
+    if (reservedSongs.length > 0) {
+      setcurrentData(reservedSongs[0]);
+    }
+  }, [reservedSongs]);
+
+   // songContext에서 노래 정보를 불러옴
+   useEffect(() => {
     fetchSongLists();
   }, [fetchSongLists]);
+
+    // 재생 위치에 따라 가사 업데이트
+    useEffect(() => {
+      let curr_idx = -1;
+      let segments = [];
+      if (lyricsData && lyricsData.segments) {
+        segments = lyricsData.segments;
+        for (let i = 0; i < segments.length; i++) {
+          if (playbackPosition >= segments[i].start) {
+            curr_idx = i;
+          } else if (curr_idx >= 0) {
+            break;
+          }
+        }
+      }
+      setPrevLyric(segments[curr_idx - 1]?.text || ' ');
+      setCurrentLyric(segments[curr_idx]?.text || ' ');
+      setNextLyric(segments[curr_idx + 1]?.text || ' ');
+    }, [playbackPosition, lyricsData]);
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -163,7 +191,6 @@ function MultiPlay() {
 
     socketRef.current.on('connect', async () => {
       console.log('웹소켓 연결 성공');
-      setIsSocketOpen(true);
       await getLocalStream();
       const token = sessionStorage.getItem('userToken');
 
@@ -296,57 +323,52 @@ function MultiPlay() {
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
-          console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
-          setMrDataBlob(fileBlob); // Blob 데이터 저장
+          setMrDataBlob(fileBlob);  // Blob 데이터 저장
         } else {
           console.error('Error: file URL not found in the response');
         }
+        
+        // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
+        const pitchArray = data.pitch;
 
-        const pitchString = data.pitch;
-        if (typeof pitchString === 'string') {
+        console.log(data.mrUrl);
+        console.log(data.pitch);
+        console.log(data.lyrics);
+        if (Array.isArray(pitchArray)) {
           try {
-            const pitchArray = JSON.parse(pitchString);
+            // console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
+            
             setEntireReferData(
               processedPitchArray.map((pitch, index) => ({
                 time: index * 25,
                 pitch,
               }))
             );
-
+        
             setEntireGraphData(
               processedPitchArray.map((_, index) => ({
                 time: index * 25,
                 pitch: null,
               }))
             );
-
+        
             setPitchLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing pitch data:', parseError);
+          } catch (error) {
+            console.error('Error processing pitch data:', error);
             setPitchLoaded(true);
           }
         } else {
-          console.warn('Warning: pitch data not found or invalid in the response');
+          console.error('Error: Expected pitch data to be an array');
           setPitchLoaded(true);
         }
-
-        const lyricsString = data.lyrics;
-        if (typeof lyricsString === 'string') {
-          try {
-            const lyrics = JSON.parse(lyricsString);
-            setLyricsData(lyrics);
-            setLyricsLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing lyrics data:', parseError);
-            setLyricsLoaded(true);
-          }
-        } else {
-          console.warn('Warning: lyrics data not found or invalid in the response');
-          setLyricsLoaded(true);
-        }
+         
+        // 가사 데이터 업로드
+        setLyricsData(data.lyrics);
+        setLyricsLoaded(true);
+        
       } catch (error) {
         console.error('Error handling data:', error);
       }
@@ -632,17 +654,25 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+              // songState={currentData}
             />
           </div>
 
           {/* Seek Bar */}
-          <div className='seek-bar-container'>
+          {/* <div className='seek-bar-container'>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
+          </div> */}
+          
+            {/* 현재 재생 중인 가사 출력 */}
+            <div className='karaoke-lyrics' style={{marginTop :'75px'}}>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
           </div>
+
 
           <div className='button-area'>
             {/* 시작 버튼 */}
@@ -678,7 +708,7 @@ function MultiPlay() {
           )}
 
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
         </div>
       </div>
     </div>
