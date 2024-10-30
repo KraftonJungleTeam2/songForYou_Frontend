@@ -6,10 +6,8 @@ import AudioPlayer from '../components/SyncAudioPlayer';
 // import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
-import ReservationPopup from '../components/ReservationPopup'
-import {useSongs} from '../Context/SongContext';
-
-
+import ReservationPopup from '../components/ReservationPopup';
+import { useSongs } from '../Context/SongContext';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -28,7 +26,6 @@ function doubleDataFrequency(dataArray) {
 
   return doubledData;
 }
-
 
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
@@ -96,109 +93,137 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-
-   // songContext에서 노래 정보를 불러옴
-   useEffect(() => {
+  // songContext에서 노래 정보를 불러옴
+  useEffect(() => {
     fetchSongLists();
   }, [fetchSongLists]);
 
-
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  // player 추가하기
+  const addPlayer = (name) => {
+    const newPlayer = {
+      id: crypto.randomUUID(),
+      name: name,
+    };
+
+    setPlayers((prevPlayers) => {
+      const index = prevPlayers.findIndex((player) => player === null);
+      if (index === -1) return prevPlayers; // 빈자리가 없으면 그대로 반환
+
+      const newPlayers = [...prevPlayers];
+      newPlayers[index] = newPlayer;
+      return newPlayers;
+    });
+  };
 
   // 마이크 스트림 획득
   const getLocalStream = async () => {
     try {
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
-            audio: true,
-            // audio: {
-            //   autoGainControl: false, // 자동 게인 제어
-            //   echoCancellation: false,  // 에코 제거
-            //   noiseSuppression: false,   // 노이즈 억제
-            //   voiceIsolation: false,
-            //   }, 
-            video: false 
-        });
-        const audioElement = document.getElementById('localAudio');
-        if (audioElement) {
-            audioElement.srcObject = localStreamRef.current;
-        }
+      localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        // audio: {
+        //   autoGainControl: false, // 자동 게인 제어
+        //   echoCancellation: false,  // 에코 제거
+        //   noiseSuppression: false,   // 노이즈 억제
+        //   voiceIsolation: false,
+        //   },
+        video: false,
+      });
+      const audioElement = document.getElementById('localAudio');
+      if (audioElement) {
+        audioElement.srcObject = localStreamRef.current;
+      }
     } catch (error) {
-        console.error('마이크 스트림 오류:', error);
+      console.error('마이크 스트림 오류:', error);
     }
   };
-  
-    // WebSocket 연결 설정
-    useEffect(() => {
-      socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
-          path: '/wss',
-          auth: {
-              token: sessionStorage.getItem('userToken')
-          }
+
+  // WebSocket 연결 설정
+  useEffect(() => {
+    socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
+      path: '/wss',
+      auth: {
+        token: sessionStorage.getItem('userToken'),
+      },
+    });
+
+    socketRef.current.on('connect', async () => {
+      console.log('웹소켓 연결 성공');
+      setIsSocketOpen(true);
+      await getLocalStream();
+      const nickname = 'asd';
+      await socketRef.current.emit('joinRoom', {
+        roomId: roomId,
+        nickname: nickname,
       });
+      // 연결되면 바로 서버시간 측정
+      timeDiffSamplesRef.current = []; // 초기화
+      sendPing(); // 첫 번째 ping 전송
+    });
 
-      socketRef.current.on('connect', async () => {
-          console.log('웹소켓 연결 성공');
-          setIsSocketOpen(true);
-          await getLocalStream();
-          socketRef.current.emit('joinRoom', {
-              roomId: roomId,
-              nickname: 'nickname',
-          });
-          
-          // 연결되면 바로 서버시간 측정
-          timeDiffSamplesRef.current = []; // 초기화
-          sendPing(); // 첫 번째 ping 전송
+    // Room 이벤트 핸들러
+    socketRef.current.on('joinedRoom', ({ roomId, roomInfo, userId }) => {
+      console.log('방 입장 성공:', roomInfo.users);
+      console.log('userId', userId);
+      const users = roomInfo.users;
+      users.forEach((user) => {
+        //일단 배열에 추가 하고 나서. 이건 내 peer connection 넣을 수 있게,
+        if (user.id !== userId) {
+            //유저 아이디가 다르다면 
+        }
       });
+    });
 
-      // Room 이벤트 핸들러
-      socketRef.current.on('joinedRoom', ({ roomId, roomInfo }) => {
-          console.log('방 입장 성공:', roomInfo);
+    //다른 유저 처음 입장하면 알려줌
+    socketRef.current.on('userJoined', ({ user, roomInfo }) => {
+      console.log('방 입장 성공:', roomInfo);
+    });
+
+    // Peer Connection 초기화
+    socketRef.current.on('initPeerConnection', async (existingUsers) => {
+      existingUsers.forEach(async (user) => {
+        const peerConnection = await createPeerConnection(user.id);
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        socketRef.current.emit('offer', {
+          targetId: user.id,
+          offer: offer,
+        });
       });
+    });
 
-      // Peer Connection 초기화
-      socketRef.current.on('initPeerConnection', async (existingUsers) => {
-          existingUsers.forEach(async (user) => {
-              const peerConnection = await createPeerConnection(user.id);
-              
-              const offer = await peerConnection.createOffer();
-              await peerConnection.setLocalDescription(offer);
+    // Offer 처리
+    socketRef.current.on('offer', async ({ offer, callerId }) => {
+      const peerConnection = await createPeerConnection(callerId);
+      await peerConnection.setRemoteDescription(offer);
 
-              socketRef.current.emit('offer', {
-                  targetId: user.id,
-                  offer: offer,
-              });
-          });
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
+      socketRef.current.emit('answer', {
+        targetId: callerId,
+        answer: answer,
       });
+    });
 
-      // Offer 처리
-      socketRef.current.on('offer', async ({ offer, callerId }) => {
-          const peerConnection = await createPeerConnection(callerId);
-          await peerConnection.setRemoteDescription(offer);
+    // Answer 처리
+    socketRef.current.on('answer', async ({ answer, callerId }) => {
+      const peerConnection = peerConnectionsRef.current[callerId];
+      if (peerConnection) {
+        await peerConnection.setRemoteDescription(answer);
+      }
+    });
 
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-
-          socketRef.current.emit('answer', {
-              targetId: callerId,
-              answer: answer,
-          });
-      });
-
-      // Answer 처리
-      socketRef.current.on('answer', async ({ answer, callerId }) => {
-          const peerConnection = peerConnectionsRef.current[callerId];
-          if (peerConnection) {
-              await peerConnection.setRemoteDescription(answer);
-          }
-      });
-
-      // ICE candidate 처리
-      socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
-          const peerConnection = peerConnectionsRef.current[callerId];
-          if (peerConnection) {
-              await peerConnection.addIceCandidate(candidate);
-          }
-      });
+    // ICE candidate 처리
+    socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
+      const peerConnection = peerConnectionsRef.current[callerId];
+      if (peerConnection) {
+        await peerConnection.addIceCandidate(candidate);
+      }
+    });
 
     // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
     socketRef.current.on('pingResponse', (data) => {
@@ -215,22 +240,21 @@ function MultiPlay() {
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
-    })
+    });
 
     socketRef.current.on('playSong', async (data) => {
       try {
-        
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
           console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
-          setMrDataBlob(fileBlob);  // Blob 데이터 저장
+          setMrDataBlob(fileBlob); // Blob 데이터 저장
         } else {
           console.error('Error: file URL not found in the response');
         }
-    
+
         const pitchString = data.pitch;
         if (typeof pitchString === 'string') {
           try {
@@ -242,14 +266,14 @@ function MultiPlay() {
                 pitch,
               }))
             );
-    
+
             setEntireGraphData(
               processedPitchArray.map((_, index) => ({
                 time: index * 25,
                 pitch: null,
               }))
             );
-    
+
             setPitchLoaded(true);
           } catch (parseError) {
             console.error('Error parsing pitch data:', parseError);
@@ -259,7 +283,7 @@ function MultiPlay() {
           console.warn('Warning: pitch data not found or invalid in the response');
           setPitchLoaded(true);
         }
-    
+
         const lyricsString = data.lyrics;
         if (typeof lyricsString === 'string') {
           try {
@@ -279,103 +303,97 @@ function MultiPlay() {
       }
     });
 
-
-
-      return () => {
-        // Peer 연결 정리
-          Object.values(peerConnectionsRef.current).forEach(connection => {
-              connection.close();
-          });
-          
-          if (socketRef.current?.connected) {
-              socketRef.current.disconnect();
-          }
-
-          if (socketRef.current) {
-            socketRef.current.close();
-          }
-          
-          // 스트림 정리
-          if (localStreamRef.current) {
-              localStreamRef.current.getTracks().forEach(track => track.stop());
-          }
-        
-      };
-  }, []);
-
-    // Peer Connection 생성 함수
-    const createPeerConnection = async (userId) => {
-      const peerConnection = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    return () => {
+      // Peer 연결 정리
+      Object.values(peerConnectionsRef.current).forEach((connection) => {
+        connection.close();
       });
 
-      peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-              socketRef.current.emit('ice-candidate', {
-                  candidate: event.candidate,
-                  targetId: userId,
-              });
-          }
-      };
+      if (socketRef.current?.connected) {
+        socketRef.current.disconnect();
+      }
 
-      peerConnection.ontrack = (event) => {
-          setConnectedUsers(prev => {
-              if (!prev.includes(userId)) {
-                  return [...prev, userId];
-              }
-              return prev;
-          });
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
 
-          setTimeout(() => {
-              const audioElement = document.getElementById(`remoteAudio_${userId}`);
-              if (audioElement && event.streams[0]) {
-                  audioElement.srcObject = event.streams[0];
-              }
-          }, 100);
-      };
-
-      // 로컬 스트림 추가
+      // 스트림 정리
       if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => {
-              peerConnection.addTrack(track, localStreamRef.current);
-          });
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
       }
-
-      peerConnectionsRef.current[userId] = peerConnection;
-      return peerConnection;
     };
-    
-    useEffect( ()=> {
-      // 지연 시간 측정 함수
-      async function measureLatency() {
-        let sqrtRTTs = 0;
-        let nUsers = 0;
-  
-        for (let key in peerConnectionsRef.current) {
-          const peerConnection = peerConnectionsRef.current[key];
-          const stats = await peerConnection.getStats();
-  
-          stats.forEach((report) => {
-            if (report.type === "candidate-pair" && report.state === "succeeded") {
-              const rtt = report.currentRoundTripTime;
-              sqrtRTTs += Math.sqrt(rtt*1000);
-              nUsers += 1;
-              console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
-            }
-          });
-        }
-        if (nUsers) {
-          const smre = (sqrtRTTs/nUsers) ** 2;
-          console.log(`set network latency as: ${networkLatency*0.9 + smre*0.1}`)
-          setNetworkLatency(networkLatency*0.9 + smre*0.1);
-        }
+  }, []);
+
+  // Peer Connection 생성 함수
+  const createPeerConnection = async (userId) => {
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socketRef.current.emit('ice-candidate', {
+          candidate: event.candidate,
+          targetId: userId,
+        });
       }
-      setInterval(measureLatency, 1000);
+    };
 
-    }, []);
-    
+    peerConnection.ontrack = (event) => {
+      setConnectedUsers((prev) => {
+        if (!prev.includes(userId)) {
+          return [...prev, userId];
+        }
+        return prev;
+      });
 
-  
+      setTimeout(() => {
+        const audioElement = document.getElementById(`remoteAudio_${userId}`);
+        if (audioElement && event.streams[0]) {
+          audioElement.srcObject = event.streams[0];
+        }
+      }, 100);
+    };
+
+    // 로컬 스트림 추가
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStreamRef.current);
+      });
+    }
+
+    peerConnectionsRef.current[userId] = peerConnection;
+    return peerConnection;
+  };
+
+  useEffect(() => {
+    // 지연 시간 측정 함수
+    async function measureLatency() {
+      let sqrtRTTs = 0;
+      let nUsers = 0;
+
+      for (let key in peerConnectionsRef.current) {
+        const peerConnection = peerConnectionsRef.current[key];
+        const stats = await peerConnection.getStats();
+
+        stats.forEach((report) => {
+          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+            const rtt = report.currentRoundTripTime;
+            sqrtRTTs += Math.sqrt(rtt * 1000);
+            nUsers += 1;
+            console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
+          }
+        });
+      }
+      if (nUsers) {
+        const smre = (sqrtRTTs / nUsers) ** 2;
+        console.log(`set network latency as: ${networkLatency * 0.9 + smre * 0.1}`);
+        setNetworkLatency(networkLatency * 0.9 + smre * 0.1);
+      }
+    }
+    setInterval(measureLatency, 1000);
+  }, []);
+
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
@@ -401,7 +419,7 @@ function MultiPlay() {
     setUserSeekPosition(newPosition);
     setPlaybackPosition(newPosition);
   };
-  
+
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
     const sendTime = Date.now();
@@ -442,39 +460,37 @@ function MultiPlay() {
 
     // 서버에 시작 요청 보내기 임시임
     socketRef.current.emit('requestStartTimeWithDelay', {
-      roomId: roomId
+      roomId: roomId,
     });
   };
-
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   const OnPopup = () => {
     setshowPopup(true);
-  }
+  };
 
   const closePopup = () => {
     setshowPopup(false);
-  }
+  };
 
   const micOn = () => {
     if (isMicOn) return;
     setIsMicOn(true);
 
-    if (isPlaying)
-      setAudioLatency(200);
-  }
+    if (isPlaying) setAudioLatency(200);
+  };
+
   const micOff = () => {
     if (!isMicOn) return;
     setIsMicOn(false);
 
-    if (isPlaying)
-      setAudioLatency(0);
-  }
+    if (isPlaying) setAudioLatency(0);
+  };
 
   useEffect(() => {
     if (isMicOn) {
-      setLatencyOffset(-audioLatency-networkLatency-optionLatency);
+      setLatencyOffset(-audioLatency - networkLatency - optionLatency);
     } else {
       setLatencyOffset(0);
     }
@@ -483,7 +499,6 @@ function MultiPlay() {
   return (
     <div className='multiPlay-page'>
       <TopBar className='top-bar' />
-      
       <div className='multi-content'>
         <div className='players-chat'>
           <div className='players'>
@@ -564,39 +579,18 @@ function MultiPlay() {
             <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
-            <div className="remote-audios" style={{ display: 'none' }}>
-                {connectedUsers.map(userId => (
-                    <audio
-                        key={userId}
-                        id={`remoteAudio_${userId}`}
-                        autoPlay
-                    />
-                ))}
+            <div className='remote-audios' style={{ display: 'none' }}>
+              {connectedUsers.map((userId) => (
+                <audio key={userId} id={`remoteAudio_${userId}`} autoPlay />
+              ))}
             </div>
           </div>
 
           {/* 조건부 렌더링 부분 popup */}
-          {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} />
-          )}
-
-
-
+          {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} />}
 
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer
-            isPlaying={isPlaying}
-            setIsPlaying={setIsPlaying}
-            userSeekPosition={userSeekPosition}
-            audioBlob={mrDataBlob}
-            setAudioLoaded={setAudioLoaded}
-            setDuration={setDuration}
-            onPlaybackPositionChange={handlePlaybackPositionChange}
-            starttime={starttime}
-            setStarttime={setStarttime}
-            setIsWaiting={setIsWaiting}
-            setIsMicOn={setIsMicOn}
-            latencyOffset={latencyOffset} />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={handlePlaybackPositionChange} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
         </div>
       </div>
     </div>
