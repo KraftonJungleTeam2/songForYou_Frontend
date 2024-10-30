@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { songlists, useSongs } from '../Context/SongContext';
-import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import React, { useState } from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs}) => {
-  const { songLists, fetchSongLists } = useSongs();
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists}) => {
+
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
   // const { roomid } = useParams(); // URL에서 songId 추출
-
-  // songContext에서 노래 정보를 불러옴
-  useEffect(() => {
-    fetchSongLists();
-  }, [fetchSongLists]);
 
   const handleTabClick = (view) => {
     setViewType(view);
