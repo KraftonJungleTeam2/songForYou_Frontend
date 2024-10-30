@@ -96,6 +96,7 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const pingTimesRef = useRef([]);
+  const [useCorrection, setUseCorrection] = useState(false);
 
   const targetStreamRef = useRef(null);
 
@@ -434,10 +435,7 @@ function MultiPlay() {
         socketRef.current.close();
       }
 
-      //   // 스트림 정리
-      //   if (localStreamRef.current) {
-      //     localStreamRef.current.getTracks().forEach((track) => track.stop());
-      //   }
+
     };
   }, []);
 
@@ -451,6 +449,7 @@ function MultiPlay() {
 
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
+        console.log('reachere??');
         audioTrack.enabled = true;
 
         // peer connections 업데이트
@@ -518,37 +517,44 @@ function MultiPlay() {
         if (audioElement && event.streams[0]) {
           audioElement.srcObject = event.streams[0];
         }
+        peerConnection.addEventListener('connectionstatechange', event => {
+          console.log('Connection State:', peerConnection.connectionState);
+        });
+
+        peerConnection.addEventListener('iceconnectionstatechange', event => {
+          console.log('ICE Connection State:', peerConnection.iceConnectionState);
+        });
       }, 100);
 
-      if (event.track.kind === 'audio') {
-        const audioReceiver = event.receiver;
+      // if (event.track.kind === 'audio') {
+      //   const audioReceiver = event.receiver;
 
-        // 오디오 레벨 체크 함수
-        const checkAudioLevel = async () => {
-          try {
-            const sources = await audioReceiver.getSynchronizationSources();
-            if (sources && sources.length > 0) {
-              const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
+      //   // 오디오 레벨 체크 함수
+      //   const checkAudioLevel = async () => {
+      //     try {
+      //       const sources = await audioReceiver.getSynchronizationSources();
+      //       if (sources && sources.length > 0) {
+      //         const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
 
-              if (audioLevel > 0.01) {
-                // 임계값은 조정 가능
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
-              } else {
-                // 음성이 없거나 매우 낮을 때
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
-              }
-            }
-          } catch (error) {
-            console.error('Audio level check failed:', error);
-          }
-        };
+      //         if (audioLevel > 0.01) {
+      //           // 임계값은 조정 가능
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
+      //         } else {
+      //           // 음성이 없거나 매우 낮을 때
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
+      //         }
+      //       }
+      //     } catch (error) {
+      //       console.error('Audio level check failed:', error);
+      //     }
+      //   };
 
-        // 주기적으로 체크 (100ms)
-        const intervalId = setInterval(checkAudioLevel, 100);
+      //   // 주기적으로 체크 (100ms)
+      //   const intervalId = setInterval(checkAudioLevel, 100);
 
-        // 컴포넌트 언마운트 시 정리
-        return () => clearInterval(intervalId);
-      }
+      //   // 컴포넌트 언마운트 시 정리
+      //   return () => clearInterval(intervalId);
+      // }
     };
     // 로컬 스트림 추가
     if (localStreamRef.current) {
@@ -561,48 +567,35 @@ function MultiPlay() {
     return peerConnection;
   };
 
-  //   useEffect(() => {
-  //     // 지연 시간 측정 함수
-  //     async function measureLatency() {
-  //       let sqrtRTTs = 0;
-  //       let nUsers = 0;
+  useEffect(() => {
+    // 지연 시간 측정 함수
+    async function measureLatency() {
+      let sqrtRTTs = 0;
+      let nUsers = 0;
 
-  //       for (let key in peerConnectionsRef.current) {
-  //         const peerConnection = peerConnectionsRef.current[key];
-  //         const stats = await peerConnection.getStats();
+      for (let key in peerConnectionsRef.current) {
+        const peerConnection = peerConnectionsRef.current[key];
+        const stats = await peerConnection.getStats();
 
-  //         stats.forEach((report) => {
-  //           if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-  //             const rtt = report.currentRoundTripTime;
-  //             sqrtRTTs += Math.sqrt(rtt * 1000);
-  //             nUsers += 1;
-  //             console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
-  //           }
-  //         });
-  //       }
-  //       if (nUsers) {
-  //         const smre = (sqrtRTTs / nUsers) ** 2;
-  //         setNetworkLatency((networkLatency) => {
-  //           // 점진적인 오차 반영
-  //           const newL = networkLatency * 0.8 + smre * 0.2;
-  //           if (networkLatency - newL > 40 || networkLatency - newL < -40) {
-  //             // 차이가 40이상 나거나
-  //             return newL;
-  //           } else if (networkLatency > 30 && (networkLatency / newL > 2 || networkLatency / newL < 0.5)) {
-  //             // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
-  //             return newL;
-  //           } else {
-  //             return networkLatency;
-  //           }
-  //         });
-  //       }
-  //     }
-  //     const interval = setInterval(measureLatency, 1000);
+        stats.forEach((report) => {
+          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+            const rtt = report.currentRoundTripTime;
+            sqrtRTTs += Math.sqrt(rtt * 1000);
+            nUsers += 1;
+            console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
+          }
+        });
+      }
+      if (nUsers) {
+        const smre = (sqrtRTTs / nUsers) ** 2;
+        setNetworkLatency(networkLatency * 0.8 + smre * 0.2);
+      }
+    }
+    const interval = setInterval(measureLatency, 1000);
 
-  //     return () => clearInterval(interval);
-  //   }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -667,6 +660,7 @@ function MultiPlay() {
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+
   const OnPopup = () => {
     setshowPopup(true);
   };
@@ -676,12 +670,12 @@ function MultiPlay() {
   };
 
   useEffect(() => {
-    if (isMicOn) {
+    if (isMicOn && useCorrection) {
       setLatencyOffset(-audioLatency - networkLatency - optionLatency);
     } else {
       setLatencyOffset(0);
     }
-  }, [audioLatency, networkLatency, optionLatency, isMicOn]);
+  }, [audioLatency, networkLatency, optionLatency, isMicOn, useCorrection]);
 
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
@@ -789,6 +783,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               시작하기 or 예약하기
             </button>
+            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection ? '보정끄기' : '보정켜기'}</button>
             <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
