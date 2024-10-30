@@ -304,59 +304,41 @@ function MultiPlay() {
         const pitchString = data.pitch;
         if (typeof pitchString === 'string') {
           try {
-            // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
-            const fileUrl = data.mrUrl;
-            if (fileUrl) {
-              const fileResponse = await fetch(fileUrl);
-              const fileBlob = await fileResponse.blob();
-              setMrDataBlob(fileBlob);  // Blob 데이터 저장
-            } else {
-              console.error('Error: file URL not found in the response');
-            }
+            // console.log(pitchArray);
+            const processedPitchArray = doubleDataFrequency(pitchArray);
             
-            // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
-            const pitchArray = data.pitch;
-    
-            console.log(data.mrUrl);
-            console.log(data.pitch);
-            console.log(data.lyrics);
-            if (Array.isArray(pitchArray)) {
-              try {
-                // console.log(pitchArray);
-                const processedPitchArray = doubleDataFrequency(pitchArray);
-                
-                setEntireReferData(
-                  processedPitchArray.map((pitch, index) => ({
-                    time: index * 25,
-                    pitch,
-                  }))
-                );
-            
-                setEntireGraphData(
-                  processedPitchArray.map((_, index) => ({
-                    time: index * 25,
-                    pitch: null,
-                  }))
-                );
-            
-                setPitchLoaded(true);
-              } catch (error) {
-                console.error('Error processing pitch data:', error);
-                setPitchLoaded(true);
-              }
-            } else {
-              console.error('Error: Expected pitch data to be an array');
-              setPitchLoaded(true);
-            }
-             
-            // 가사 데이터 업로드
-            setLyricsData(data.lyrics);
-            setLyricsLoaded(true);
-            
+            setEntireReferData(
+              processedPitchArray.map((pitch, index) => ({
+                time: index * 25,
+                pitch,
+              }))
+            );
+        
+            setEntireGraphData(
+              processedPitchArray.map((_, index) => ({
+                time: index * 25,
+                pitch: null,
+              }))
+            );
+        
+            setPitchLoaded(true);
           } catch (error) {
-            console.error('Error handling data:', error);
+            console.error('Error processing pitch data:', error);
+            setPitchLoaded(true);
           }
-        });
+        } else {
+          console.error('Error: Expected pitch data to be an array');
+          setPitchLoaded(true);
+        }
+         
+        // 가사 데이터 업로드
+        setLyricsData(data.lyrics);
+        setLyricsLoaded(true);
+        
+      } catch (error) {
+        console.error('Error handling data:', error);
+      }
+    });
 
     return () => {
       // Peer 연결 정리
