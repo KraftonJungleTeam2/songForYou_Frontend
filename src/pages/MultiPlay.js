@@ -366,12 +366,24 @@ function MultiPlay() {
         }
         if (nUsers) {
           const smre = (sqrtRTTs/nUsers) ** 2;
-          console.log(`set network latency as: ${networkLatency*0.9 + smre*0.1}`)
-          setNetworkLatency(networkLatency*0.9 + smre*0.1);
+          setNetworkLatency((networkLatency) => {
+            // 점진적인 오차 반영
+            const newL = networkLatency*0.8 + smre*0.2;
+            if (networkLatency - newL > 40 || networkLatency - newL < -40) {
+              // 차이가 40이상 나거나
+              return newL;
+            } else if (networkLatency > 30 && (networkLatency/newL > 2 || networkLatency/newL < 0.5)) {
+              // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
+              return newL;
+            } else {
+              return networkLatency;
+            }
+          });
         }
       }
-      setInterval(measureLatency, 1000);
+      const interval = setInterval(measureLatency, 1000);
 
+      return () => clearInterval(interval);
     }, []);
     
 
