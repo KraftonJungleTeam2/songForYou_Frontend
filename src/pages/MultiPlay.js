@@ -35,10 +35,8 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-  const [isSocketOpen, setIsSocketOpen] = useState(false);
-  const [userSeekPosition, setUserSeekPosition] = useState(0);
+
   const [duration, setDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
@@ -163,7 +161,6 @@ function MultiPlay() {
 
     socketRef.current.on('connect', async () => {
       console.log('웹소켓 연결 성공');
-      setIsSocketOpen(true);
       await getLocalStream();
       const token = sessionStorage.getItem('userToken');
 
@@ -307,50 +304,59 @@ function MultiPlay() {
         const pitchString = data.pitch;
         if (typeof pitchString === 'string') {
           try {
-            const pitchArray = JSON.parse(pitchString);
-            const processedPitchArray = doubleDataFrequency(pitchArray);
-            setEntireReferData(
-              processedPitchArray.map((pitch, index) => ({
-                time: index * 25,
-                pitch,
-              }))
-            );
-
-            setEntireGraphData(
-              processedPitchArray.map((_, index) => ({
-                time: index * 25,
-                pitch: null,
-              }))
-            );
-
-            setPitchLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing pitch data:', parseError);
-            setPitchLoaded(true);
-          }
-        } else {
-          console.warn('Warning: pitch data not found or invalid in the response');
-          setPitchLoaded(true);
-        }
-
-        const lyricsString = data.lyrics;
-        if (typeof lyricsString === 'string') {
-          try {
-            const lyrics = JSON.parse(lyricsString);
-            setLyricsData(lyrics);
+            // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
+            const fileUrl = data.mrUrl;
+            if (fileUrl) {
+              const fileResponse = await fetch(fileUrl);
+              const fileBlob = await fileResponse.blob();
+              setMrDataBlob(fileBlob);  // Blob 데이터 저장
+            } else {
+              console.error('Error: file URL not found in the response');
+            }
+            
+            // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
+            const pitchArray = data.pitch;
+    
+            console.log(data.mrUrl);
+            console.log(data.pitch);
+            console.log(data.lyrics);
+            if (Array.isArray(pitchArray)) {
+              try {
+                // console.log(pitchArray);
+                const processedPitchArray = doubleDataFrequency(pitchArray);
+                
+                setEntireReferData(
+                  processedPitchArray.map((pitch, index) => ({
+                    time: index * 25,
+                    pitch,
+                  }))
+                );
+            
+                setEntireGraphData(
+                  processedPitchArray.map((_, index) => ({
+                    time: index * 25,
+                    pitch: null,
+                  }))
+                );
+            
+                setPitchLoaded(true);
+              } catch (error) {
+                console.error('Error processing pitch data:', error);
+                setPitchLoaded(true);
+              }
+            } else {
+              console.error('Error: Expected pitch data to be an array');
+              setPitchLoaded(true);
+            }
+             
+            // 가사 데이터 업로드
+            setLyricsData(data.lyrics);
             setLyricsLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing lyrics data:', parseError);
-            setLyricsLoaded(true);
+            
+          } catch (error) {
+            console.error('Error handling data:', error);
           }
-        } else {
-          console.warn('Warning: lyrics data not found or invalid in the response');
-          setLyricsLoaded(true);
-        }
-      } catch (error) {
-        console.error('Error handling data:', error);
-      }
-    });
+        });
 
     return () => {
       // Peer 연결 정리
@@ -678,7 +684,7 @@ function MultiPlay() {
           )}
 
           {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} userSeekPosition={userSeekPosition} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
+          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
         </div>
       </div>
     </div>
