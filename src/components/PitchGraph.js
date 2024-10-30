@@ -15,7 +15,7 @@ const PitchGraph = ({
   realtimeData,
   referenceData,
   dataPointCount = 200,
-  currentTimeIndex, // 변경된 prop
+  currentTimeIndex, 
   songState,
 }) => {
   const backgroundCanvasRef = useRef(null);
