@@ -18,7 +18,7 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
     e.stopPropagation();
 
     // 예약된 곡 ID 추가
-    setReservedSongs((prev) => [...prev, song.id]);
+    setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달
     socket.emit('reserveSong', {songId: song.id});
   };
@@ -27,9 +27,9 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
     e.stopPropagation();
 
     // 예약된 곡 ID 추가 (임시임 일단)
-    setReservedSongs((prev) => [...prev, song.id]);
+    setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달 + 방번호
-    socket.emit('playSong', {songId: song.id, roomId: roomid});
+    socket.emit('playSong', {songId: song.id, roomId: roomid, getNow: true});
 
     onClose();
   };

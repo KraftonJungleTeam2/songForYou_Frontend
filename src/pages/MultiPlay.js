@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
+import { usePitchDetection } from '../components/usePitchDetection';
+
 // import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
@@ -35,11 +37,13 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-  const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
+  // const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const playbackPositionRef = useRef(playbackPosition);
+  playbackPositionRef.current = playbackPosition;
+
   const [connectedUsers, setConnectedUsers] = useState([]);
 
   //데이터 로딩되었는지 확인하는거
@@ -62,7 +66,9 @@ function MultiPlay() {
   const [starttime, setStarttime] = useState();
   const [isMicOn, setIsMicOn] = useState(true);
   const { roomId } = useParams(); // URL에서 songId 추출
-  const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
+  
+  // 예약 팝업 띄우는 state
+  const [showPopup, setshowPopup] = useState(false); 
 
   //웹소켓 부분
   const timeDiffSamplesRef = useRef([]); // 지연 시간 측정을 위한 배열
@@ -74,8 +80,8 @@ function MultiPlay() {
   // 서버에서 데이터 로딩 후 배열 생성
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
-
-  const [dataPointCount, setDataPointCount] = useState(200);
+  // 그려지는 속도 (음악 속도 X 아님)
+  const [dataPointCount, setDataPointCount] = useState(100);
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
@@ -288,7 +294,6 @@ function MultiPlay() {
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
-          console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
           setMrDataBlob(fileBlob); // Blob 데이터 저장
@@ -299,8 +304,9 @@ function MultiPlay() {
         const pitchString = data.pitch;
         if (typeof pitchString === 'string') {
           try {
-            const pitchArray = JSON.parse(pitchString);
+            // console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
+            
             setEntireReferData(
               processedPitchArray.map((pitch, index) => ({
                 time: index * 25,
@@ -316,12 +322,12 @@ function MultiPlay() {
             );
 
             setPitchLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing pitch data:', parseError);
+          } catch (error) {
+            console.error('Error processing pitch data:', error);
             setPitchLoaded(true);
           }
         } else {
-          console.warn('Warning: pitch data not found or invalid in the response');
+          console.error('Error: Expected pitch data to be an array');
           setPitchLoaded(true);
         }
 
@@ -578,6 +584,10 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
+
+  // Use the custom hook and pass necessary parameters
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+
   return (
     <div className='multiPlay-page'>
       <TopBar className='top-bar' />
@@ -610,19 +620,6 @@ function MultiPlay() {
             <p>가수</p>
             <p>곡번호</p>
           </div>
-          {/* 오디오 상태 표시 */}
-          {/* <div className="audio-status">
-                        {audioLoaded ? (
-                            <div>
-                                <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
-                                <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
-                                <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
-                                <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
-                            </div>
-                        ) : (
-                            <p>오디오 로딩 중...</p>
-                        )}
-                    </div> */}
 
           <div className='pitch-graph-multi' style={{ height: '500px' }}>
             <PitchGraph
@@ -631,17 +628,27 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+              songState={currentSong}
             />
           </div>
 
-          {/* Seek Bar */}
-          <div className='seek-bar-container'>
+          {/* Seek Bar
+          <div className='seek-bar-container' style={{marginTop :'75px'}}>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
-              {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
+              {playbackPosition.toFixed(3)} / {duration.toFixed(0)} 초
             </div>
+          </div> */}
+          
+
+
+          {/* 현재 재생 중인 가사 출력 */}
+          <div className='karaoke-lyrics' style={{marginTop :'75px'}}>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
           </div>
+
 
           <div className='button-area'>
             {/* 시작 버튼 */}
@@ -659,9 +666,12 @@ function MultiPlay() {
             </button>
 
             <button className='button reservation-button' onClick={OnPopup}>
-              시작하기 or 예약하기
+              노래 올리기 or 예약하기
             </button>
-            <h3>networkLatency: {networkLatency}</h3>
+
+            {/* <h3>networkLatency: {networkLatency}</h3> */}
+
+
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className='remote-audios' style={{ display: 'none' }}>
