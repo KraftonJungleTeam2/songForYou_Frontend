@@ -193,8 +193,10 @@ function MultiPlay() {
   };
   const updatePlayerMic = (userId, micBool) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
-    const audioElement = document.getElementById(`remoteAudio_${userId}`);
-    targetStreamRef.current = audioElement.srcObject;
+    if (micBool) {
+      const audioElement = document.getElementById(`remoteAudio_${userId}`);
+      targetStreamRef.current = audioElement.srcObject;
+    }
   };
   // 마이크 스트림 획득
   const getLocalStream = async () => {
@@ -732,7 +734,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={currentData}
+            // songState={currentData}
             />
           </div>
 
@@ -761,7 +763,7 @@ function MultiPlay() {
             <button
               className={`button mic-button ${!isPlaying ? 'is-disabled' : ''}`} // 버튼 스타일 변경
               onClick={isMicOn ? micOff : micOn}
-              //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
+            //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
             >
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
