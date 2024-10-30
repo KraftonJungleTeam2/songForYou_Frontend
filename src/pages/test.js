@@ -1,76 +1,69 @@
-import io from 'socket.io-client';
 
-const socket = io('http://yourserver.com'); // 서버 URL
-const peerConnections = {}; // 각 피어에 대해 개별 연결 생성
-let localStream; // 마이크 스트림을 저장할 변수
-
-// 마이크 스트림 얻기
-const getLocalStream = async () => {
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  } catch (error) {
-    console.error('마이크 스트림 오류:', error);
-  }
-};
-
-// 피어 연결 생성 및 관리 함수
-const createPeerConnection = (peerId) => {
-  const peerConnection = new RTCPeerConnection({
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-  });
-
-  // 로컬 스트림 추가
-  localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-  // ICE 후보 생성 시 서버로 전송
-  peerConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      socket.emit('ice-candidate', { candidate: event.candidate, to: peerId });
-    }
-  };
-
-  // 상대방의 스트림을 오디오 태그에 연결
-  peerConnection.ontrack = (event) => {
-    const remoteStream = event.streams[0];
-    document.getElementById(`remoteAudio_${peerId}`).srcObject = remoteStream;
-  };
-
-  peerConnections[peerId] = peerConnection;
-  return peerConnection;
-};
-
-// 서버에서 offer 수신 시 answer 생성 후 전송
-socket.on('offer', async ({ offer, from }) => {
-  const peerConnection = createPeerConnection(from);
-  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-  const answer = await peerConnection.createAnswer();
-  await peerConnection.setLocalDescription(answer);
-  socket.emit('answer', { answer, to: from });
-});
-
-// 서버에서 answer 수신 시 설정
-socket.on('answer', async ({ answer, from }) => {
-  const peerConnection = peerConnections[from];
-  await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-});
-
-// 서버에서 ICE 후보 수신 시 설정
-socket.on('ice-candidate', async ({ candidate, from }) => {
-  const peerConnection = peerConnections[from];
-  await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-});
-
-// 방에 입장
-socket.emit('join-room', roomId); // 방 입장
-
-// 방에 있는 기존 사용자 정보 수신 후 offer 전송
-socket.on('existing-users', async (users) => {
-  await getLocalStream(); // 마이크 스트림 준비
-
-  users.forEach(async (userId) => {
-    const peerConnection = createPeerConnection(userId);
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    socket.emit('offer', { offer, to: userId });
-  });
-});
+    // mr 싱크 관련
+    // Start 요청에 대한 응답
+    socket.on('requestStartTimeWithDelay', async (data) => {
+      const { roomId } = data;
+      // 모든 클라이언트에게 시작 시간 브로드캐스트
+      io.to(roomId).emit('startTime', {
+        startTime: Date.now() + 3000,
+      });
+      if (queueHelper.getQueueLength(roomId) > 0) {
+        const songId = queueHelper.dequeueItem(roomId);
+        const queryResult = await pool.query('SELECT mr_key, lyrics, pitch FROM songs WHERE id = $1', [songId]);
+        if (queryResult.rows.length === 0) {
+          socket.emit('error', {
+            message: 'Loading song failed'
+          });
+          return;
+        }
+        const songData = queryResult.rows[0];
+        const s3Url = await generateS3Url(songData.mr_key, 360);
+        console.log('s3 url generated : ', s3Url);
+        io.to(roomId).emit('playSong', {
+          mrUrl: s3Url,
+          lyrics: songData.lyrics,
+          pitch: songData.pitch,
+        });
+      }
+    });
+    // Ping 요청에 대한 응답
+    socket.on('ping', (data) => {
+      socket.emit('pingResponse', {
+        sendTime: data.sendTime,
+        serverTime: Date.now()
+      });
+    });
+    //  노래 재생 관련
+    // Play 요청에 대한 응답
+    socket.on('playSong', async (data) => {
+      const { songId, roomId } = data;
+      if (queueHelper.getQueueLength(roomId) === 0) {
+        const queryResult = await pool.query('SELECT mr_key, lyrics, pitch FROM songs WHERE id = $1', [songId]);
+        if (queryResult.rows.length === 0) {
+          socket.emit('error', {
+            message: 'Loading song failed'
+          });
+          return;
+        }
+        const songData = queryResult.rows[0];
+        const s3Url = await generateS3Url(songData.mr_key, 360);
+        console.log('s3 url generated : ', s3Url);
+        io.to(roomId).emit('playSong', {
+          mrUrl: s3Url,
+          lyrics: songData.lyrics,
+          pitch: songData.pitch,
+        });
+        queueHelper.enqueueItem(roomId, songId);
+        io.to(roomId).emit('songAdded', {
+          message: 'song added successfully',
+          songId: songId,
+        });
+      } else {
+        queueHelper.enqueueItem(roomId, songId);
+        io.to(roomId).emit('songAdded', {
+          message: 'song added successfully',
+          songId: songId,
+        });
+      }
+    });
+ 

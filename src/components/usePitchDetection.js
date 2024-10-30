@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData) => {
+export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPositionRef, setEntireGraphData) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -31,7 +31,18 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     CONFIRMATION_THRESHOLD: 3,
     JUMP_TOLERANCE_TIME: 10,
   };
-
+  
+  const lastIndex = useRef(0);
+  const round = (i) => {
+    const idx = Math.floor(i);
+    if (idx == lastIndex.current) {
+        lastIndex.current = idx+1;
+        return idx + 1;
+    } else {
+        lastIndex.current = idx;
+        return idx;
+    }
+  }
   useEffect(() => {
     pitchRef.current = pitch;
   }, [pitch]);
@@ -111,7 +122,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     let stopStreamFunction;
     async function setupAudio() {
       try {
-        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext();
+        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext(targetStreamRef.current);
         stopStreamFunction = stopStream;
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
@@ -125,8 +136,8 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         console.error('Error accessing the microphone', error);
       }
     }
-
-    setupAudio();
+    if (targetStreamRef.current)
+      setupAudio();
 
     return () => {
       if (sourceRef.current) {
@@ -140,7 +151,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         stopStreamFunction();
       }
     };
-  }, []);
+  }, [targetStreamRef.current]);
 
   useEffect(() => {
     let intervalId;
@@ -169,7 +180,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
 
             // Update entireGraphData based on playbackPosition
             const playbackPos = playbackPositionRef.current; // seconds
-            const index = Math.floor(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
+            const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
@@ -184,7 +195,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
           } else {
             // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
             const playbackPos = playbackPositionRef.current;
-            const index = Math.floor(playbackPos * 40);
+            const index = round(playbackPos * 40);
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
@@ -200,7 +211,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         } else {
           // 유효하지 않은 피치인 경우
           const playbackPos = playbackPositionRef.current;
-          const index = Math.floor(playbackPos * 40);
+          const index = round(playbackPos * 40);
 
           setEntireGraphData((prevData) => {
             if (index < 0 || index >= prevData.length) return prevData;
@@ -218,7 +229,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
       } else {
         setPitch(0);
         const playbackPos = playbackPositionRef.current;
-        const index = Math.floor(playbackPos * 40);
+        const index = round(playbackPos * 40);
 
         setEntireGraphData((prevData) => {
           if (index < 0 || index >= prevData.length) return prevData;
