@@ -90,7 +90,10 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
-  const pingTimesRef = useRef([]);
+
+  // Data를 추적하기 위해 사용하는 Ref(참조)
+  const currentDataRef = useRef(currentData);
+  const nextDataRef = useRef(nextData); 
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -104,16 +107,16 @@ function MultiPlay() {
   const [latencyOffset, setLatencyOffset] = useState(0);
 
    // 섬네일 업데이트 로직 (미완)
-   useEffect(() => {
-    if (reservedSongs.length > 0) {
-      setcurrentData(reservedSongs[0]);
-    }
-  }, [reservedSongs]);
+    useEffect(() => {
+      if (reservedSongs.length > 0) {
+        setcurrentData(reservedSongs[0]);
+      }
+    }, [reservedSongs]);
 
    // songContext에서 노래 정보를 불러옴
-   useEffect(() => {
-    fetchSongLists();
-  }, [fetchSongLists]);
+    useEffect(() => {
+      fetchSongLists();
+    }, [fetchSongLists]);
 
     // 재생 위치에 따라 가사 업데이트
     useEffect(() => {
@@ -133,6 +136,12 @@ function MultiPlay() {
       setCurrentLyric(segments[curr_idx]?.text || ' ');
       setNextLyric(segments[curr_idx + 1]?.text || ' ');
     }, [playbackPosition, lyricsData]);
+
+    // songDatas를 추적하기 위한 useEffect
+    useEffect(() => {
+      currentDataRef.current = currentData;
+      nextDataRef.current = nextData;
+    }, [currentData, nextData]);
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -318,9 +327,26 @@ function MultiPlay() {
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
-    // socketRef.current.on('playSong', (data) => {
-    //   ``
-    // });
+    socketRef.current.on('playSong', (data) => {
+      try{
+        if(currentDataRef.current === null){
+          setcurrentData(data);
+        }
+        else{
+          if(nextDataRef.current === null){
+            setnextData(data);
+          }
+          else{
+            console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ')
+          }
+        }
+
+
+      }
+      catch (error) {
+        console.error('Error processing download playsong data:', error);
+      }
+    });
 
     socketRef.current.on('playSong', async (data) => {
       try {
@@ -711,7 +737,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} currentData={currentData} nextData={nextData}  />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextData.current}  />
           )}
 
           {/* AudioPlayer 컴포넌트 */}
