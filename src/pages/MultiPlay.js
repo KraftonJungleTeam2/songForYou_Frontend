@@ -60,14 +60,14 @@ function MultiPlay() {
   const [currentData, setcurrentData] = useState(null); //현재곡 데이터를 담음
   const [nextData, setnextData] = useState(null);
   // Data를 추적하기 위해 사용하는 Ref(참조)
-  // const currentDataRef = useRef(currentData);
-  // currentDataRef.current = currentData;
-  // const nextDataRef = useRef(nextData);
-  // nextDataRef.current = nextData; 
+  const currentDataRef = useRef(currentData);
+  currentDataRef.current = currentData;
+  const nextDataRef = useRef(nextData);
+  nextDataRef.current = nextData; 
 
   const [audioLoaded, setAudioLoaded] = useState(false);
-  // const audioLoadedRef = useRef(audioLoaded);
-  // audioLoadedRef.current = audioLoaded;
+  const audioLoadedRef = useRef(audioLoaded);
+  audioLoadedRef.current = audioLoaded;
 
 
   // 버튼 끄게 하는 state
@@ -146,20 +146,32 @@ function MultiPlay() {
 
     // songDatas를 추적하기 위한 useEffect
     useEffect(() => {
-      // currentDataRef.current = currentData;
-    
-      if (currentData) {
+      currentDataRef.current = currentData;
+
+      console.log(currentData);
+      console.log(nextData);
+      console.log(audioLoaded);
+
+      if (currentData && audioLoadedRef.current === false) {
         loadData(currentData);
       }
-    }, [currentData]);
+    }, [currentData, nextData, audioLoaded]);
 
 
     // songDatas를 추적하기 위한 useEffect
-    // useEffect(() => {
-    //   // nextDataRef.current = nextData;
-    //   // audioLoadedRef.current = audioLoaded;
-    // }, [nextData, audioLoaded]);
-
+    useEffect(() => {
+      nextDataRef.current = nextData;
+    
+    }, [nextData]);
+    
+    useEffect(() => {
+  
+      audioLoadedRef.current = audioLoaded;
+      if(audioLoaded === true){
+        setcurrentData(nextDataRef.current);
+        setnextData(null);
+      }
+    }, [audioLoaded]);
 
     // loadaudio 함수 정의
     const loadData = async (data) => {
@@ -177,9 +189,9 @@ function MultiPlay() {
         // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
         const pitchArray = data.pitch;
 
-        console.log(data.mrUrl);
-        console.log(data.pitch);
-        console.log(data.lyrics);
+        // console.log(data.mrUrl);
+        // console.log(data.pitch);
+        // console.log(data.lyrics);
         if (Array.isArray(pitchArray)) {
           try {
             const processedPitchArray = doubleDataFrequency(pitchArray);
@@ -211,9 +223,6 @@ function MultiPlay() {
         // 가사 데이터 업로드
         setLyricsData(data.lyrics);
         setLyricsLoaded(true);
-
-        // setcurrentData(nextDataRef.current);
-        setnextData(null);
 
       } catch (error) {
         console.error('Error handling data:', error);
@@ -406,17 +415,17 @@ function MultiPlay() {
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
     socketRef.current.on('playSong', (data) => {
       try{
-        // if(currentDataRef.current === null){
-        //   setcurrentData(data);
-        // }
-        // else{
-        //   if(nextDataRef.current === null){
-        //     setnextData(data);
-        //   }
-        //   else{
-        //     console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ')
-        //   }
-        // }
+        if(currentDataRef.current === null){
+          setcurrentData(data);
+        }
+        else{
+          if(nextDataRef.current === null){
+            setnextData(data);
+          }
+          else{
+            console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ')
+          }
+        }
 
 
       }
@@ -759,7 +768,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists}  />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists}  nextData={nextDataRef.current} currentData={currentDataRef.current} />
           )}
 
           {/* AudioPlayer 컴포넌트 */}
