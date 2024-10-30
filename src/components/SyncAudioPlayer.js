@@ -12,6 +12,7 @@ const AudioPlayer = ({
   setStarttime,
   setIsWaiting,
   setIsMicOn,
+  latencyOffset,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -24,6 +25,7 @@ const AudioPlayer = ({
   const FRAME_RATE = 0.025; // 프레임 속도, 25ms 단위로 업데이트하여 일정한 타이밍으로 재생 위치를 업데이트
   const SPEEDFORWARD = 2.0;
   const SPEEDBACKWARD = 0.5;
+  const TOLERANCE = 10; // ms단위로 허용 overrun을 설정
   // 현재 시간을 프레임 단위에 맞춰 반올림하는 함수
   const roundToFrame = (time) => {
     return Math.round(time / FRAME_RATE) * FRAME_RATE;
@@ -70,9 +72,8 @@ const AudioPlayer = ({
     const offset = (Date.now()-starttime)/1000;
     // while (Date.now() < starttime) {}
     // source.start();
-    console.log(audioContext.currentTime);
-    console.log(starttime);
-    console.log(offset);
+
+    //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
     if (offset < 0) {
       source.start(audioContext.currentTime-offset);
     } else {
@@ -115,41 +116,32 @@ const AudioPlayer = ({
 
     return playbackPositionRef.current + timePassed * prevRate; // in seconds
   }
+  
+  // transition
+  useEffect(() => {
+    if (!isPlaying) return;
 
-  // starttime을 기준으로한 목표 재생시간으로 이동(재생속도를 변경하여)
-  const transition = () => {
-    const targetTime = Date.now() - starttime;
+    const targetTime = Date.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime()*1000 - targetTime; //실제보다 앞서나간 시간
+    if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
+
+    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log("target: "+targetTime +"overrun:" +overrun);
     
-    if (overrun < 0) {
-      setPlaybackRate(SPEEDFORWARD);
-      clearTimeout(rateTimeoutRef.current);
-
-      rateTimeoutRef.current = setTimeout(() => {
-        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
-        setPlaybackRate(1);
-      }, -overrun/(SPEEDFORWARD-1));
-    } 
-    else {
-      setPlaybackRate(SPEEDBACKWARD);
-      clearTimeout(rateTimeoutRef.current);
-
-      rateTimeoutRef.current = setTimeout(() => {
-        console.log("default rate!, overrun:" +((Date.now() - starttime) - getPlaybackTime()*1000));
-        setPlaybackRate(1);
-      }, overrun/(1-SPEEDBACKWARD));
-    }
-  }
+    setPlaybackRate(transitionSpeed);
+    clearTimeout(rateTimeoutRef.current);
+    rateTimeoutRef.current = setTimeout(() => {
+      console.log("default rate!, overrun: " +((Date.now() - (starttime + latencyOffset)) - getPlaybackTime()*1000));
+      setPlaybackRate(1);
+    }, overrun/(1-transitionSpeed));
+  }, [latencyOffset])
 
   // 재생 및 일시정지 상태, 속도 변경 시 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
 
     if (starttime) {
-      if (isPlaying) {
-        transition();
-      } else {
+      if (!isPlaying) {
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
       }
     }
