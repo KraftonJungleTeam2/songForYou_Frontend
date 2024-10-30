@@ -257,6 +257,10 @@ function MultiPlay() {
     })
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
+    // socketRef.current.on('playSong', (data) => {
+    //   ``
+    // });
+
     socketRef.current.on('playSong', async (data) => {
       try {
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
