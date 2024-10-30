@@ -60,7 +60,7 @@ function MultiPlay() {
 
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState();
-  const [isMicOn, setIsMicOn] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(true);
   const { roomId } = useParams(); // URL에서 songId 추출
   const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
@@ -190,6 +190,7 @@ function MultiPlay() {
 
     //다른 유저 처음 입장하면 알려줌
     socketRef.current.on('userJoined', ({ user, roomInfo }) => {
+      console.log('userJoin', user.userId);
       addPlayer(user.nickname, user.userId);
     });
 
@@ -220,6 +221,7 @@ function MultiPlay() {
       peerConnection.onconnectionstatechange = () => {
         if (peerConnection.connectionState === 'connected') {
           // peer 연결이 완료되면 players 상태 업데이트
+          console.log('1st', callerId);
           updatePlayerPeer(callerId, peerConnection);
         }
       };
@@ -239,16 +241,20 @@ function MultiPlay() {
         peerConnection.onconnectionstatechange = () => {
           if (peerConnection.connectionState === 'connected') {
             // peer 연결이 완료되면 players 상태 업데이트
+            console.log('2nd', callerId);
             updatePlayerPeer(callerId, peerConnection);
           }
         };
       }
     });
 
-    socketRef.current.on('micOn', async (userId) => {
+    socketRef.current.on('micOn', ({ userId }) => {
+      console.log('fuckOn');
       updatePlayerMic(userId, true);
     });
-    socketRef.current.on('micOff', async (userId) => {
+
+    socketRef.current.on('micOff', ({ userId }) => {
+      console.log('fuckOff');
       updatePlayerMic(userId, false);
     });
 
@@ -359,6 +365,39 @@ function MultiPlay() {
     };
   }, []);
 
+  const micOn = () => {
+    if (isMicOn) return;
+
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = true;
+        setIsMicOn(true);
+        socketRef.current.emit('userMicOn', {
+          roomId: roomId,
+        });
+        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
+      }
+    }
+    if (isPlaying) setAudioLatency(200);
+  };
+
+  const micOff = () => {
+    if (!isMicOn) return;
+
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = false;
+        setIsMicOn(false);
+        socketRef.current.emit('userMicOff', {
+          roomId: roomId,
+        });
+        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: false } : player)));
+      }
+    }
+    if (isPlaying) setAudioLatency(0);
+  };
   // Peer Connection 생성 함수
   const createPeerConnection = async (userId) => {
     const peerConnection = new RTCPeerConnection({
@@ -529,34 +568,6 @@ function MultiPlay() {
 
   const closePopup = () => {
     setshowPopup(false);
-  };
-
-  const micOn = () => {
-    if (isMicOn) return;
-
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = true;
-        setIsMicOn(true);
-        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
-      }
-    }
-    if (isPlaying) setAudioLatency(200);
-  };
-
-  const micOff = () => {
-    if (!isMicOn) return;
-
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = false;
-        setIsMicOn(false);
-        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: false } : player)));
-      }
-    }
-    if (isPlaying) setAudioLatency(0);
   };
 
   useEffect(() => {
