@@ -37,7 +37,6 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-  const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   // const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
@@ -612,7 +611,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} songDatas={songDatas} setsongDatas={setsongDatas}   />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} currentData={currentData} nextData={nextData}  />
           )}
 
           {/* AudioPlayer 컴포넌트 */}
