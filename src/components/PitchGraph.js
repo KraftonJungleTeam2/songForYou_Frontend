@@ -14,7 +14,7 @@ const PitchGraph = ({
   dimensions,
   realtimeData,
   referenceData,
-  dataPointCount = 100,
+  dataPointCount,
   currentTimeIndex,
   songState,
 }) => {
