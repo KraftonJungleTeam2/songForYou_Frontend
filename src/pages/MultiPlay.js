@@ -431,9 +431,9 @@ function MultiPlay() {
       }
 
       // 스트림 정리
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
+      // if (localStreamRef.current) {
+      //   localStreamRef.current.getTracks().forEach((track) => track.stop());
+      // }
     };
   }, []);
 
@@ -443,6 +443,7 @@ function MultiPlay() {
     if (localStreamRef.current) {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
+        console.log('reachere??');
         audioTrack.enabled = true;
         setIsMicOn(true);
         socketRef.current.emit('userMicOn', {
@@ -499,6 +500,13 @@ function MultiPlay() {
         if (audioElement && event.streams[0]) {
           audioElement.srcObject = event.streams[0];
         }
+        peerConnection.addEventListener('connectionstatechange', event => {
+          console.log('Connection State:', peerConnection.connectionState);
+        });
+
+        peerConnection.addEventListener('iceconnectionstatechange', event => {
+          console.log('ICE Connection State:', peerConnection.iceConnectionState);
+        });
       }, 100);
 
       // if (event.track.kind === 'audio') {
@@ -564,19 +572,7 @@ function MultiPlay() {
       }
       if (nUsers) {
         const smre = (sqrtRTTs / nUsers) ** 2;
-        setNetworkLatency((networkLatency) => {
-          // 점진적인 오차 반영
-          const newL = networkLatency * 0.8 + smre * 0.2;
-          if (networkLatency - newL > 40 || networkLatency - newL < -40) {
-            // 차이가 40이상 나거나
-            return newL;
-          } else if (networkLatency > 30 && (networkLatency / newL > 2 || networkLatency / newL < 0.5)) {
-            // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
-            return newL;
-          } else {
-            return networkLatency;
-          }
-        });
+        setNetworkLatency(networkLatency * 0.8 + smre * 0.2);
       }
     }
     const interval = setInterval(measureLatency, 1000);
@@ -773,7 +769,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               시작하기 or 예약하기
             </button>
-            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection?'보정끄기':'보정켜기'}</button>
+            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection ? '보정끄기' : '보정켜기'}</button>
             <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
