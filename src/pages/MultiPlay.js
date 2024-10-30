@@ -362,38 +362,53 @@ function MultiPlay() {
       });
     }
 
-    peerConnectionsRef.current[userId] = peerConnection;
-    return peerConnection;
-  };
-
-  useEffect(() => {
-    // 지연 시간 측정 함수
-    async function measureLatency() {
-      let sqrtRTTs = 0;
-      let nUsers = 0;
-
-      for (let key in peerConnectionsRef.current) {
-        const peerConnection = peerConnectionsRef.current[key];
-        const stats = await peerConnection.getStats();
-
-        stats.forEach((report) => {
-          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-            const rtt = report.currentRoundTripTime;
-            sqrtRTTs += Math.sqrt(rtt * 1000);
-            nUsers += 1;
-            console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
-          }
-        });
+      peerConnectionsRef.current[userId] = peerConnection;
+      return peerConnection;
+    };
+    
+    useEffect( ()=> {
+      // 지연 시간 측정 함수
+      async function measureLatency() {
+        let sqrtRTTs = 0;
+        let nUsers = 0;
+  
+        for (let key in peerConnectionsRef.current) {
+          const peerConnection = peerConnectionsRef.current[key];
+          const stats = await peerConnection.getStats();
+  
+          stats.forEach((report) => {
+            if (report.type === "candidate-pair" && report.state === "succeeded") {
+              const rtt = report.currentRoundTripTime;
+              sqrtRTTs += Math.sqrt(rtt*1000);
+              nUsers += 1;
+              console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
+            }
+          });
+        }
+        if (nUsers) {
+          const smre = (sqrtRTTs/nUsers) ** 2;
+          setNetworkLatency((networkLatency) => {
+            // 점진적인 오차 반영
+            const newL = networkLatency*0.8 + smre*0.2;
+            if (networkLatency - newL > 40 || networkLatency - newL < -40) {
+              // 차이가 40이상 나거나
+              return newL;
+            } else if (networkLatency > 30 && (networkLatency/newL > 2 || networkLatency/newL < 0.5)) {
+              // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
+              return newL;
+            } else {
+              return networkLatency;
+            }
+          });
+        }
       }
-      if (nUsers) {
-        const smre = (sqrtRTTs / nUsers) ** 2;
-        console.log(`set network latency as: ${networkLatency * 0.9 + smre * 0.1}`);
-        setNetworkLatency(networkLatency * 0.9 + smre * 0.1);
-      }
-    }
-    setInterval(measureLatency, 1000);
-  }, []);
+      const interval = setInterval(measureLatency, 1000);
 
+      return () => clearInterval(interval);
+    }, []);
+    
+
+  
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
