@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
+import { usePitchDetection } from '../components/usePitchDetection';
+
 // import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
@@ -39,6 +41,9 @@ function MultiPlay() {
   const [duration, setDuration] = useState(0);
   // const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const playbackPositionRef = useRef(playbackPosition);
+  playbackPositionRef.current = playbackPosition;
+
   const [connectedUsers, setConnectedUsers] = useState([]);
 
   //데이터 로딩되었는지 확인하는거
@@ -99,6 +104,16 @@ function MultiPlay() {
   const [prevLyric, setPrevLyric] = useState(' ');
   const [currentLyric, setCurrentLyric] = useState(' ');
   const [nextLyric, setNextLyric] = useState(' ');
+
+  //섬네일 데이터를 넘기기 위한 state
+  const [currentSong, setcurrentSong] = useState(null);
+
+  // 섬네일 업데이트 로직 (미완)
+  useEffect(() => {
+    if (reservedSongs.length > 0) {
+      setcurrentSong(reservedSongs[0]);
+    }
+  }, [reservedSongs]);
 
    // songContext에서 노래 정보를 불러옴
    useEffect(() => {
@@ -247,7 +262,6 @@ function MultiPlay() {
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
-          console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
           setMrDataBlob(fileBlob);  // Blob 데이터 저장
@@ -258,6 +272,9 @@ function MultiPlay() {
         // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
         const pitchArray = data.pitch;
 
+        console.log(data.mrUrl);
+        console.log(data.pitch);
+        console.log(data.lyrics);
         if (Array.isArray(pitchArray)) {
           try {
             // console.log(pitchArray);
@@ -498,7 +515,8 @@ function MultiPlay() {
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
 
-
+  // Use the custom hook and pass necessary parameters
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
     <div className='multiPlay-page'>
@@ -538,7 +556,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+              songState={currentSong}
             />
           </div>
 
