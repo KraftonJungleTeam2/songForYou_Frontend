@@ -501,35 +501,35 @@ function MultiPlay() {
         }
       }, 100);
 
-      if (event.track.kind === 'audio') {
-        const audioReceiver = event.receiver;
+      // if (event.track.kind === 'audio') {
+      //   const audioReceiver = event.receiver;
 
-        // 오디오 레벨 체크 함수
-        const checkAudioLevel = async () => {
-          try {
-            const sources = await audioReceiver.getSynchronizationSources();
-            if (sources && sources.length > 0) {
-              const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
+      //   // 오디오 레벨 체크 함수
+      //   const checkAudioLevel = async () => {
+      //     try {
+      //       const sources = await audioReceiver.getSynchronizationSources();
+      //       if (sources && sources.length > 0) {
+      //         const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
 
-              if (audioLevel > 0.01) {
-                // 임계값은 조정 가능
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
-              } else {
-                // 음성이 없거나 매우 낮을 때
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
-              }
-            }
-          } catch (error) {
-            console.error('Audio level check failed:', error);
-          }
-        };
+      //         if (audioLevel > 0.01) {
+      //           // 임계값은 조정 가능
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
+      //         } else {
+      //           // 음성이 없거나 매우 낮을 때
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
+      //         }
+      //       }
+      //     } catch (error) {
+      //       console.error('Audio level check failed:', error);
+      //     }
+      //   };
 
-        // 주기적으로 체크 (100ms)
-        const intervalId = setInterval(checkAudioLevel, 100);
+      //   // 주기적으로 체크 (100ms)
+      //   const intervalId = setInterval(checkAudioLevel, 100);
 
-        // 컴포넌트 언마운트 시 정리
-        return () => clearInterval(intervalId);
-      }
+      //   // 컴포넌트 언마운트 시 정리
+      //   return () => clearInterval(intervalId);
+      // }
     };
 
     // 로컬 스트림 추가
