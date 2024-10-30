@@ -9,7 +9,7 @@ import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
-import {usePitchDetection} from '../components/usePitchDetection'
+import { usePitchDetection } from '../components/usePitchDetection';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -86,6 +86,11 @@ function MultiPlay() {
 
   const [dataPointCount, setDataPointCount] = useState(75);
 
+  //채팅 관련
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const messagesEndRef = useRef(null); // 자동 스크롤용
+
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -105,36 +110,60 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-   // 섬네일 업데이트 로직 (미완)
-   useEffect(() => {
+  // 자동 스크롤
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // 메시지 전송
+  const sendMessage = () => {
+    const timestamp = new Date();
+    if (inputMessage.trim()) {
+      socketRef.current.emit('sendMessage', {
+        roomId: roomId,
+        text: inputMessage,
+        timestamp: timestamp,
+      });
+
+      setMessages((prev) => [...prev, { text: inputMessage, timestamp: timestamp }]);
+      setInputMessage('');
+    }
+  };
+
+  // 섬네일 업데이트 로직 (미완)
+  useEffect(() => {
     if (reservedSongs.length > 0) {
       setcurrentData(reservedSongs[0]);
     }
   }, [reservedSongs]);
 
-   // songContext에서 노래 정보를 불러옴
-   useEffect(() => {
+  // songContext에서 노래 정보를 불러옴
+  useEffect(() => {
     fetchSongLists();
   }, [fetchSongLists]);
 
-    // 재생 위치에 따라 가사 업데이트
-    useEffect(() => {
-      let curr_idx = -1;
-      let segments = [];
-      if (lyricsData && lyricsData.segments) {
-        segments = lyricsData.segments;
-        for (let i = 0; i < segments.length; i++) {
-          if (playbackPosition >= segments[i].start) {
-            curr_idx = i;
-          } else if (curr_idx >= 0) {
-            break;
-          }
+  // 재생 위치에 따라 가사 업데이트
+  useEffect(() => {
+    let curr_idx = -1;
+    let segments = [];
+    if (lyricsData && lyricsData.segments) {
+      segments = lyricsData.segments;
+      for (let i = 0; i < segments.length; i++) {
+        if (playbackPosition >= segments[i].start) {
+          curr_idx = i;
+        } else if (curr_idx >= 0) {
+          break;
         }
       }
-      setPrevLyric(segments[curr_idx - 1]?.text || ' ');
-      setCurrentLyric(segments[curr_idx]?.text || ' ');
-      setNextLyric(segments[curr_idx + 1]?.text || ' ');
-    }, [playbackPosition, lyricsData]);
+    }
+    setPrevLyric(segments[curr_idx - 1]?.text || ' ');
+    setCurrentLyric(segments[curr_idx]?.text || ' ');
+    setNextLyric(segments[curr_idx + 1]?.text || ' ');
+  }, [playbackPosition, lyricsData]);
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -145,6 +174,7 @@ function MultiPlay() {
       name: name,
       peer: null,
       mic: true,
+      isAudioActive: false,
     };
 
     setPlayers((prevPlayers) => {
@@ -218,6 +248,10 @@ function MultiPlay() {
       sendPing(); // 첫 번째 ping 전송
     });
 
+    socketRef.current.on('receiveMessage', (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
     // Room 이벤트 핸들러
     socketRef.current.on('joinedRoom', ({ roomId, roomInfo, userId }) => {
       const users = roomInfo.users;
@@ -228,7 +262,6 @@ function MultiPlay() {
 
     //다른 유저 처음 입장하면 알려줌
     socketRef.current.on('userJoined', ({ user, roomInfo }) => {
-      console.log('userJoin', user.userId);
       addPlayer(user.nickname, user.userId);
     });
 
@@ -239,7 +272,6 @@ function MultiPlay() {
 
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
-
         socketRef.current.emit('offer', {
           targetId: user.id,
           offer: offer,
@@ -333,11 +365,11 @@ function MultiPlay() {
         if (fileUrl) {
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
-          setMrDataBlob(fileBlob);  // Blob 데이터 저장
+          setMrDataBlob(fileBlob); // Blob 데이터 저장
         } else {
           console.error('Error: file URL not found in the response');
         }
-        
+
         // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
         const pitchArray = data.pitch;
 
@@ -348,21 +380,21 @@ function MultiPlay() {
           try {
             // console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
-            
+
             setEntireReferData(
               processedPitchArray.map((pitch, index) => ({
                 time: index * 25,
                 pitch,
               }))
             );
-        
+
             setEntireGraphData(
               processedPitchArray.map((_, index) => ({
                 time: index * 25,
                 pitch: null,
               }))
             );
-        
+
             setPitchLoaded(true);
           } catch (error) {
             console.error('Error processing pitch data:', error);
@@ -372,11 +404,10 @@ function MultiPlay() {
           console.error('Error: Expected pitch data to be an array');
           setPitchLoaded(true);
         }
-         
+
         // 가사 데이터 업로드
         setLyricsData(data.lyrics);
         setLyricsLoaded(true);
-        
       } catch (error) {
         console.error('Error handling data:', error);
       }
@@ -467,14 +498,35 @@ function MultiPlay() {
         }
       }, 100);
 
-      //   if (event.track.kind === 'audio') {
-      //     event.track.onunmute = () => {
-      //       setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isSpeaking: true } : player)));
-      //     };
-      //     event.track.onmute = () => {
-      //       setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isSpeaking: false } : player)));
-      //     };
-      //   }
+      if (event.track.kind === 'audio') {
+        const audioReceiver = event.receiver;
+
+        // 오디오 레벨 체크 함수
+        const checkAudioLevel = async () => {
+          try {
+            const sources = await audioReceiver.getSynchronizationSources();
+            if (sources && sources.length > 0) {
+              const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
+
+              if (audioLevel > 0.01) {
+                // 임계값은 조정 가능
+                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
+              } else {
+                // 음성이 없거나 매우 낮을 때
+                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
+              }
+            }
+          } catch (error) {
+            console.error('Audio level check failed:', error);
+          }
+        };
+
+        // 주기적으로 체크 (100ms)
+        const intervalId = setInterval(checkAudioLevel, 100);
+
+        // 컴포넌트 언마운트 시 정리
+        return () => clearInterval(intervalId);
+      }
     };
 
     // 로컬 스트림 추가
@@ -547,7 +599,7 @@ function MultiPlay() {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
     const sendTime = Date.now();
@@ -588,7 +640,7 @@ function MultiPlay() {
 
     // 서버에 시작 요청 보내기 임시임
     socketRef.current.emit('requestStartTimeWithDelay', {
-      roomId: roomId
+      roomId: roomId,
     });
   };
 
@@ -620,7 +672,7 @@ function MultiPlay() {
         <div className='players-chat'>
           <div className='players'>
             {players.map((player, index) => (
-              <div key={index} className='player-card'>
+              <div key={index} className={`player-card ${player?.isAudioActive ? 'active' : ''}`}>
                 {player ? (
                   <div>
                     <p>{player.name}</p>{' '}
@@ -634,9 +686,23 @@ function MultiPlay() {
               </div>
             ))}
           </div>
-
           <div className='chat-area'>
-            <p>chating area</p>
+            {' '}
+            <div className='chat-container'>
+              <div className='messages'>
+                {messages.map((msg, index) => (
+                  <div key={index} className='message'>
+                    <span className='text'>{msg.text}</span>
+                    <span className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className='input-area'>
+                <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요...' />
+                <button onClick={sendMessage}>전송</button>
+              </div>
+            </div>
           </div>
         </div>
         <div className='sing-area' ref={containerRef}>
@@ -677,14 +743,13 @@ function MultiPlay() {
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
           </div> */}
-          
-            {/* 현재 재생 중인 가사 출력 */}
-            <div className='karaoke-lyrics' style={{marginTop :'75px'}}>
+
+          {/* 현재 재생 중인 가사 출력 */}
+          <div className='karaoke-lyrics' style={{ marginTop: '75px' }}>
             <p className='prev-lyrics'>{prevLyric}</p>
             <p className='curr-lyrics'>{currentLyric}</p>
             <p className='next-lyrics'>{nextLyric}</p>
           </div>
-
 
           <div className='button-area'>
             {/* 시작 버튼 */}
@@ -715,9 +780,7 @@ function MultiPlay() {
           </div>
 
           {/* 조건부 렌더링 부분 popup */}
-          {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} currentData={currentData} nextData={nextData}  />
-          )}
+          {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} currentData={currentData} nextData={nextData} />}
 
           {/* AudioPlayer 컴포넌트 */}
           <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
