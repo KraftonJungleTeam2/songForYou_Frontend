@@ -9,6 +9,7 @@ import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
+import {usePitchDetection} from '../components/usePitchDetection'
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -42,6 +43,9 @@ function MultiPlay() {
 
   const [duration, setDuration] = useState(0);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const playbackPositionRef = useRef(playbackPosition);
+  playbackPositionRef.current = playbackPosition;
+
   const [connectedUsers, setConnectedUsers] = useState([]);
 
   //데이터 로딩되었는지 확인하는거
@@ -80,7 +84,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
 
-  const [dataPointCount, setDataPointCount] = useState(50);
+  const [dataPointCount, setDataPointCount] = useState(75);
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
@@ -600,6 +604,9 @@ function MultiPlay() {
       setLatencyOffset(0);
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
+
+
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
     <div className='multiPlay-page'>
