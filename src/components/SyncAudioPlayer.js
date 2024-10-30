@@ -82,7 +82,7 @@ const AudioPlayer = ({
     }
     setIsPlaying(true);
     setIsWaiting(false);
-    setTimeout(() => { setIsMicOn(false); }, -offset * 1000);
+    // setTimeout(() => { setIsMicOn(false); }, -offset * 1000);
     resumeTimeRef.current = audioContext.currentTime - offset;
 
     // 재생 완료 시 호출되는 콜백 설정
