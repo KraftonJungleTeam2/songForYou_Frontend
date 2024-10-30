@@ -8,6 +8,7 @@ import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
+import axios from 'axios';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -101,10 +102,12 @@ function MultiPlay() {
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // player 추가하기
-  const addPlayer = (name) => {
+  const addPlayer = (name, userId) => {
     const newPlayer = {
-      id: crypto.randomUUID(),
+      userId: userId,
       name: name,
+      peer: null,
+      mic: true,
     };
 
     setPlayers((prevPlayers) => {
@@ -117,6 +120,13 @@ function MultiPlay() {
     });
   };
 
+  // peer 연결되면 state 업데이트하기
+  const updatePlayerPeer = (userId, peerConnection) => {
+    setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, peer: peerConnection } : player)));
+  };
+  const updatePlayerMic = (userId, micBool) => {
+    setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
+  };
   // 마이크 스트림 획득
   const getLocalStream = async () => {
     try {
@@ -152,7 +162,15 @@ function MultiPlay() {
       console.log('웹소켓 연결 성공');
       setIsSocketOpen(true);
       await getLocalStream();
-      const nickname = 'asd';
+      const token = sessionStorage.getItem('userToken');
+
+      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const nickname = response.data.name;
       await socketRef.current.emit('joinRoom', {
         roomId: roomId,
         nickname: nickname,
@@ -164,20 +182,15 @@ function MultiPlay() {
 
     // Room 이벤트 핸들러
     socketRef.current.on('joinedRoom', ({ roomId, roomInfo, userId }) => {
-      console.log('방 입장 성공:', roomInfo.users);
-      console.log('userId', userId);
       const users = roomInfo.users;
       users.forEach((user) => {
-        //일단 배열에 추가 하고 나서. 이건 내 peer connection 넣을 수 있게,
-        if (user.id !== userId) {
-            //유저 아이디가 다르다면 
-        }
+        addPlayer(user.nickname, user.id);
       });
     });
 
     //다른 유저 처음 입장하면 알려줌
     socketRef.current.on('userJoined', ({ user, roomInfo }) => {
-      console.log('방 입장 성공:', roomInfo);
+      addPlayer(user.nickname, user.userId);
     });
 
     // Peer Connection 초기화
@@ -203,6 +216,14 @@ function MultiPlay() {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
+      // peer 연결 상태 모니터링 추가
+      peerConnection.onconnectionstatechange = () => {
+        if (peerConnection.connectionState === 'connected') {
+          // peer 연결이 완료되면 players 상태 업데이트
+          updatePlayerPeer(callerId, peerConnection);
+        }
+      };
+
       socketRef.current.emit('answer', {
         targetId: callerId,
         answer: answer,
@@ -214,7 +235,21 @@ function MultiPlay() {
       const peerConnection = peerConnectionsRef.current[callerId];
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
+
+        peerConnection.onconnectionstatechange = () => {
+          if (peerConnection.connectionState === 'connected') {
+            // peer 연결이 완료되면 players 상태 업데이트
+            updatePlayerPeer(callerId, peerConnection);
+          }
+        };
       }
+    });
+
+    socketRef.current.on('micOn', async (userId) => {
+      updatePlayerMic(userId, true);
+    });
+    socketRef.current.on('micOff', async (userId) => {
+      updatePlayerMic(userId, false);
     });
 
     // ICE candidate 처리
@@ -353,6 +388,15 @@ function MultiPlay() {
           audioElement.srcObject = event.streams[0];
         }
       }, 100);
+
+      //   if (event.track.kind === 'audio') {
+      //     event.track.onunmute = () => {
+      //       setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isSpeaking: true } : player)));
+      //     };
+      //     event.track.onmute = () => {
+      //       setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isSpeaking: false } : player)));
+      //     };
+      //   }
     };
 
     // 로컬 스트림 추가
@@ -362,53 +406,51 @@ function MultiPlay() {
       });
     }
 
-      peerConnectionsRef.current[userId] = peerConnection;
-      return peerConnection;
-    };
-    
-    useEffect( ()=> {
-      // 지연 시간 측정 함수
-      async function measureLatency() {
-        let sqrtRTTs = 0;
-        let nUsers = 0;
-  
-        for (let key in peerConnectionsRef.current) {
-          const peerConnection = peerConnectionsRef.current[key];
-          const stats = await peerConnection.getStats();
-  
-          stats.forEach((report) => {
-            if (report.type === "candidate-pair" && report.state === "succeeded") {
-              const rtt = report.currentRoundTripTime;
-              sqrtRTTs += Math.sqrt(rtt*1000);
-              nUsers += 1;
-              console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
-            }
-          });
-        }
-        if (nUsers) {
-          const smre = (sqrtRTTs/nUsers) ** 2;
-          setNetworkLatency((networkLatency) => {
-            // 점진적인 오차 반영
-            const newL = networkLatency*0.8 + smre*0.2;
-            if (networkLatency - newL > 40 || networkLatency - newL < -40) {
-              // 차이가 40이상 나거나
-              return newL;
-            } else if (networkLatency > 30 && (networkLatency/newL > 2 || networkLatency/newL < 0.5)) {
-              // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
-              return newL;
-            } else {
-              return networkLatency;
-            }
-          });
-        }
+    peerConnectionsRef.current[userId] = peerConnection;
+    return peerConnection;
+  };
+
+  useEffect(() => {
+    // 지연 시간 측정 함수
+    async function measureLatency() {
+      let sqrtRTTs = 0;
+      let nUsers = 0;
+
+      for (let key in peerConnectionsRef.current) {
+        const peerConnection = peerConnectionsRef.current[key];
+        const stats = await peerConnection.getStats();
+
+        stats.forEach((report) => {
+          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+            const rtt = report.currentRoundTripTime;
+            sqrtRTTs += Math.sqrt(rtt * 1000);
+            nUsers += 1;
+            console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
+          }
+        });
       }
-      const interval = setInterval(measureLatency, 1000);
+      if (nUsers) {
+        const smre = (sqrtRTTs / nUsers) ** 2;
+        setNetworkLatency((networkLatency) => {
+          // 점진적인 오차 반영
+          const newL = networkLatency * 0.8 + smre * 0.2;
+          if (networkLatency - newL > 40 || networkLatency - newL < -40) {
+            // 차이가 40이상 나거나
+            return newL;
+          } else if (networkLatency > 30 && (networkLatency / newL > 2 || networkLatency / newL < 0.5)) {
+            // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
+            return newL;
+          } else {
+            return networkLatency;
+          }
+        });
+      }
+    }
+    const interval = setInterval(measureLatency, 1000);
 
-      return () => clearInterval(interval);
-    }, []);
-    
+    return () => clearInterval(interval);
+  }, []);
 
-  
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
@@ -491,15 +533,29 @@ function MultiPlay() {
 
   const micOn = () => {
     if (isMicOn) return;
-    setIsMicOn(true);
 
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = true;
+        setIsMicOn(true);
+        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
+      }
+    }
     if (isPlaying) setAudioLatency(200);
   };
 
   const micOff = () => {
     if (!isMicOn) return;
-    setIsMicOn(false);
 
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = false;
+        setIsMicOn(false);
+        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: false } : player)));
+      }
+    }
     if (isPlaying) setAudioLatency(0);
   };
 
@@ -521,7 +577,10 @@ function MultiPlay() {
               <div key={index} className='player-card'>
                 {player ? (
                   <div>
-                    <p>{player.name}</p>
+                    <p>{player.name}</p>{' '}
+                    <span role='img' aria-label='mic status'>
+                      {player.mic ? '🎤' : '🔇'}
+                    </span>
                   </div>
                 ) : (
                   <p>빈 자리</p>
@@ -583,7 +642,7 @@ function MultiPlay() {
             <button
               className={`button mic-button ${!isPlaying ? 'is-disabled' : ''}`} // 버튼 스타일 변경
               onClick={isMicOn ? micOff : micOn}
-              disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
+              //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
             >
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
