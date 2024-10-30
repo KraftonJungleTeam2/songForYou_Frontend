@@ -90,6 +90,8 @@ const AudioPlayer = ({
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       playbackPositionRef.current = 0; // 재생 위치를 초기화
       setStarttime(null);
+      //곡 종료 그래서 데이터 넣어라.
+      setAudioLoaded(false);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
