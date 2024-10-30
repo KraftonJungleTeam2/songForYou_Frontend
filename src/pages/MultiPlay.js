@@ -56,7 +56,8 @@ function MultiPlay() {
 
   // 예약 popup에서 작업하는 부분
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
-  const [songDatas, setsongDatas] = useState([]); //현재곡 0, 다음곡 1 (mr, pitch lyrics 데이터를 담음)
+  const [currentData, setcurrentData] = useState(null); //현재곡 데이터를 담음
+  const [nextData, setnextData] = useState(null);
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(true);
