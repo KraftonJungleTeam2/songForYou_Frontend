@@ -35,10 +35,9 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-  const [isSocketOpen, setIsSocketOpen] = useState(false);
-  const [userSeekPosition, setUserSeekPosition] = useState(0);
+    const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
+  // const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
@@ -62,7 +61,9 @@ function MultiPlay() {
   const [starttime, setStarttime] = useState();
   const [isMicOn, setIsMicOn] = useState(false);
   const { roomId } = useParams(); // URL에서 songId 추출
-  const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
+  
+  // 예약 팝업 띄우는 state
+  const [showPopup, setshowPopup] = useState(false); 
 
   //웹소켓 부분
   const timeDiffSamplesRef = useRef([]); // 지연 시간 측정을 위한 배열
@@ -74,7 +75,7 @@ function MultiPlay() {
   // 서버에서 데이터 로딩 후 배열 생성
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
-
+  // 그려지는 속도 (음악 속도 X 아님)
   const [dataPointCount, setDataPointCount] = useState(100);
 
   // useRef로 관리하는 변수들
@@ -94,12 +95,34 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
+  // 가사 렌더링 하는 state
+  const [prevLyric, setPrevLyric] = useState(' ');
+  const [currentLyric, setCurrentLyric] = useState(' ');
+  const [nextLyric, setNextLyric] = useState(' ');
 
    // songContext에서 노래 정보를 불러옴
    useEffect(() => {
     fetchSongLists();
   }, [fetchSongLists]);
 
+    // 재생 위치에 따라 가사 업데이트
+    useEffect(() => {
+      let curr_idx = -1;
+      let segments = [];
+      if (lyricsData && lyricsData.segments) {
+        segments = lyricsData.segments;
+        for (let i = 0; i < segments.length; i++) {
+          if (playbackPosition >= segments[i].start) {
+            curr_idx = i;
+          } else if (curr_idx >= 0) {
+            break;
+          }
+        }
+      }
+      setPrevLyric(segments[curr_idx - 1]?.text || ' ');
+      setCurrentLyric(segments[curr_idx]?.text || ' ');
+      setNextLyric(segments[curr_idx + 1]?.text || ' ');
+    }, [playbackPosition, lyricsData]);
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -136,7 +159,7 @@ function MultiPlay() {
 
       socketRef.current.on('connect', async () => {
           console.log('웹소켓 연결 성공');
-          setIsSocketOpen(true);
+
           await getLocalStream();
           socketRef.current.emit('joinRoom', {
               roomId: roomId,
@@ -217,7 +240,7 @@ function MultiPlay() {
 
 
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // 마운트된 데이터 받는 부분
+    // 데이터 받는 부분 (마운트 작업)
     socketRef.current.on('playSong', async (data) => {
       try {
         
@@ -237,7 +260,7 @@ function MultiPlay() {
 
         if (Array.isArray(pitchArray)) {
           try {
-            console.log(pitchArray);
+            // console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
             
             setEntireReferData(
@@ -263,21 +286,11 @@ function MultiPlay() {
           console.error('Error: Expected pitch data to be an array');
           setPitchLoaded(true);
         }
-    
-        const lyricsString = data.lyrics;
-        if (typeof lyricsString === 'string') {
-          try {
-            const lyrics = JSON.parse(lyricsString);
-            setLyricsData(lyrics);
-            setLyricsLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing lyrics data:', parseError);
-            setLyricsLoaded(true);
-          }
-        } else {
-          console.warn('Warning: lyrics data not found or invalid in the response');
-          setLyricsLoaded(true);
-        }
+         
+        // 가사 데이터 업로드
+        setLyricsData(data.lyrics);
+        setLyricsLoaded(true);
+        
       } catch (error) {
         console.error('Error handling data:', error);
       }
@@ -484,6 +497,9 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn]);
 
+
+
+
   return (
     <div className='multiPlay-page'>
       <TopBar className='top-bar' />
@@ -527,12 +543,22 @@ function MultiPlay() {
           </div>
 
           {/* Seek Bar */}
-          <div className='seek-bar-container'>
+          <div className='seek-bar-container' style={{marginTop :'75px'}}>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {duration.toFixed(0)} 초
             </div>
           </div>
+          
+
+
+          {/* 현재 재생 중인 가사 출력 */}
+          <div className='karaoke-lyrics'>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
+          </div>
+
 
           <div className='button-area'>
             {/* 시작 버튼 */}
