@@ -96,6 +96,7 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const pingTimesRef = useRef([]);
+  const [useCorrection, setUseCorrection] = useState(false);
 
   const targetStreamRef = useRef(null);
 
@@ -648,6 +649,7 @@ function MultiPlay() {
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+
   const OnPopup = () => {
     setshowPopup(true);
   };
@@ -657,12 +659,12 @@ function MultiPlay() {
   };
 
   useEffect(() => {
-    if (isMicOn) {
+    if (isMicOn && useCorrection) {
       setLatencyOffset(-audioLatency - networkLatency - optionLatency);
     } else {
       setLatencyOffset(0);
     }
-  }, [audioLatency, networkLatency, optionLatency, isMicOn]);
+  }, [audioLatency, networkLatency, optionLatency, isMicOn, useCorrection]);
 
 
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
@@ -771,6 +773,7 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               시작하기 or 예약하기
             </button>
+            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection?'보정끄기':'보정켜기'}</button>
             <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
