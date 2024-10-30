@@ -189,6 +189,7 @@ function MultiPlay() {
   const updatePlayerPeer = (userId, peerConnection) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, peer: peerConnection } : player)));
   };
+
   const updatePlayerMic = (userId, micBool) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
   };
