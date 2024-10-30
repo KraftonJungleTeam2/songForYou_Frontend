@@ -35,6 +35,10 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
+  // 가사 렌더링 하는 state
+  const [prevLyric, setPrevLyric] = useState(' ');
+  const [currentLyric, setCurrentLyric] = useState(' ');
+  const [nextLyric, setNextLyric] = useState(' ');
 
   const [duration, setDuration] = useState(0);
   const [playbackPosition, setPlaybackPosition] = useState(0);
@@ -76,7 +80,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
 
-  const [dataPointCount, setDataPointCount] = useState(200);
+  const [dataPointCount, setDataPointCount] = useState(50);
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
@@ -95,10 +99,36 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-  // songContext에서 노래 정보를 불러옴
-  useEffect(() => {
+   // 섬네일 업데이트 로직 (미완)
+   useEffect(() => {
+    if (reservedSongs.length > 0) {
+      setcurrentData(reservedSongs[0]);
+    }
+  }, [reservedSongs]);
+
+   // songContext에서 노래 정보를 불러옴
+   useEffect(() => {
     fetchSongLists();
   }, [fetchSongLists]);
+
+    // 재생 위치에 따라 가사 업데이트
+    useEffect(() => {
+      let curr_idx = -1;
+      let segments = [];
+      if (lyricsData && lyricsData.segments) {
+        segments = lyricsData.segments;
+        for (let i = 0; i < segments.length; i++) {
+          if (playbackPosition >= segments[i].start) {
+            curr_idx = i;
+          } else if (curr_idx >= 0) {
+            break;
+          }
+        }
+      }
+      setPrevLyric(segments[curr_idx - 1]?.text || ' ');
+      setCurrentLyric(segments[curr_idx]?.text || ' ');
+      setNextLyric(segments[curr_idx + 1]?.text || ' ');
+    }, [playbackPosition, lyricsData]);
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -293,16 +323,20 @@ function MultiPlay() {
         // fileBlob을 URL로 받는다면 해당 URL을 이용하여 blob으로 변환
         const fileUrl = data.mrUrl;
         if (fileUrl) {
-          console.log(fileUrl);
           const fileResponse = await fetch(fileUrl);
           const fileBlob = await fileResponse.blob();
-          setMrDataBlob(fileBlob); // Blob 데이터 저장
+          setMrDataBlob(fileBlob);  // Blob 데이터 저장
         } else {
           console.error('Error: file URL not found in the response');
         }
+        
+        // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
+        const pitchArray = data.pitch;
 
-        const pitchString = data.pitch;
-        if (typeof pitchString === 'string') {
+        console.log(data.mrUrl);
+        console.log(data.pitch);
+        console.log(data.lyrics);
+        if (Array.isArray(pitchArray)) {
           try {
             // console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
@@ -620,17 +654,25 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              // songState={song}
+              // songState={currentData}
             />
           </div>
 
           {/* Seek Bar */}
-          <div className='seek-bar-container'>
+          {/* <div className='seek-bar-container'>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
+          </div> */}
+          
+            {/* 현재 재생 중인 가사 출력 */}
+            <div className='karaoke-lyrics' style={{marginTop :'75px'}}>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
           </div>
+
 
           <div className='button-area'>
             {/* 시작 버튼 */}
