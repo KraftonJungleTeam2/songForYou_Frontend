@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { songlists, useSongs } from '../Context/SongContext';
+import React, { useState, useRef, useEffect} from 'react';
 
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, currentData, nextData}) => {
 
-const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) => {
-  const { songLists, fetchSongLists } = useSongs();
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
+  // Data를 추적하기 위해 사용하는 Ref(참조)
+  const currentDataRef = useRef(currentData);
+  const nextDataRef = useRef(nextData); 
+  // const { roomid } = useParams(); // URL에서 songId 추출
 
-  // songContext에서 노래 정보를 불러옴
+  // songDatas를 추적하기 위한 useEffect
   useEffect(() => {
-    fetchSongLists();
-  }, [fetchSongLists]);
+    currentDataRef.current = currentData;
+    nextDataRef.current = nextData;
+  }, [currentData, nextData]);
 
   const handleTabClick = (view) => {
     setViewType(view);
@@ -24,9 +27,25 @@ const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) =
     e.stopPropagation();
 
     // 예약된 곡 ID 추가
-    setReservedSongs((prev) => [...prev, song.id]);
+    setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달
-    socket.emit('reserveSong', song.id);
+    socket.emit('reserveSong', {songId: song.id});
+  };
+
+  const handlePlay = (e, song) => {
+    e.stopPropagation();
+
+    // 예약된 곡 정보 추가 (섬네일 그리기 위해)
+    setReservedSongs((prev) => [...prev, song]);
+    // 예약 정보를 소켓으로 전달 + 방번호
+    // nextData가 비었다는 것은 곡의 갯수가 1개 이하라는 뜻, 무조건 current먼저 채워짐.
+    if (nextDataRef.current === null) {
+      socket.emit('playSong', { songId: song.id, roomId: roomid, getNow: true });
+    } else {
+      socket.emit('playSong', { songId: song.id, roomId: roomid });
+    }
+
+    onClose();
   };
 
   const isReserved = (songId) => reservedSongs.includes(songId); // 예약 여부 확인
@@ -80,33 +99,44 @@ const ReservationPopup = ({ socket, onClose, reservedSongs, setReservedSongs}) =
                     filteredSongs.map((song) => (
                         <div key={song.id} className='song-item'>
                             <div
-                                className='song-icon'
-                                style={{
-                                backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
-                                backgroundSize: 'cover',
-                                backgroundRepeat: 'no-repeat',
-                                width: '4rem',
-                                height: '4rem',
-                                }}
-                                alt={song.metadata.title}
+                              className='song-icon'
+                              style={{
+                              backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
+                              backgroundSize: 'cover',
+                              backgroundRepeat: 'no-repeat',
+                              width: '4rem',
+                              height: '4rem',
+                              }}
+                              alt={song.metadata.title}
                             />
 
-                        <div className='song-info'>
-                            <h3>{song.metadata.title}</h3>
-                            <p>{song.metadata.description}</p>
-                            <span className='timestamp'>{song.timestamp}</span>
+                        <div className='song-info has-text-left'>
+                          <h3>{song.metadata.title}</h3>
+                          <p>{song.metadata.description}</p>
+                          <span className='timestamp'>{song.timestamp}</span>
                         </div>
-
-
-                        <div
-                            className={`button ${isReserved(song.id) ? 'is-static has-text-grey-light' : 'is-dark'}`}
-                            style={{ cursor: isReserved(song.id) ? 'default' : 'pointer' }}
-                            onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
-                            >
-                            {isReserved(song.id) ? '예약됨!' : <i className="fa-solid fa-plus"></i>}
+                        
+                        <div className='buttons has-addons is-right'
+                        style={{width: '8rem'}}>
+                            <button
+                              className={`button is-dark`}
+                              disabled={isReserved(song.id)}
+                              onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
+                              style={{height: '2.2rem', width: '3rem'}}
+                              >
+                              {isReserved(song.id) ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}
+                            </button>
+                          
+                            <button 
+                              className='button play-button is-dark' 
+                              onClick={(e) => handlePlay(e, song)}
+                              style={{height: '2.2rem', width: '3rem'}}
+                              >
+                              <i className="fa-solid fa-play"></i>
+                            </button>
                         </div>
-
-                        </div>
+                        
+                </div>
                     ))
                     )}
                 </div>

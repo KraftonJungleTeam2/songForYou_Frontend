@@ -40,23 +40,34 @@
 
 /* room-card: 방 정보 카드 크기 고정 */
 .room-card {
-  background-color: #f9f9f9;
-  border-radius: 2px;
+  background-color: #f9f9f9; /* 방이 있는 경우 기본 배경색 */
+  border-radius: 4px;
   box-shadow: var(--shadow);
   padding: 20px;
   display: flex;
   align-items: center;
+  transition: background-color 0.3s ease;
 }
 
-/* 빈 카드 스타일 */
+/* 빈 방 카드 스타일 */
 .room-card.empty {
-  /* background-color: #e0e0e0; */
+  background-color: #e0e0e0; /* 빈 방 카드 배경색 */
   justify-content: center;
+  color: #aaa; /* 텍스트 색상 조정 */
+  text-align: center;
+}
+
+.room-card:not(.empty) .room-info h3 {
+  font-weight: bold;
+  color: #333; /* 방 제목 스타일 */
+}
+
+.room-card:not(.empty) .room-info p {
+  color: #666; /* 방 정보 텍스트 스타일 */
 }
 
 .room-info-empty {
   font-size: 1.2em;
-  color: #666;
 }
 
 .thumbnail {
