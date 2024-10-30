@@ -52,6 +52,7 @@ const Play = () => {
   playbackPositionRef.current = playbackPosition;
 
   const [userSeekPosition, setUserSeekPosition] = useState(0);
+  
   const [duration, setDuration] = useState(0);
   const [prevLyric, setPrevLyric] = useState(' ');
   const [currentLyric, setCurrentLyric] = useState(' ');
