@@ -3,10 +3,11 @@ import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
-import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
+// import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup'
+import {useSongs} from '../Context/SongContext';
 
 
 
@@ -32,6 +33,9 @@ function doubleDataFrequency(dataArray) {
 function MultiPlay() {
   const [players, setPlayers] = useState(Array(4).fill(null)); // 8자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // 곡 리스트 불러오는 context
+  const { songLists, fetchSongLists } = useSongs();
 
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [userSeekPosition, setUserSeekPosition] = useState(0);
@@ -91,6 +95,12 @@ function MultiPlay() {
   const [networkLatency, setNetworkLatency] = useState(0);
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
+
+
+   // songContext에서 노래 정보를 불러옴
+   useEffect(() => {
+    fetchSongLists();
+  }, [fetchSongLists]);
 
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -567,7 +577,7 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
-            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} />
+            <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} />
           )}
 
 
