@@ -18,7 +18,7 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
     e.stopPropagation();
 
     // 예약된 곡 ID 추가
-    setReservedSongs((prev) => [...prev, song.id]);
+    setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달
     socket.emit('reserveSong', {songId: song.id});
   };
@@ -27,9 +27,9 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
     e.stopPropagation();
 
     // 예약된 곡 ID 추가 (임시임 일단)
-    setReservedSongs((prev) => [...prev, song.id]);
+    setReservedSongs((prev) => [...prev, song]);
     // 예약 정보를 소켓으로 전달 + 방번호
-    socket.emit('playSong', {songId: song.id, roomId: roomid});
+    socket.emit('playSong', {songId: song.id, roomId: roomid, getNow: true});
 
     onClose();
   };
@@ -96,26 +96,30 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
                               alt={song.metadata.title}
                             />
 
-                        <div className='song-info'>
+                        <div className='song-info has-text-left'>
                           <h3>{song.metadata.title}</h3>
                           <p>{song.metadata.description}</p>
                           <span className='timestamp'>{song.timestamp}</span>
                         </div>
-
-                        <div
-                          className={`button ${isReserved(song.id) ? 'is-static has-text-grey-light' : 'is-dark'}`}
-                          style={{ cursor: isReserved(song.id) ? 'default' : 'pointer' }}
-                          onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
-                          >
-                          {isReserved(song.id) ? '예약됨!' : <i className="fa-solid fa-plus"></i>}
-                        </div>
                         
-                        <div 
-                          className='play-button has-text-link' 
-                          style={{ cursor: 'pointer', marginLeft: '20px'}} 
-                          onClick={(e) => handlePlay(e, song)}
-                          >
-                          <i className="fa-solid fa-play"></i>
+                        <div className='buttons has-addons is-right'
+                        style={{width: '8rem'}}>
+                            <button
+                              className={`button is-dark`}
+                              disabled={isReserved(song.id)}
+                              onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
+                              style={{height: '2.2rem', width: '3rem'}}
+                              >
+                              {isReserved(song.id) ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}
+                            </button>
+                          
+                            <button 
+                              className='button play-button is-dark' 
+                              onClick={(e) => handlePlay(e, song)}
+                              style={{height: '2.2rem', width: '3rem'}}
+                              >
+                              <i className="fa-solid fa-play"></i>
+                            </button>
                         </div>
                         
                 </div>
