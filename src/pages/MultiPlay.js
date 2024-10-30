@@ -35,7 +35,7 @@ function MultiPlay() {
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
 
-    const [userSeekPosition, setUserSeekPosition] = useState(0);
+  const [userSeekPosition, setUserSeekPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   // const [audioBlob, setAudioBlob] = useState(null);
   const [playbackPosition, setPlaybackPosition] = useState(0);
@@ -609,7 +609,7 @@ function MultiPlay() {
             audioBlob={mrDataBlob}
             setAudioLoaded={setAudioLoaded}
             setDuration={setDuration}
-            onPlaybackPositionChange={handlePlaybackPositionChange}
+            onPlaybackPositionChange={setPlaybackPosition}
             starttime={starttime}
             setStarttime={setStarttime}
             setIsWaiting={setIsWaiting}
