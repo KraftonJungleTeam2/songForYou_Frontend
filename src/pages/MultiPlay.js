@@ -7,9 +7,7 @@ import AudioPlayer from '../components/SyncAudioPlayer';
 import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup'
-import {useSongs} from '../Context/SongContext';
-
-
+import {useSongs} from '../Context/SongContext'; //곡 목록을 가져오기 위한 context
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -77,7 +75,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
 
-  const [dataPointCount, setDataPointCount] = useState(200);
+  const [dataPointCount, setDataPointCount] = useState(100);
 
   // useRef로 관리하는 변수들
   const socketRef = useRef(null);
@@ -217,6 +215,9 @@ function MultiPlay() {
       setStarttime(clientStartTime);
     })
 
+
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // 마운트된 데이터 받는 부분
     socketRef.current.on('playSong', async (data) => {
       try {
         
@@ -230,33 +231,36 @@ function MultiPlay() {
         } else {
           console.error('Error: file URL not found in the response');
         }
-    
-        const pitchString = data.pitch;
-        if (typeof pitchString === 'string') {
+        
+        // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
+        const pitchArray = data.pitch;
+
+        if (Array.isArray(pitchArray)) {
           try {
-            const pitchArray = JSON.parse(pitchString);
+            console.log(pitchArray);
             const processedPitchArray = doubleDataFrequency(pitchArray);
+            
             setEntireReferData(
               processedPitchArray.map((pitch, index) => ({
                 time: index * 25,
                 pitch,
               }))
             );
-    
+        
             setEntireGraphData(
               processedPitchArray.map((_, index) => ({
                 time: index * 25,
                 pitch: null,
               }))
             );
-    
+        
             setPitchLoaded(true);
-          } catch (parseError) {
-            console.error('Error parsing pitch data:', parseError);
+          } catch (error) {
+            console.error('Error processing pitch data:', error);
             setPitchLoaded(true);
           }
         } else {
-          console.warn('Warning: pitch data not found or invalid in the response');
+          console.error('Error: Expected pitch data to be an array');
           setPitchLoaded(true);
         }
     
@@ -510,19 +514,6 @@ function MultiPlay() {
             <p>가수</p>
             <p>곡번호</p>
           </div>
-          {/* 오디오 상태 표시 */}
-          {/* <div className="audio-status">
-                        {audioLoaded ? (
-                            <div>
-                                <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
-                                <p>현재 상태: {isPlaying ? '재생 중' : '정지'}</p>
-                                <p>재생 위치: {playbackPosition.toFixed(2)}초</p>
-                                <p>실제 지연 시간: {starttime ? starttime.toFixed(5) : "측정 중"}초</p>
-                            </div>
-                        ) : (
-                            <p>오디오 로딩 중...</p>
-                        )}
-                    </div> */}
 
           <div className='pitch-graph-multi' style={{ height: '500px' }}>
             <PitchGraph
@@ -539,7 +530,7 @@ function MultiPlay() {
           <div className='seek-bar-container'>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
-              {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
+              {playbackPosition.toFixed(3)} / {duration.toFixed(0)} 초
             </div>
           </div>
 
@@ -559,8 +550,9 @@ function MultiPlay() {
             </button>
 
             <button className='button reservation-button' onClick={OnPopup}>
-              시작하기 or 예약하기
+              노래 올리기 or 예약하기
             </button>
+
             <h3>networkLatency: {networkLatency}</h3>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
