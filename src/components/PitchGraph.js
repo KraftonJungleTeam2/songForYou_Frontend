@@ -15,7 +15,7 @@ const PitchGraph = ({
   realtimeData,
   referenceData,
   dataPointCount = 100,
-  currentTimeIndex, 
+  currentTimeIndex,
   songState,
 }) => {
   const backgroundCanvasRef = useRef(null);
@@ -70,10 +70,10 @@ const PitchGraph = ({
       image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
       image.src = `data:image/jpeg;base64,${arrayBufferToBase64(songState.image.data)}`;
       image.onload = () => {
-        ctx.filter = 'blur(15px)';
+        ctx.filter = 'blur(10px)';
         const imgHeight = image.height;
         const imgWidth = image.width;
-  
+
         ctx.drawImage(
           image,
           0,
@@ -83,14 +83,12 @@ const PitchGraph = ({
         );
         ctx.drawImage(image, 0, -(imgHeight + dimensions.height) / 2, graphWidth, (imgHeight / imgWidth) * dimensions.width);
         ctx.filter = 'none';
-  
+
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
 
         drawGuidelinesAndLabels(ctx);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.fillRect(0, 0, dimensions.width, dimensions.height);
-        drawGuidelinesAndLabels(ctx);
+
       };
     } else {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -142,26 +140,30 @@ const PitchGraph = ({
         const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
         const y2 = logScale(point.pitch, dimensions, cFrequencies);
         // x1이 1/3 지점 이하일 때 불투명도 조정
-        ctx.globalAlpha = !isRealtime && x1 + 1 <= x0 ? 0.5 : 1.0;
+        ctx.globalAlpha = !isRealtime && x1 + 1 <= x0 ? 0.2 : 1.0;
         ctx.beginPath(); // 각 선마다 경로 시작
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
       });
       ctx.globalAlpha = 1.0; // 불투명도 초기화
-      if (isRealtime) {
-        const startX = x0;
-        const endX = 0;
-        const currentY = logScale(data[currentTimeIndex]?.pitch, dimensions, cFrequencies);
-        if (data[currentTimeIndex]?.pitch !== null) {
-          ctx.beginPath();
-          ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
-          ctx.lineWidth = 10;
-          ctx.moveTo(startX, currentY);
-          ctx.lineTo(endX, currentY);
-          ctx.stroke();
-        }
-      }
+
+
+      // if (isRealtime) {
+      //   const startX = x0;
+      //   const endX = 0;
+      //   const currentY = logScale(data[currentTimeIndex]?.pitch, dimensions, cFrequencies);
+      //   if (data[currentTimeIndex]?.pitch !== null) {
+      //     ctx.beginPath();
+      //     ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+      //     ctx.lineWidth = 10;
+      //     ctx.moveTo(startX, currentY);
+      //     ctx.lineTo(endX, currentY);
+      //     ctx.stroke();
+      //   }
+      // }
+
+
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
     };
@@ -170,8 +172,8 @@ const PitchGraph = ({
     // 실시간 피치 데이터 그리기
     drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true); // 주황색
   }, [dimensions, referenceData, realtimeData, cFrequencies, dataPointCount, currentTimeIndex, graphWidth]);
-  
-  
+
+
   return (
     <>
       <canvas ref={dataCanvasRef} width={dimensions.width} height={dimensions.height} style={{ position: 'absolute', zIndex: 2 }} />
