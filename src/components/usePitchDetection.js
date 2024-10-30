@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData) => {
+export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPositionRef, setEntireGraphData) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -111,7 +111,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     let stopStreamFunction;
     async function setupAudio() {
       try {
-        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext();
+        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext(targetStreamRef.current);
         stopStreamFunction = stopStream;
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
@@ -125,8 +125,8 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         console.error('Error accessing the microphone', error);
       }
     }
-
-    setupAudio();
+    if (targetStreamRef.current)
+      setupAudio();
 
     return () => {
       if (sourceRef.current) {
@@ -140,7 +140,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         stopStreamFunction();
       }
     };
-  }, []);
+  }, [targetStreamRef.current]);
 
   useEffect(() => {
     let intervalId;
