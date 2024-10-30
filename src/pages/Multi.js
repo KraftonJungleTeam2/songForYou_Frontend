@@ -76,7 +76,7 @@ function Multi() {
         <TopBar />
         <div className='content-area-multi'>
           {isCreatingRoom ? (
-            <RoomCreation onCancel={() => setIsCreatingRoom(false)} /> // 방 생성 화면
+            <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
           ) : (
             <div className='main-area'>
               <button className='button page-button is-white' onClick={handlePreviousPage}>
@@ -87,20 +87,18 @@ function Multi() {
                 {roomCards.map((room, index) => (
                   <div
                     className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`}
-                    key={room.empty ? `empty-${index}` : room.id} // 고유한 key 설정
+                    key={room.empty ? `empty-${index}` : room.id}
                   >
                     {room.empty ? (
                       <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
-                      <>
-                        <div onClick={(e) => handlePlay(e, room.id)}>
-                          <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
-                          <div className='room-info'>
-                            <h3>{room.roomTitle}</h3>
-                            <p>Players: {room.users.length}/4</p>
-                          </div>
+                      <div onClick={(e) => handlePlay(e, room.id)} className="room-content">
+                        <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
+                        <div className='room-info'>
+                          <h3>{room.roomTitle}</h3>
+                          <p>Players: {room.users.length}/4</p>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -114,7 +112,7 @@ function Multi() {
 
           <div className={`bottom-buttons ${isSidebarOpen ? 'shifted' : ''}`}>
             <button className='quick-join'>빠른 입장</button>
-            <button className='sort-by'> 정렬 조건</button>
+            <button className='sort-by'>정렬 조건</button>
             <button className='create-room' onClick={() => setIsCreatingRoom(true)}>
               방 생성
             </button>
