@@ -152,13 +152,6 @@ function MultiPlay() {
     }
   };
 
-  // 섬네일 업데이트 로직 (미완)
-  useEffect(() => {
-    if (reservedSongs.length > 0) {
-      setcurrentData(reservedSongs[0]);
-    }
-  }, [reservedSongs]);
-
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
     fetchSongLists();
@@ -461,7 +454,7 @@ function MultiPlay() {
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
     socketRef.current.on('playSong', (data) => {
       try{
-        console.log(data);
+        // console.log(data);
         if(currentDataRef.current === null){
           setcurrentData(data);
         }
