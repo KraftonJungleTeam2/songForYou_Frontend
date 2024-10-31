@@ -212,9 +212,9 @@ function MultiPlay() {
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
         },
         video: false,
       });
@@ -785,6 +785,7 @@ function MultiPlay() {
             </button>
             <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection ? '보정끄기' : '보정켜기'}</button>
             <h3>networkLatency: {networkLatency}</h3>
+            <input type='number' value={optionLatency} onChange={(e)=>setOptionLatency(e.target.value)}></input>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className='remote-audios' style={{ display: 'none' }}>
