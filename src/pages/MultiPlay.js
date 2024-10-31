@@ -192,6 +192,7 @@ function MultiPlay() {
   const updatePlayerPeer = (userId, peerConnection) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, peer: peerConnection } : player)));
   };
+
   const updatePlayerMic = (userId, micBool) => {
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
     if (micBool) {
@@ -202,22 +203,43 @@ function MultiPlay() {
   // 마이크 스트림 획득
   const getLocalStream = async () => {
     try {
-      localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        // audio: {
-        //   autoGainControl: false, // 자동 게인 제어
-        //   echoCancellation: false,  // 에코 제거
-        //   noiseSuppression: false,   // 노이즈 억제
-        //   voiceIsolation: false,
-        //   },
+      // 기존 스트림이 있다면 정리
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
         video: false,
       });
+
+      // 트랙 상태 모니터링
+      stream.getAudioTracks().forEach((track) => {
+        track.onended = async () => {
+          console.log('Audio track ended, attempting to recover');
+          // 트랙이 의도치 않게 종료된 경우 재연결 시도
+          if (isMicOn) {
+            await getLocalStream();
+          }
+        };
+      });
+
+      localStreamRef.current = stream;
       const audioElement = document.getElementById('localAudio');
       if (audioElement) {
-        audioElement.srcObject = localStreamRef.current;
+        audioElement.srcObject = stream;
       }
+
+      return stream;
     } catch (error) {
-      console.error('마이크 스트림 오류:', error);
+      console.error('Error getting local stream:', error);
+      throw error;
     }
   };
 
@@ -290,15 +312,6 @@ function MultiPlay() {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
-      // peer 연결 상태 모니터링 추가
-      peerConnection.onconnectionstatechange = () => {
-        if (peerConnection.connectionState === 'connected') {
-          // peer 연결이 완료되면 players 상태 업데이트
-          console.log('1st', callerId);
-          updatePlayerPeer(callerId, peerConnection);
-        }
-      };
-
       socketRef.current.emit('answer', {
         targetId: callerId,
         answer: answer,
@@ -310,14 +323,6 @@ function MultiPlay() {
       const peerConnection = peerConnectionsRef.current[callerId];
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
-
-        peerConnection.onconnectionstatechange = () => {
-          if (peerConnection.connectionState === 'connected') {
-            // peer 연결이 완료되면 players 상태 업데이트
-            console.log('2nd', callerId);
-            updatePlayerPeer(callerId, peerConnection);
-          }
-        };
       }
     });
 
@@ -430,46 +435,59 @@ function MultiPlay() {
         socketRef.current.close();
       }
 
-      // 스트림 정리
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
+
     };
   }, []);
 
-  const micOn = () => {
+  const micOn = async () => {
     if (isMicOn) return;
 
-    if (localStreamRef.current) {
+    try {
+      if (!localStreamRef.current || !localStreamRef.current.active) {
+        await getLocalStream();
+      }
+
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
+        console.log('reachere??');
         audioTrack.enabled = true;
-        setIsMicOn(true);
-        socketRef.current.emit('userMicOn', {
-          roomId: roomId,
+
+        // peer connections 업데이트
+        Object.values(peerConnectionsRef.current).forEach((pc) => {
+          const sender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+          if (sender) {
+            sender.replaceTrack(audioTrack);
+          }
         });
+
+        setIsMicOn(true);
+        socketRef.current.emit('userMicOn', { roomId });
         setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: true } : player)));
+
+        if (isPlaying) setAudioLatency(200);
       }
-      targetStreamRef.current = localStreamRef.current;
+    } catch (error) {
+      console.error('Error in micOn:', error);
     }
-    if (isPlaying) setAudioLatency(200);
   };
 
   const micOff = () => {
     if (!isMicOn) return;
 
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = false;
-        setIsMicOn(false);
-        socketRef.current.emit('userMicOff', {
-          roomId: roomId,
-        });
-        setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: false } : player)));
+    try {
+      if (localStreamRef.current) {
+        const audioTrack = localStreamRef.current.getAudioTracks()[0];
+        if (audioTrack) {
+          audioTrack.enabled = false;
+          setIsMicOn(false);
+          socketRef.current.emit('userMicOff', { roomId });
+          setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.peer === null ? { ...player, mic: false } : player)));
+        }
       }
+      if (isPlaying) setAudioLatency(0);
+    } catch (error) {
+      console.error('Error in micOff:', error);
     }
-    if (isPlaying) setAudioLatency(0);
   };
   // Peer Connection 생성 함수
   const createPeerConnection = async (userId) => {
@@ -499,39 +517,45 @@ function MultiPlay() {
         if (audioElement && event.streams[0]) {
           audioElement.srcObject = event.streams[0];
         }
+        peerConnection.addEventListener('connectionstatechange', event => {
+          console.log('Connection State:', peerConnection.connectionState);
+        });
+
+        peerConnection.addEventListener('iceconnectionstatechange', event => {
+          console.log('ICE Connection State:', peerConnection.iceConnectionState);
+        });
       }, 100);
 
-      if (event.track.kind === 'audio') {
-        const audioReceiver = event.receiver;
+      // if (event.track.kind === 'audio') {
+      //   const audioReceiver = event.receiver;
 
-        // 오디오 레벨 체크 함수
-        const checkAudioLevel = async () => {
-          try {
-            const sources = await audioReceiver.getSynchronizationSources();
-            if (sources && sources.length > 0) {
-              const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
+      //   // 오디오 레벨 체크 함수
+      //   const checkAudioLevel = async () => {
+      //     try {
+      //       const sources = await audioReceiver.getSynchronizationSources();
+      //       if (sources && sources.length > 0) {
+      //         const audioLevel = sources[0].audioLevel; // 0-1 사이의 값
 
-              if (audioLevel > 0.01) {
-                // 임계값은 조정 가능
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
-              } else {
-                // 음성이 없거나 매우 낮을 때
-                setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
-              }
-            }
-          } catch (error) {
-            console.error('Audio level check failed:', error);
-          }
-        };
+      //         if (audioLevel > 0.01) {
+      //           // 임계값은 조정 가능
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: true } : player)));
+      //         } else {
+      //           // 음성이 없거나 매우 낮을 때
+      //           setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, isAudioActive: false } : player)));
+      //         }
+      //       }
+      //     } catch (error) {
+      //       console.error('Audio level check failed:', error);
+      //     }
+      //   };
 
-        // 주기적으로 체크 (100ms)
-        const intervalId = setInterval(checkAudioLevel, 100);
+      //   // 주기적으로 체크 (100ms)
+      //   const intervalId = setInterval(checkAudioLevel, 100);
 
-        // 컴포넌트 언마운트 시 정리
-        return () => clearInterval(intervalId);
-      }
+      //   // 컴포넌트 언마운트 시 정리
+      //   return () => clearInterval(intervalId);
+      // }
     };
-
     // 로컬 스트림 추가
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
@@ -564,19 +588,7 @@ function MultiPlay() {
       }
       if (nUsers) {
         const smre = (sqrtRTTs / nUsers) ** 2;
-        setNetworkLatency((networkLatency) => {
-          // 점진적인 오차 반영
-          const newL = networkLatency * 0.8 + smre * 0.2;
-          if (networkLatency - newL > 40 || networkLatency - newL < -40) {
-            // 차이가 40이상 나거나
-            return newL;
-          } else if (networkLatency > 30 && (networkLatency / newL > 2 || networkLatency / newL < 0.5)) {
-            // 2배 이상 날 때에만 업데이트를 해서 자주 배속이 걸리지 않도록 하였음.
-            return newL;
-          } else {
-            return networkLatency;
-          }
-        });
+        setNetworkLatency(networkLatency * 0.8 + smre * 0.2);
       }
     }
     const interval = setInterval(measureLatency, 1000);
@@ -584,7 +596,6 @@ function MultiPlay() {
     return () => clearInterval(interval);
   }, []);
 
-  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -666,7 +677,6 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn, useCorrection]);
 
-
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
@@ -736,7 +746,7 @@ function MultiPlay() {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-            // songState={currentData}
+              // songState={currentData}
             />
           </div>
 
@@ -765,7 +775,7 @@ function MultiPlay() {
             <button
               className={`button mic-button ${!isPlaying ? 'is-disabled' : ''}`} // 버튼 스타일 변경
               onClick={isMicOn ? micOff : micOn}
-            //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
+              //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
             >
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
@@ -773,8 +783,9 @@ function MultiPlay() {
             <button className='button reservation-button' onClick={OnPopup}>
               시작하기 or 예약하기
             </button>
-            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection?'보정끄기':'보정켜기'}</button>
+            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>{useCorrection ? '보정끄기' : '보정켜기'}</button>
             <h3>networkLatency: {networkLatency}</h3>
+            <input type='number' value={optionLatency} onChange={(e)=>setOptionLatency(e.target.value)}></input>
             {/* 오디오 엘리먼트들 */}
             <audio id='localAudio' autoPlay muted />
             <div className='remote-audios' style={{ display: 'none' }}>
