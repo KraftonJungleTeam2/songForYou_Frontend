@@ -181,6 +181,7 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
             // Update entireGraphData based on playbackPosition
             const playbackPos = playbackPositionRef.current; // seconds
             const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
+    
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
@@ -196,6 +197,7 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
             // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
             const playbackPos = playbackPositionRef.current;
             const index = round(playbackPos * 40);
+            
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
@@ -212,6 +214,7 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
           // 유효하지 않은 피치인 경우
           const playbackPos = playbackPositionRef.current;
           const index = round(playbackPos * 40);
+          
 
           setEntireGraphData((prevData) => {
             if (index < 0 || index >= prevData.length) return prevData;
@@ -230,6 +233,7 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
         setPitch(0);
         const playbackPos = playbackPositionRef.current;
         const index = round(playbackPos * 40);
+        
 
         setEntireGraphData((prevData) => {
           if (index < 0 || index >= prevData.length) return prevData;
