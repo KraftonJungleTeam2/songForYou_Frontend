@@ -120,6 +120,8 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
+  const [testval, settestval] = useState(0);
+  
    // 섬네일 업데이트 로직 (미완)
     useEffect(() => {
       if (reservedSongs.length > 0) {
@@ -443,6 +445,9 @@ function MultiPlay() {
     });
 
     socketRef.current.on('startTime', (data) => {
+      setcurrentData(nextDataRef.current);
+      setnextData(null);
+      
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
