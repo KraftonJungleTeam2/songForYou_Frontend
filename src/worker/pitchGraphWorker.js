@@ -8,43 +8,38 @@ import { getCFrequencies, logScale } from '../utils/GraphUtils';
 let canvas, ctx, dimensions, cFrequencies;
 let songImageData = null;
 
-self.onmessage = function (e) {
-  const data = e.data;
-  try {
-    switch (data.type) {
-      case 'init':
-        canvas = data.canvas;
-        ctx = canvas.getContext('2d');
-        cFrequencies = getCFrequencies();
-        break;
-      case 'updateData':
-        dimensions = data.dimensions;
+self.onmessage = (event) => {
+  console.log(event);
+  const data = event.data
+  //초기화 if 문
+  if(data.canvas){     
+    console.log(data);
 
-        // songStateImageData를 수신
-        if (data.songStateImageData) {
-          songImageData = data.songStateImageData;
-        }
-
-        // OffscreenCanvas 크기 업데이트
-        if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
-          canvas.width = dimensions.width;
-          canvas.height = dimensions.height;
-        }
-
-        drawData(
-          data.realtimeData,
-          data.referenceData,
-          data.dataPointCount,
-          data.currentTimeIndex
-        );
-        break;
-      default:
-        break;
-    }
-  } catch (error) {
-    // 에러 메시지 전송
-    self.postMessage({ type: 'error', message: error.message });
+    canvas = data.canvas;
+    ctx = canvas.getContext('2d');
+    cFrequencies = getCFrequencies();
   }
+  else{
+    dimensions = data.dimensions;
+    // songStateImageData를 수신
+    if (data.songStateImageData) {
+      songImageData = data.songStateImageData;
+    }
+
+    // OffscreenCanvas 크기 업데이트
+    if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+    }
+
+    drawData(
+      data.realtimeData,
+      data.referenceData,
+      data.dataPointCount,
+      data.currentTimeIndex
+    );
+  }
+      
 };
 
 function drawData(
