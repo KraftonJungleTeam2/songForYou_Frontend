@@ -138,18 +138,10 @@ const Play = () => {
           try {
             const pitchArray = JSON.parse(pitchString);
             const processedPitchArray = doubleDataFrequency(pitchArray);
-            setEntireReferData(
-              processedPitchArray.map((pitch, index) => ({
-                time: index * 25,
-                pitch,
-              }))
-            );
+            setEntireReferData(processedPitchArray);
 
             setEntireGraphData(
-              processedPitchArray.map((_, index) => ({
-                time: index * 25,
-                pitch: null,
-              }))
+              new Array(processedPitchArray.length).fill(null)
             );
 
             setPitchLoaded(true);

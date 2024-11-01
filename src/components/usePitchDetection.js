@@ -185,13 +185,9 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
-
-              const newData = [...prevData];
-              newData[index] = {
-                ...newData[index],
-                pitch: smoothedPitch,
-              };
-              return newData;
+              
+              prevData[index] = smoothedPitch;
+              return prevData;
             });
           } else {
             // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
@@ -201,13 +197,9 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
-
-              const newData = [...prevData];
-              newData[index] = {
-                ...newData[index],
-                pitch: pitchRef.current > 0 ? pitchRef.current : null,
-              };
-              return newData;
+              
+              prevData[index] = pitchRef.current > 0 ? pitchRef.current : null;
+              return prevData;
             });
           }
         } else {
@@ -219,12 +211,8 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
           setEntireGraphData((prevData) => {
             if (index < 0 || index >= prevData.length) return prevData;
 
-            const newData = [...prevData];
-            newData[index] = {
-              ...newData[index],
-              pitch: null,
-            };
-            return newData;
+            prevData[index] = null;
+              return prevData;
           });
 
           setPitch(0);
@@ -238,18 +226,14 @@ export const usePitchDetection = (targetStreamRef, isPlaying = true, playbackPos
         setEntireGraphData((prevData) => {
           if (index < 0 || index >= prevData.length) return prevData;
 
-          const newData = [...prevData];
-          newData[index] = {
-            ...newData[index],
-            pitch: null,
-          };
-          return newData;
+          prevData[index] = null;
+            return prevData;
         });
       }
     }
 
     if (isPlaying) {
-      intervalId = setInterval(updatePitch, 25);
+      intervalId = setInterval(updatePitch, 50);
     }
 
     return () => {
