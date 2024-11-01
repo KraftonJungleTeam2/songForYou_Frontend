@@ -122,7 +122,7 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-  const [testval, settestval] = useState(0);
+
 
   // 섬네일 업데이트 로직 (미완)
   useEffect(() => {
@@ -227,19 +227,11 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
 
-          setEntireReferData(
-            processedPitchArray.map((pitch, index) => ({
-              time: index * 25,
-              pitch,
-            }))
-          );
+            setEntireReferData(processedPitchArray);
 
-          setEntireGraphData(
-            processedPitchArray.map((_, index) => ({
-              time: index * 25,
-              pitch: null,
-            }))
-          );
+            setEntireGraphData(
+              new Array(processedPitchArray.length).fill(null)
+            );
 
           setPitchLoaded(true);
         } catch (error) {
