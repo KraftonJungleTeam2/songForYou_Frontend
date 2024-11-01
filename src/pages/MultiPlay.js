@@ -10,6 +10,7 @@ import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
+import measureLatency from '../components/LatencyCalc'
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -120,16 +121,12 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
+  // latencyCalc.js에서 사용
+  const oldSamplesCount = useRef(0);
+  const oldPlayoutDelay = useRef(0);
+
   const [testval, settestval] = useState(0);
 
-  const handleInputChange = (e) => {
-    // 키보드 입력에 의한 이벤트인지 확인
-    const isKeyboardEvent = e.nativeEvent instanceof KeyboardEvent;
-    
-    if (isKeyboardEvent) {
-      setInputValue(e.target.value);
-    }
-  };
 
    // 섬네일 업데이트 로직 (미완)
     useEffect(() => {
@@ -454,7 +451,7 @@ function MultiPlay() {
 
     // 서버로부터 ping 응답을 받으면 handlePingResponse 호출
     socketRef.current.on('pingResponse', (data) => {
-      const receiveTime = Date.now();
+      const receiveTime = performance.now();
       const { sendTime, serverTime } = data;
 
       handlePingResponse(sendTime, serverTime, receiveTime);
@@ -467,7 +464,9 @@ function MultiPlay() {
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
-
+      console.log(serverStartTime);
+      console.log(serverTimeDiff.current);
+      console.log(serverStartTime);
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
     });
@@ -643,30 +642,7 @@ function MultiPlay() {
   };
 
   useEffect(() => {
-    // 지연 시간 측정 함수
-    async function measureLatency() {
-      let sqrtRTTs = 0;
-      let nUsers = 0;
-
-      for (let key in peerConnectionsRef.current) {
-        const peerConnection = peerConnectionsRef.current[key];
-        const stats = await peerConnection.getStats();
-
-        stats.forEach((report) => {
-          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-            const rtt = report.currentRoundTripTime;
-            sqrtRTTs += Math.sqrt(rtt * 1000);
-            nUsers += 1;
-            console.log(`RTT to peer ${key}: ${rtt * 1000} ms`);
-          }
-        });
-      }
-      if (nUsers) {
-        const smre = (sqrtRTTs / nUsers) ** 2;
-        setNetworkLatency(networkLatency * 0.8 + smre * 0.2);
-      }
-    }
-    const interval = setInterval(measureLatency, 1000);
+    const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -691,7 +667,7 @@ function MultiPlay() {
 
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
-    const sendTime = Date.now();
+    const sendTime = performance.now();
     socketRef.current.emit('ping', {
       sendTime,
     });

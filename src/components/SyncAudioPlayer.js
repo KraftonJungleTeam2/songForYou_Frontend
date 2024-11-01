@@ -71,8 +71,8 @@ const AudioPlayer = ({
     sourceRef.current = source;
 
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-    const offset = (Date.now() - starttime) / 1000;
-    // while (Date.now() < starttime) {}
+    const offset = (performance.now() - starttime) / 1000;
+    // while (performance.now() < starttime) {}
     // source.start();
 
     //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
@@ -126,7 +126,7 @@ const AudioPlayer = ({
   useEffect(() => {
     if (!isPlaying) return;
 
-    const targetTime = Date.now() - (starttime + latencyOffset);
+    const targetTime = performance.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
     if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
 
@@ -136,7 +136,7 @@ const AudioPlayer = ({
     setPlaybackRate(transitionSpeed);
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
-      console.log('default rate!, overrun: ' + (Date.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
+      console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
@@ -162,12 +162,12 @@ const AudioPlayer = ({
   useEffect(() => {
     if (!isPlaying) return;
 
-    let lastUpdateTime = Date.now();
+    let lastUpdateTime = performance.now();
 
     const updatePosition = () => {
       if (!isPlaying) return;
 
-      const now = Date.now();
+      const now = performance.now();
       const elapsed = now - lastUpdateTime;
 
       if (elapsed >= FRAME_RATE * 1000) {
