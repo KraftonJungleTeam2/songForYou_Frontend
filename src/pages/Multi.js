@@ -50,10 +50,20 @@ function Multi() {
     fetchRooms();
   }, [fetchRooms]);
 
-  const handlePlay = (e, roomId) => {
+  const handlePlay = (e, roomId, roomPassword) => {
     e.stopPropagation();
+    if (roomPassword === '') navigate(`/multiplay/${roomId}`, { replace: true }); // 상태와 함께 네비게이션
+    else {
+      // 비밀번호가 있는 경우 팝업으로 확인
+      const userPassword = prompt('방 비밀번호를 입력하세요:');
 
-    navigate(`/multiplay/${roomId}`, { replace: true }); // 상태와 함께 네비게이션
+      if (userPassword === roomPassword) {
+        navigate(`/multiplay/${roomId}`, { replace: true });
+      } else if (userPassword !== null) {
+        // 취소 버튼이 아닌 경우
+        alert('비밀번호가 일치하지 않습니다.');
+      }
+    }
   };
 
   const handlePreviousPage = () => {
@@ -89,7 +99,7 @@ function Multi() {
                     {room.empty ? (
                       <div className='room-info-empty has-text-light-invert'>빈 방</div>
                     ) : (
-                      <div onClick={(e) => handlePlay(e, room.id)} className='room-content'>
+                      <div onClick={(e) => handlePlay(e, room.id, room.password)} className='room-content'>
                         <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
                         <div className='room-info'>
                           <h3>{room.roomTitle}</h3>
