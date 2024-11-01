@@ -69,16 +69,9 @@ function updateBackground() {
 
     createImageBitmap(imageBlob).then((imageBitmap) => {
       backgroundCtx.filter = 'blur(10px)';
-      const imgHeight = imageBitmap.height;
-      const imgWidth = imageBitmap.width;
+      // const imgHeight = imageBitmap.height;
+      // const imgWidth = imageBitmap.width;
 
-      backgroundCtx.drawImage(
-        imageBitmap,
-        0,
-        -(imgHeight + dimensions.height) / 2,
-        dimensions.width,
-        (imgHeight / imgWidth) * dimensions.width
-      );
       backgroundCtx.filter = 'none';
 
       backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
