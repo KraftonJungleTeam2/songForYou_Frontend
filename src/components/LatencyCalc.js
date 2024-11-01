@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 
 // 지연 시간 측정 함수
-async function MeasureLatency(peerConnectionsRef, samples, delay) {
+async function MeasureLatency(peerConnectionsRef, samples, delay, state) {
 
   for (let key in peerConnectionsRef.current) {
     const peerConnection = peerConnectionsRef.current[key];
@@ -19,14 +19,17 @@ async function MeasureLatency(peerConnectionsRef, samples, delay) {
         samples.current = newSamples;
         delay.current = newDelay;
       }
+      if (report.type === 'inbound-rtp') {
+        console.log("mean jitterBufferDelay: ", report.jitterBufferDelay/report.jitterBufferEmittedCount);
+        console.log("mean jitterBufferMinimumDelay: ", report.jitterBufferMinimumDelay/report.jitterBufferEmittedCount);
+        console.log("mean jitterDelay: ", report.jitterBufferTargetDelay/report.jitterBufferEmittedCount);
+      }
       // if (report.type === 'media-source') {
-      //   console.log(report.totalAudioEnergy);
-      // }
-      // if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-      //   const rtt = report.currentRoundTripTime;
-      //   sqrtRTTs += Math.sqrt(rtt * 1000);
-      //   nUsers += 1;
-      // }
+        //   console.log(report.totalAudioEnergy);
+        // }
+      if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+        console.log("RTT: ", report.currentRoundTripTime);
+      }
     });
   }
 }
