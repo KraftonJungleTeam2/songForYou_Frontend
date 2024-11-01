@@ -120,17 +120,6 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
-  const [testval, settestval] = useState(0);
-
-  const handleInputChange = (e) => {
-    // 키보드 입력에 의한 이벤트인지 확인
-    const isKeyboardEvent = e.nativeEvent instanceof KeyboardEvent;
-    
-    if (isKeyboardEvent) {
-      setInputValue(e.target.value);
-    }
-  };
-
    // 섬네일 업데이트 로직 (미완)
     useEffect(() => {
       if (reservedSongs.length > 0) {
