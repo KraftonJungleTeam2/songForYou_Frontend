@@ -176,9 +176,16 @@ function drawPitchData(
   visibleData.forEach((point, index) => {
     const dataIndex = start + index;
     if (!point || point === null) return;
-    const prevPoint = data[dataIndex - 1];
-    if (!prevPoint || prevPoint === null) return;
+    let prevPoint = data[dataIndex - 1];
     let indexDifference1 = dataIndex - 1 - currentTimeIndex;
+    if (!prevPoint || prevPoint === null) {
+      prevPoint = data[dataIndex - 2];
+      if (!prevPoint || prevPoint === null) {
+        return;
+      } else {
+        indexDifference1 = dataIndex - 2 - currentTimeIndex;
+      }
+    }
     let indexDifference2 = dataIndex - currentTimeIndex;
     const x1 = x0 + indexDifference1 * pixelsPerIndex;
     const x2 = x0 + indexDifference2 * pixelsPerIndex;
