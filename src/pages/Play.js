@@ -234,7 +234,7 @@ const Play = () => {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              songState={song}
+              songimageProps={song}
             />
           </div>
 
