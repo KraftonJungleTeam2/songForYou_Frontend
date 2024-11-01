@@ -6,7 +6,7 @@ export const setupAudioContext = async (stream) => {
   //     autoGainControl: false,
   //   },
   // });
-  console.log(stream);
+  // console.log(stream);
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const analyser = audioContext.createAnalyser();
   const source = audioContext.createMediaStreamSource(stream);
