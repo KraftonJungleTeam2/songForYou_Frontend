@@ -1,5 +1,3 @@
-// src/worker/pitchGraphWorker.js
-
 /* eslint-env worker */
 /* eslint-disable no-restricted-globals */
 
@@ -7,127 +5,149 @@ import { getCFrequencies, logScale } from '../utils/GraphUtils';
 
 let canvas, ctx, dimensions, cFrequencies;
 let songImageData = null;
+let backgroundCanvas = null;
+let backgroundCtx = null;
+let lastDimensions = null;
+let backgroundNeedsUpdate = true;
 
 self.onmessage = (event) => {
-  console.log(event);
-  const data = event.data
-  //초기화 if 문
-  if(data.canvas){     
-    console.log(data);
+  const data = event.data;
 
+  // 초기화
+  if (data.canvas) {
     canvas = data.canvas;
     ctx = canvas.getContext('2d');
     cFrequencies = getCFrequencies();
-  }
-  else{
     dimensions = data.dimensions;
-    // songStateImageData를 수신
-    if (data.songStateImageData) {
-      songImageData = data.songStateImageData;
-    }
 
-    // OffscreenCanvas 크기 업데이트
-    if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
+    // 배경용 OffscreenCanvas 생성
+    backgroundCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+    backgroundCtx = backgroundCanvas.getContext('2d');
+  } else {
+    const dimensionsChanged = !lastDimensions ||
+      lastDimensions.width !== data.dimensions.width ||
+      lastDimensions.height !== data.dimensions.height;
+
+    dimensions = data.dimensions;
+
+    // 크기가 변경되었을 때 캔버스 크기 조정
+    if (dimensionsChanged) {
       canvas.width = dimensions.width;
       canvas.height = dimensions.height;
+      backgroundCanvas.width = dimensions.width;
+      backgroundCanvas.height = dimensions.height;
+      backgroundNeedsUpdate = true;
+      lastDimensions = { ...dimensions };
     }
 
-    drawData(
+    // songStateImageData가 변경되었을 때
+    if (data.songStateImageData !== songImageData) {
+      songImageData = data.songStateImageData;
+      backgroundNeedsUpdate = true;
+    }
+
+    // 배경 업데이트가 필요한 경우에만 배경 다시 그리기
+    if (backgroundNeedsUpdate) {
+      updateBackground();
+      backgroundNeedsUpdate = false;
+    }
+
+    drawFrame(
       data.realtimeData,
       data.referenceData,
       data.dataPointCount,
       data.currentTimeIndex
     );
   }
-      
 };
 
-function drawData(
-  realtimeData,
-  referenceData,
-  dataPointCount,
-  currentTimeIndex
-) {
-  ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-  drawBackground();
-
-  drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
-  drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
-}
-
-function drawBackground() {
-  ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+function updateBackground() {
+  backgroundCtx.clearRect(0, 0, dimensions.width, dimensions.height);
 
   if (songImageData) {
-    // songImageData는 ArrayBuffer 형태라고 가정
     const imageBlob = new Blob([songImageData], { type: 'image/jpeg' });
 
     createImageBitmap(imageBlob).then((imageBitmap) => {
-      ctx.filter = 'blur(10px)';
+      backgroundCtx.filter = 'blur(10px)';
       const imgHeight = imageBitmap.height;
       const imgWidth = imageBitmap.width;
 
-      ctx.drawImage(
+      backgroundCtx.drawImage(
         imageBitmap,
         0,
         -(imgHeight + dimensions.height) / 2,
         dimensions.width,
         (imgHeight / imgWidth) * dimensions.width
       );
-      ctx.filter = 'none';
+      backgroundCtx.filter = 'none';
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+      backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      backgroundCtx.fillRect(0, 0, dimensions.width, dimensions.height);
 
-      drawGuidelinesAndLabels(ctx);
+      drawGuidelinesAndLabels(backgroundCtx);
     }).catch((error) => {
       console.error('Error creating ImageBitmap:', error);
-      // 이미지 로딩에 실패한 경우 기본 배경 처리
-      drawDefaultBackground();
+      drawDefaultBackground(backgroundCtx);
     });
   } else {
-    // 이미지 데이터가 없는 경우 기본 배경 처리
-    drawDefaultBackground();
+    drawDefaultBackground(backgroundCtx);
   }
 }
 
-function drawDefaultBackground() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-  ctx.fillRect(0, 0, dimensions.width, dimensions.height);
-  drawGuidelinesAndLabels(ctx);
+function drawDefaultBackground(targetCtx) {
+  targetCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  targetCtx.fillRect(0, 0, dimensions.width, dimensions.height);
+  drawGuidelinesAndLabels(targetCtx);
 }
 
-function drawGuidelinesAndLabels(ctx) {
+function drawGuidelinesAndLabels(targetCtx) {
   const graphWidth = dimensions.width;
 
-  ctx.beginPath();
-  ctx.strokeStyle = '#EEEEEE';
-  ctx.lineWidth = 4;
-  ctx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-  ctx.shadowBlur = 10;
-  ctx.moveTo(graphWidth / 3, 0);
-  ctx.lineTo(graphWidth / 3, dimensions.height);
-  ctx.stroke();
+  targetCtx.beginPath();
+  targetCtx.strokeStyle = '#EEEEEE';
+  targetCtx.lineWidth = 4;
+  targetCtx.shadowColor = 'rgba(255, 170, 150, 0.8)';
+  targetCtx.shadowBlur = 10;
+  targetCtx.moveTo(graphWidth / 3, 0);
+  targetCtx.lineTo(graphWidth / 3, dimensions.height);
+  targetCtx.stroke();
 
-  ctx.shadowBlur = 0;
-  ctx.shadowColor = 'transparent';
+  targetCtx.shadowBlur = 0;
+  targetCtx.shadowColor = 'transparent';
 
   cFrequencies.forEach((freq, index) => {
     const y = logScale(freq, dimensions, cFrequencies);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.moveTo(0, y);
-    ctx.lineTo(dimensions.width, y);
-    ctx.stroke();
+    targetCtx.lineWidth = 2;
+    targetCtx.beginPath();
+    targetCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    targetCtx.moveTo(0, y);
+    targetCtx.lineTo(dimensions.width, y);
+    targetCtx.stroke();
 
-    ctx.fillStyle = 'white';
-    ctx.font = '10px Arial';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`C${index + 2}`, 15, y);
+    targetCtx.fillStyle = 'white';
+    targetCtx.font = '10px Arial';
+    targetCtx.textBaseline = 'middle';
+    targetCtx.fillText(`C${index + 2}`, 15, y);
   });
 }
 
+function drawFrame(
+  realtimeData,
+  referenceData,
+  dataPointCount,
+  currentTimeIndex
+) {
+  ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+
+  // 캐시된 배경 그리기
+  ctx.drawImage(backgroundCanvas, 0, 0);
+
+  // 데이터 그리기
+  drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
+  drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
+}
+
+// drawPitchData 함수는 기존과 동일
 function drawPitchData(
   data,
   color,
@@ -162,15 +182,15 @@ function drawPitchData(
   const x0 = graphWidth / 3;
   visibleData.forEach((point, index) => {
     const dataIndex = start + index;
-    if (!point || point.pitch === null) return;
+    if (!point || point === null) return;
     const prevPoint = data[dataIndex - 1];
-    if (!prevPoint || prevPoint.pitch === null) return;
+    if (!prevPoint || prevPoint === null) return;
     let indexDifference1 = dataIndex - 1 - currentTimeIndex;
     let indexDifference2 = dataIndex - currentTimeIndex;
     const x1 = x0 + indexDifference1 * pixelsPerIndex;
     const x2 = x0 + indexDifference2 * pixelsPerIndex;
-    const y1 = logScale(prevPoint.pitch, dimensions, cFrequencies);
-    const y2 = logScale(point.pitch, dimensions, cFrequencies);
+    const y1 = logScale(prevPoint, dimensions, cFrequencies);
+    const y2 = logScale(point, dimensions, cFrequencies);
     ctx.globalAlpha = !isRealtime && x1 + 1 <= x0 ? 0.2 : 1.0;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
