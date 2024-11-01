@@ -622,8 +622,13 @@ function MultiPlay() {
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
     
-    setcurrentData(nextData);
-    setnextData(null);
+    setcurrentData(nextData, () => {
+      setnextData(null, () => {
+        socketRef.current.emit('requestStartTimeWithDelay', {
+          roomId: roomId,
+        });
+      })
+    });
 
     console.log('시작버튼' ,currentDataRef.current);
     console.log('시작버튼' ,nextDataRef.current);
