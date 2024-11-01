@@ -71,7 +71,7 @@ const Play = () => {
   const [lyricsData, setLyricsData] = useState(null);
 
   // 렌더링 크기 및 속도 상태
-  const [dataPointCount, setDataPointCount] = useState(200);
+  const [dataPointCount, setDataPointCount] = useState(100);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
   const handlePlaybackPositionChange = (e) => {

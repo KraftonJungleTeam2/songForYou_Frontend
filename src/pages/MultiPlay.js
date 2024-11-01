@@ -10,8 +10,8 @@ import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
-import measureLatency from '../components/LatencyCalc'
 import { useNavigate } from 'react-router-dom';
+import measureLatency from '../components/LatencyCalc'
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -126,8 +126,6 @@ function MultiPlay() {
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
   const oldPlayoutDelay = useRef(0);
-
-
 
   // 섬네일 업데이트 로직 (미완)
   useEffect(() => {
