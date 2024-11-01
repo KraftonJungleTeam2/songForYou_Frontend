@@ -1,6 +1,6 @@
 import React, { useState} from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, nextData, currentData}) => {
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, nextData}) => {
 
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
