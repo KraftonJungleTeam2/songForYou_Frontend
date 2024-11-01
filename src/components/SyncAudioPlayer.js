@@ -45,6 +45,7 @@ const AudioPlayer = ({
         // 오디오 버퍼가 완전히 로드된 후 duration과 로드 상태 설정
         setDuration(audioBufferRef.current.duration);
         setAudioLoaded(true);
+
       } catch (error) {
         console.error('오디오 로딩 오류:', error);
       }
@@ -90,6 +91,8 @@ const AudioPlayer = ({
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       playbackPositionRef.current = 0; // 재생 위치를 초기화
       setStarttime(null);
+      //곡 종료 현재 오디오 없음.
+      setAudioLoaded(false);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
