@@ -1,4 +1,3 @@
-import { useEffect, useState, useRef } from 'react';
 
 // 지연 시간 측정 함수
 async function MeasureLatency(peerConnectionsRef, samples, delay, state) {
