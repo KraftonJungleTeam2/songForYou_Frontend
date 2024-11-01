@@ -8,7 +8,6 @@ function Setting() {
   const [userData, setUserData] = useState({
     name: '',
     email: '',
-    password: '',
   });
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
@@ -100,6 +99,12 @@ function Setting() {
 
   return (
     <div className='settings-container'>
+      <button
+        className='multiplay-nav-button'
+        onClick={() => navigate('/single')} // 또는 원하는 경로
+      >
+        🏠
+      </button>
       <h2>Settings</h2>
       <form onSubmit={handleSubmit}>
         <div className='form-group'>
@@ -109,10 +114,6 @@ function Setting() {
         <div className='form-group'>
           <label htmlFor='email'>Email:</label>
           <input type='email' id='email' name='email' value={userData.email} onChange={handleChange} />
-        </div>
-        <div className='form-group'>
-          <label htmlFor='password'>Password:</label>
-          <input type='password' id='password' name='password' value={userData.password} onChange={handleChange} />
         </div>
         <button type='submit' className='update-button'>
           Update Information
