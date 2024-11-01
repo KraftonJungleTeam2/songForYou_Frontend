@@ -8,6 +8,7 @@ import '../css/karaoke-lyrics.css';
 import '../css/Play.css';
 import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
 import TopBar from '../components/TopBar';
+import { useNavigate } from 'react-router-dom';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -28,6 +29,7 @@ function doubleDataFrequency(dataArray) {
 }
 
 const Play = () => {
+  const navigate = useNavigate();
   // song State 받아옴
   const location = useLocation();
   const { song } = location.state || {};
@@ -206,14 +208,14 @@ const Play = () => {
 
   useEffect(() => {
     async function setUpMediaStream() {
-      targetStreamRef.current =  await navigator.mediaDevices.getUserMedia({
+      targetStreamRef.current = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: false,
         },
       });
-    };
+    }
     setUpMediaStream();
   }, []);
 
@@ -224,6 +226,12 @@ const Play = () => {
     <div className='single-page'>
       <div className='main-content-play'>
         <TopBar />
+        <button
+          className='play-nav-button'
+          onClick={() => navigate('/single')} // 또는 원하는 경로
+        >
+          🏠
+        </button>
         <div className='flex-col' ref={containerRef}>
           {/* Pitch Graph */}
           <div className='pitch-graph'>

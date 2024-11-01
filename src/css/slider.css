@@ -33,7 +33,7 @@
   margin-top: -6px; /* 썸을 트랙 중앙에 위치 */
   width: 16px;
   height: 16px;
-  background: #4A90E2;
+  background: #4a90e2;
   cursor: pointer;
   border-radius: 50%;
   border: none;
@@ -42,7 +42,7 @@
 .range-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;
-  background: #4A90E2;
+  background: #4a90e2;
   cursor: pointer;
   border-radius: 50%;
   border: none;
@@ -52,5 +52,3 @@
 .range-slider::-moz-focus-outer {
   border: 0;
 }
-
-
