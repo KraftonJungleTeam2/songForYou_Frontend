@@ -120,6 +120,8 @@ function MultiPlay() {
   const [optionLatency, setOptionLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
 
+
+
    // 섬네일 업데이트 로직 (미완)
     useEffect(() => {
       if (reservedSongs.length > 0) {
