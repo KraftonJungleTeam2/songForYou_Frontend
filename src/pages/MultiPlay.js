@@ -37,7 +37,7 @@ function MultiPlay() {
   const { roomId } = useParams(); // URL에서 songId 추출
 
   const [socketId, setSocketId] = useState('');
-  const [players, setPlayers] = useState([]); // 8자리 초기화
+  const [players, setPlayers] = useState([]); // 4자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
 
   // 곡 리스트 불러오는 context
@@ -146,6 +146,7 @@ function MultiPlay() {
       if(currentDataRef.current){
         loadData(currentDataRef.current);
       }
+      setReservedSongs(prev => prev.slice(1));
 
       console.log('노래끝' ,currentDataRef.current);
       console.log('노래끝' ,nextDataRef.current);
@@ -620,7 +621,7 @@ function MultiPlay() {
 
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
-
+    
     setcurrentData(nextData);
     setnextData(null);
 
@@ -727,7 +728,7 @@ function MultiPlay() {
                     </div> */}
 
           <div className='pitch-graph-multi' style={{ height: '500px' }}>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={reservedSongs[0]} />
+            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0] || null} />
           </div>
 
           {/* Seek Bar */}

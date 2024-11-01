@@ -1,24 +1,45 @@
-// src/components/PitchGraph.js
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
 
 const PitchGraph = ({
   dimensions,
   realtimeData,
   referenceData,
   dataPointCount,
-  currentTimeIndex
+  currentTimeIndex,
+  songimageProps
 }) => {
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
-  const hasTransferredRef = useRef(false); // 전환 상태를 추적하는 Ref
+  const [imageSrc, setImageSrc] = useState(null);
+
+  // 이미지 데이터를 처리하여 src 생성
+  // useEffect(() => {
+  //   if (songimageProps?.image?.data) {
+  //     // ArrayBuffer를 Base64 문자열로 변환
+  //     const base64String = arrayBufferToBase64(songimageProps.image.data);
+  //     // 이미지의 MIME 타입을 지정 (예: 'image/png' 또는 'image/jpeg')
+  //     const mimeType = 'image/png'; // 필요에 따라 변경
+  //     // 데이터 URL 생성
+  //     const dataUrl = `data:${mimeType};base64,${base64String}`;
+  //     setImageSrc(dataUrl);
+  //   }
+  // }, [songimageProps]);
 
   // Worker와 OffscreenCanvas 초기화
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas._hasTransferred) { // 전환 상태 확인
-      
-      const offscreen = canvas.transferControlToOffscreen(); // 캔버스 전환
-      hasTransferredRef.current = true; // 플래그 설정하여 재호출 방지
+    if (!canvas._hasTransferred) {
+      const offscreen = canvas.transferControlToOffscreen();
 
       const worker = new Worker(new URL('../worker/pitchGraphWorker.js', import.meta.url), {
         type: 'module'
@@ -27,8 +48,8 @@ const PitchGraph = ({
       workerRef.current = worker;
 
       // OffscreenCanvas를 사용하여 워커 초기화
-      worker.postMessage({canvas: offscreen, dimensions }, [offscreen]);
-      console.log('messege on');
+      worker.postMessage({ canvas: offscreen, dimensions }, [offscreen]);
+      console.log('message on');
       canvas._hasTransferred = true;
     }
   }, []); // 마운트 시 한 번만 실행
@@ -37,19 +58,20 @@ const PitchGraph = ({
   useEffect(() => {
     const worker = workerRef.current;
 
-    if (!worker){
+    if (!worker) {
       console.log('no workers');
       return;
     }
-    // console.log('In send data', dimensions.width, dimensions.height);
+
+    // console.log('In send data', songimageProps);
+
     worker.postMessage({
       dimensions,
       realtimeData,
       referenceData,
       dataPointCount,
-      currentTimeIndex,
+      currentTimeIndex
     });
-    
   }, [
     dimensions,
     realtimeData,
@@ -59,17 +81,42 @@ const PitchGraph = ({
   ]);
 
   return (
-    <div style={{ 
-      width: dimensions.width, 
-      height: dimensions.height,
-    }}>
+    <div
+      style={{
+        width: dimensions.width,
+        height: dimensions.height,
+        position: 'relative',
+        overflow: 'hidden', // overflow를 숨겨 가장자리 아티팩트 제거
+      }}
+    >
+      {imageSrc && (
+        <img
+          src={imageSrc}
+          alt="Background"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 0,
+            filter: 'blur(10px)', // 블러 효과 추가
+          }}
+        />
+      )}
       <canvas
         ref={canvasRef}
         width={dimensions.width}
         height={dimensions.height}
-        style={{ 
-          width: '100%', 
-          height: '100%'
+        style={{
+          
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 1,
         }}
       />
     </div>

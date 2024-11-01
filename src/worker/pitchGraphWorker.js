@@ -3,7 +3,8 @@
 
 import { getCFrequencies, logScale } from '../utils/GraphUtils';
 
-let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, cFrequencies, songImageData;
+let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, cFrequencies;
+let songURL = null;
 let dimensions = { width: 1, height: 1 }; // 초기 dimensions 값 설정
 
 // cFrequencies 초기화 - getCFrequencies()가 undefined를 반환할 경우 빈 배열로 설정
@@ -29,20 +30,21 @@ self.onmessage = (event) => {
   }
 
   // dimensions 값이 변경되었는지 확인
-  else if (
-    dimensions.width !== data.dimensions.width || 
-    dimensions.height !== data.dimensions.height
-  ) {
+  else if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) 
+    {
+    
     // console.log("Updating dimensions:", data.dimensions);
     setDimensions(data.dimensions);  // dataCanvas와 backgroundCanvas 모두 업데이트
     updateBackground();
   }
 
-  // songStateImageData가 변경되었을 때
-  if (data.songStateImageData !== songImageData) {
-    songImageData = data.songStateImageData;
+  // 이미지 정보 읽기
+  if (data.songURL && data.songURL !== songURL) {
+    songURL = data.songURL;
+    console.log('이미지 데이터 수신:', songURL);
+    updateBackground(); // 이미지 데이터를 받은 후 배경 업데이트
   }
-
+    
   // 프레임을 그리는 함수 호출
   if (data.realtimeData && data.referenceData && Array.isArray(data.realtimeData) && Array.isArray(data.referenceData)) {
     drawFrame(
@@ -66,26 +68,33 @@ function setDimensions(newDimensions) {
   }
 }
 
-function updateBackground() {
+async function updateBackground() {
   if (!backgroundCtx) return; // backgroundCtx가 초기화되었는지 확인
 
   backgroundCtx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-  if (songImageData) {
-    const imageBlob = new Blob([songImageData], { type: 'image/jpeg' });
+  if (songURL) {
+    try {
+      console.log('배경 이미지 그리기 시작');
+      const response = await fetch(songURL);
+      const blob = await response.blob();
+      const imageBitmap = await createImageBitmap(blob);
+      console.log(imageBitmap);
 
-    createImageBitmap(imageBlob).then((imageBitmap) => {
+      imageBitmap.width = dimensions.width;
+      imageBitmap.height = dimensions.height;
       backgroundCtx.filter = 'blur(10px)';
       backgroundCtx.drawImage(imageBitmap, 0, 0, dimensions.width, dimensions.height);
-      backgroundCtx.filter = 'none';
+      // backgroundCtx.filter = 'none';
       backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       backgroundCtx.fillRect(0, 0, dimensions.width, dimensions.height);
       drawGuidelinesAndLabels(backgroundCtx);
-    }).catch((error) => {
+    } catch (error) {
       console.error('Error creating ImageBitmap:', error);
       drawDefaultBackground(backgroundCtx);
-    });
+    }
   } else {
+    console.log('fucking');
     drawDefaultBackground(backgroundCtx);
   }
 }
