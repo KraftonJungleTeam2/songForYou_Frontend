@@ -121,12 +121,14 @@ function MultiPlay() {
   const MAXPING = 50;
   const MINPING = 10;
   // 최대 허용 오차(ms)
-  const MAXERROR = 10;
+  const MAXERROR = 7;
   const [audioLatency, setAudioLatency] = useState(0);
   const [networkLatency, setNetworkLatency] = useState(0);
   const [optionLatency, setOptionLatency] = useState(0);
   const [jitterLatency, setJitterLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
+  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
+  const micStatRef = useRef({});
 
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
@@ -181,7 +183,7 @@ function MultiPlay() {
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
     fetchSongLists();
-  }, [fetchSongLists]);
+  }, []);
 
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
@@ -604,7 +606,7 @@ function MultiPlay() {
 
   // 레이턴시 측정
   useEffect(() => {
-    const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
+    const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
     return () => clearInterval(interval);
   }, []);
