@@ -575,12 +575,19 @@ function MultiPlay() {
 
       if (peerConnection.connectionState === 'disconnected') {
         // 재연결 대기
-      } else if (peerConnection.connectionState === 'failed') {
-        // 목록에서 삭제
+      } else if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'closed') {
+        // 기존 코드
         delete peerConnectionsRef.current[userId];
-      } else if (peerConnection.connectionState === 'closed') {
-        // 목록에서 삭제
-        delete peerConnectionsRef.current[userId];
+
+        // 트랙 정리
+        peerConnection.getSenders().forEach((sender) => {
+          if (sender.track) {
+            sender.track.stop();
+          }
+        });
+
+        // 추가 정리
+        peerConnection.close();
       }
     };
 
