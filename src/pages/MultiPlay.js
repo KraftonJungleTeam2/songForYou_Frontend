@@ -42,7 +42,7 @@ function MultiPlay() {
   const { roomId } = useParams(); // URL에서 songId 추출
 
   const [socketId, setSocketId] = useState('');
-  const [players, setPlayers] = useState([]); // 8자리 초기화
+  const [players, setPlayers] = useState([]); // 4자리 초기화
   const [isPlaying, setIsPlaying] = useState(false);
 
   // 곡 리스트 불러오는 context
@@ -67,12 +67,11 @@ function MultiPlay() {
 
   // 예약 popup에서 작업하는 부분
   const [reservedSongs, setReservedSongs] = useState([]); // 예약된 곡 ID 리스트
-  const [currentData, setcurrentData] = useState(null); //현재곡 데이터를 담음
+  const [currentData, setcurrentData] = useState(null);
   const [nextData, setnextData] = useState(null);
-  // Data를 추적하기 위해 사용하는 Ref(참조)
   const currentDataRef = useRef(currentData);
-  currentDataRef.current = currentData;
   const nextDataRef = useRef(nextData);
+  currentDataRef.current = currentData;
   nextDataRef.current = nextData;
 
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -132,12 +131,28 @@ function MultiPlay() {
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
   const oldPlayoutDelay = useRef(0);
+  
 
-  // 섬네일 업데이트 로직 (미완)
   useEffect(() => {
-    if (reservedSongs.length > 0) {
+    currentDataRef.current = currentData;
+    nextDataRef.current = nextData;
+    console.log('use' ,currentDataRef.current);
+    console.log('use' ,nextDataRef.current);
+  }, [currentData, nextData]);
+
+  useEffect(() => {
+    audioLoadedRef.current = audioLoaded;
+    if(!audioLoadedRef.current){
+
+      if(currentDataRef.current){
+        loadData(currentDataRef.current);
+      }
+      setReservedSongs(prev => prev.slice(1));
+
+      console.log('노래끝' ,currentDataRef.current);
+      console.log('노래끝' ,nextDataRef.current);
     }
-  }, [reservedSongs]);
+  }, [audioLoaded]);
 
   // 자동 스크롤
   const scrollToBottom = () => {
@@ -187,28 +202,6 @@ function MultiPlay() {
     setNextLyric(segments[curr_idx + 1]?.text || ' ');
   }, [playbackPosition, lyricsData]);
 
-  // songDatas를 추적하기 위한 useEffect
-  useEffect(() => {
-    currentDataRef.current = currentData;
-
-    if (currentData && audioLoadedRef.current === false) {
-      loadData(currentData);
-    }
-  }, [currentData, nextData, audioLoaded]);
-
-  // songDatas를 추적하기 위한 useEffect
-  useEffect(() => {
-    nextDataRef.current = nextData;
-  }, [nextData]);
-
-  useEffect(() => {
-    audioLoadedRef.current = audioLoaded;
-    if (audioLoaded === true) {
-      // setcurrentData(nextDataRef.current);
-      // setnextData(null);
-    }
-  }, [audioLoaded]);
-
   // loadaudio 함수 정의
   const loadData = async (data) => {
     try {
@@ -225,9 +218,6 @@ function MultiPlay() {
       // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
       const pitchArray = data.pitch;
 
-      // console.log(data.mrUrl);
-      // console.log(data.pitch);
-      // console.log(data.lyrics);
       if (Array.isArray(pitchArray)) {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
@@ -241,18 +231,16 @@ function MultiPlay() {
           setPitchLoaded(true);
         } catch (error) {
           console.error('Error processing pitch data:', error);
-          setPitchLoaded(true);
         }
       } else {
         console.error('Error: Expected pitch data to be an array');
-        setPitchLoaded(true);
       }
 
       // 가사 데이터 업로드
       setLyricsData(data.lyrics);
       setLyricsLoaded(true);
     } catch (error) {
-      console.error('Error handling data:', error);
+      console.error('Error handling data load:', error);
     }
   };
 
@@ -470,9 +458,6 @@ function MultiPlay() {
     });
 
     socketRef.current.on('startTime', (data) => {
-      setcurrentData(nextDataRef.current);
-      setnextData(null);
-
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
@@ -487,14 +472,18 @@ function MultiPlay() {
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
     socketRef.current.on('playSong', (data) => {
       try {
-        // console.log(data);
         if (currentDataRef.current === null) {
           setcurrentData(data);
+          loadData(data);
+          console.log('소켓 수신 데이터 current' ,currentDataRef.current);
+          console.log('소켓 수신 데이터 current' ,nextDataRef.current);
         } else {
           if (nextDataRef.current === null) {
             setnextData(data);
+            console.log('소켓 수신 데이터 next' ,currentDataRef.current);
+          console.log('소켓 수신 데이터 next' ,nextDataRef.current);
           } else {
-            console.log('데이터 저장 용량 2개 꽊참 ㅅㄱ');
+            console.log('데이터 저장 용량 2개 꽉참 ㅅㄱ');
           }
         }
       } catch (error) {
@@ -668,13 +657,18 @@ function MultiPlay() {
 
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
+    
+    setcurrentData(nextData);
+    setnextData(null);
+
+    console.log('시작버튼' ,currentDataRef.current);
+    console.log('시작버튼' ,nextDataRef.current);
     setIsWaiting(true);
     if (!audioLoaded) {
       alert('오디오가 아직 로딩되지 않았습니다.');
       setIsWaiting(false);
       return;
     }
-
     // 서버에 시작 요청 보내기 임시임
     socketRef.current.emit('requestStartTimeWithDelay', {
       roomId: roomId,
@@ -771,7 +765,7 @@ function MultiPlay() {
                     </div> */}
 
           <div className='pitch-graph-multi'>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={reservedSongs[0]} />
+            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
           </div>
 
           {/* Seek Bar */}
@@ -821,7 +815,7 @@ function MultiPlay() {
           </div>
 
           {/* 조건부 렌더링 부분 popup */}
-          {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} currentData={currentDataRef.current} />}
+          {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
 
           {/* AudioPlayer 컴포넌트 */}
           <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
