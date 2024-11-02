@@ -85,8 +85,8 @@ const PitchGraph = ({
   return (
     <div
       style={{
-        width: dimensions.width,
-        height: dimensions.height,
+        width: '100%',
+        height: '100%',
         position: 'relative',
         overflow: 'hidden', // overflow를 숨겨 가장자리 아티팩트 제거
       }}
