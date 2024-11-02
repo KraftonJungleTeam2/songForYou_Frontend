@@ -36,7 +36,7 @@ const Play = () => {
   const { song } = location.state || {};
   const { id: songId } = useParams(); // URL에서 songId 추출
 
-  const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 100, height: 600 });
   const containerRef = useRef(null);
 
   // 재생 제어
@@ -220,7 +220,7 @@ const Play = () => {
               referenceData={entireReferData}
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
-              songState={song}
+              songimageProps={song}
             />
           </div>
 
