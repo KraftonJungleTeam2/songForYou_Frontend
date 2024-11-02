@@ -113,8 +113,8 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
-  const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
-  const pitchArraysRef = useRef({});  //  pitchArrays
+  const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
+  const pitchArraysRef = useRef({}); //  pitchArrays
 
   const [useCorrection, setUseCorrection] = useState(false);
 
@@ -231,7 +231,7 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
-          Object.keys(dataChannelsRef.current).forEach(key => {
+          Object.keys(dataChannelsRef.current).forEach((key) => {
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
@@ -389,7 +389,7 @@ function MultiPlay() {
         });
       });
     });
-    
+
     // Offer 처리
     socketRef.current.on('offer', async ({ offer, callerId }) => {
       const peerConnection = await createPeerConnection(callerId);
@@ -597,13 +597,6 @@ function MultiPlay() {
         // 기존 코드
         delete peerConnectionsRef.current[userId];
 
-        // 트랙 정리
-        peerConnection.getSenders().forEach((sender) => {
-          if (sender.track) {
-            sender.track.stop();
-          }
-        });
-
         // 추가 정리
         peerConnection.close();
       }
@@ -668,14 +661,14 @@ function MultiPlay() {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
       console.log(pitchArraysRef.current[data.id]);
-    }
+    };
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
