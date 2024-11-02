@@ -12,7 +12,8 @@ import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
-import measureLatency from '../components/LatencyCalc';
+// 콘솔로그 그만
+// import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -600,13 +601,6 @@ function MultiPlay() {
         // 기존 코드
         delete peerConnectionsRef.current[userId];
 
-        // 트랙 정리
-        peerConnection.getSenders().forEach((sender) => {
-          if (sender.track) {
-            sender.track.stop();
-          }
-        });
-
         // 추가 정리
         peerConnection.close();
       }
@@ -670,15 +664,14 @@ function MultiPlay() {
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
-      console.log(pitchArraysRef.current[data.id]);
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -841,7 +834,7 @@ function MultiPlay() {
                     </div> */}
 
             <div className='pitch-graph-multi'>
-              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
             </div>
 
             {/* Seek Bar */}
