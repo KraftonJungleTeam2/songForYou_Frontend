@@ -635,22 +635,9 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log(event.data);
+      console.log(JSON.parse(event.data));
     }
   };
-
-  // 고쳐야함 ...
-  useEffect(() => {
-    const interval = setInterval(() => {
-      Object.values(dataChannelsRef.current).forEach((channel) => {
-        if (channel.readyState === 'open') {
-          channel.send(entireGraphData);
-        }
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
@@ -746,7 +733,7 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
 
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData, dataChannelsRef.current);
 
   return (
     <div className='multiPlay-page'>
