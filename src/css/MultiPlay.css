@@ -1,8 +1,8 @@
 .multi-content {
-  flex-grow: 1;
-  transition: margin-left 0.3s ease;
-  --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* 컨텐츠 영역 스크롤 방지 */
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .multi-content.shifted {
