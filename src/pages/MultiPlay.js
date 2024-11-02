@@ -12,7 +12,7 @@ import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
-import measureLatency from '../components/LatencyCalc'
+import measureLatency from '../components/LatencyCalc';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -131,26 +131,24 @@ function MultiPlay() {
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
   const oldPlayoutDelay = useRef(0);
-  
 
   useEffect(() => {
     currentDataRef.current = currentData;
     nextDataRef.current = nextData;
-    console.log('use' ,currentDataRef.current);
-    console.log('use' ,nextDataRef.current);
+    console.log('use', currentDataRef.current);
+    console.log('use', nextDataRef.current);
   }, [currentData, nextData]);
 
   useEffect(() => {
     audioLoadedRef.current = audioLoaded;
-    if(!audioLoadedRef.current){
-
-      if(currentDataRef.current){
+    if (!audioLoadedRef.current) {
+      if (currentDataRef.current) {
         loadData(currentDataRef.current);
       }
-      setReservedSongs(prev => prev.slice(1));
+      setReservedSongs((prev) => prev.slice(1));
 
-      console.log('노래끝' ,currentDataRef.current);
-      console.log('노래끝' ,nextDataRef.current);
+      console.log('노래끝', currentDataRef.current);
+      console.log('노래끝', nextDataRef.current);
     }
   }, [audioLoaded]);
 
@@ -181,7 +179,7 @@ function MultiPlay() {
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
     fetchSongLists();
-  }, [fetchSongLists]);
+  }, []);
 
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
@@ -222,11 +220,9 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
 
-            setEntireReferData(processedPitchArray);
+          setEntireReferData(processedPitchArray);
 
-            setEntireGraphData(
-              new Array(processedPitchArray.length).fill(null)
-            );
+          setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
           setPitchLoaded(true);
         } catch (error) {
@@ -260,7 +256,7 @@ function MultiPlay() {
 
   // player 삭제하기
   const removePlayer = (userId) => {
-    setPlayers((prevPlayers) => prevPlayers.filter(player => player.userId !== userId));
+    setPlayers((prevPlayers) => prevPlayers.filter((player) => player.userId !== userId));
   };
 
   const updatePlayerMic = (userId, micBool) => {
@@ -334,7 +330,7 @@ function MultiPlay() {
       await socketRef.current.emit('joinRoom', {
         roomId: roomId,
         nickname: nickname,
-        mic: isMicOn
+        mic: isMicOn,
       });
       // 연결되면 바로 서버시간 측정
       timeDiffSamplesRef.current = []; // 초기화
@@ -370,7 +366,7 @@ function MultiPlay() {
     // Peer Connection 초기화
     socketRef.current.on('initPeerConnection', async (existingUsers) => {
       existingUsers.forEach(async (user) => {
-        console.log(user.id, "에 rtc 연결중")
+        console.log(user.id, '에 rtc 연결중');
         const peerConnection = await createPeerConnection(user.id);
 
         const offer = await peerConnection.createOffer();
@@ -421,9 +417,9 @@ function MultiPlay() {
           });
         }
       };
-      console.log("ddfsfwegewggweg")
+      console.log('ddfsfwegewggweg');
       if (peerConnection) {
-        console.log("ddfsfwegewggweg")
+        console.log('ddfsfwegewggweg');
         await peerConnection.setRemoteDescription(answer);
       }
     });
@@ -434,8 +430,7 @@ function MultiPlay() {
       if (peerConnection) {
         console.log('- yes');
         console.log(candidate);
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
-          .catch(error => console.error("Error adding received ICE candidate:", error));
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch((error) => console.error('Error adding received ICE candidate:', error));
       }
     });
 
@@ -475,13 +470,13 @@ function MultiPlay() {
         if (currentDataRef.current === null) {
           setcurrentData(data);
           loadData(data);
-          console.log('소켓 수신 데이터 current' ,currentDataRef.current);
-          console.log('소켓 수신 데이터 current' ,nextDataRef.current);
+          console.log('소켓 수신 데이터 current', currentDataRef.current);
+          console.log('소켓 수신 데이터 current', nextDataRef.current);
         } else {
           if (nextDataRef.current === null) {
             setnextData(data);
-            console.log('소켓 수신 데이터 next' ,currentDataRef.current);
-          console.log('소켓 수신 데이터 next' ,nextDataRef.current);
+            console.log('소켓 수신 데이터 next', currentDataRef.current);
+            console.log('소켓 수신 데이터 next', nextDataRef.current);
           } else {
             console.log('데이터 저장 용량 2개 꽉참 ㅅㄱ');
           }
@@ -495,6 +490,18 @@ function MultiPlay() {
       // Peer 연결 정리
       Object.values(peerConnectionsRef.current).forEach((connection) => {
         connection.close();
+      });
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
+
+      events.forEach((event) => {
+        socketRef.current?.off(event);
       });
 
       socketRef.current.emit('leaveRoom', roomId);
@@ -564,14 +571,14 @@ function MultiPlay() {
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
     peerConnection.onconnectionstatechange = () => {
-      console.log("Connection state:", peerConnection.connectionState);
-    
-      if (peerConnection.connectionState === "disconnected") {
+      console.log('Connection state:', peerConnection.connectionState);
+
+      if (peerConnection.connectionState === 'disconnected') {
         // 재연결 대기
-      } else if (peerConnection.connectionState === "failed") {
+      } else if (peerConnection.connectionState === 'failed') {
         // 목록에서 삭제
         delete peerConnectionsRef.current[userId];
-      } else if (peerConnection.connectionState === "closed") {
+      } else if (peerConnection.connectionState === 'closed') {
         // 목록에서 삭제
         delete peerConnectionsRef.current[userId];
       }
@@ -592,7 +599,7 @@ function MultiPlay() {
     };
     // 로컬 스트림 추가
     if (localStreamRef.current) {
-      console.log("add local stream")
+      console.log('add local stream');
       localStreamRef.current.getTracks().forEach((track) => {
         peerConnection.addTrack(track, localStreamRef.current);
       });
@@ -604,7 +611,7 @@ function MultiPlay() {
 
   // 레이턴시 측정
   useEffect(() => {
-    const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -615,7 +622,7 @@ function MultiPlay() {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight*0.5,
+          height: containerRef.current.offsetHeight * 0.5,
         });
       }
     }
@@ -657,12 +664,11 @@ function MultiPlay() {
 
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
-    
     setcurrentData(nextData);
     setnextData(null);
 
-    console.log('시작버튼' ,currentDataRef.current);
-    console.log('시작버튼' ,nextDataRef.current);
+    console.log('시작버튼', currentDataRef.current);
+    console.log('시작버튼', nextDataRef.current);
     setIsWaiting(true);
     if (!audioLoaded) {
       alert('오디오가 아직 로딩되지 않았습니다.');
@@ -701,57 +707,56 @@ function MultiPlay() {
 
   return (
     <div className='multiPlay-page'>
-      
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      <div className={`multi-content ${isSidebarOpen ? 'shifted' : ''}`} style={{flexGrow: 1}} >
-      <TopBar className='top-bar' />
-      <div className={'multi-content-area'}>
-        <div className='players-chat'>
-          <div className='players'>
-            {Array(4)
-              .fill(null)
-              .map((_, index) => (
-                <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}>
-                  {players[index] ? (
-                    <div>
-                      <p>{players[index].name}</p>{' '}
-                      <span role='img' aria-label='mic status'>
-                        {players[index].mic ? '🎤' : '🔇'}
-                      </span>
-                    </div>
-                  ) : (
-                    <p>빈 자리</p>
-                  )}
-                </div>
-              ))}
-          </div>
-          <div className='chat-area'>
-            {' '}
-            <div className='chat-container'>
-              <div className='messages'>
-                {messages.map((msg, index) => (
-                  <div key={index} className='message'>
-                    <span className='text'>{msg.text}</span>
-                    <div className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</div>
+      <div className={`multi-content ${isSidebarOpen ? 'shifted' : ''}`} style={{ flexGrow: 1 }}>
+        <TopBar className='top-bar' />
+        <div className={'multi-content-area'}>
+          <div className='players-chat'>
+            <div className='players'>
+              {Array(4)
+                .fill(null)
+                .map((_, index) => (
+                  <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}>
+                    {players[index] ? (
+                      <div>
+                        <p>{players[index].name}</p>{' '}
+                        <span role='img' aria-label='mic status'>
+                          {players[index].mic ? '🎤' : '🔇'}
+                        </span>
+                      </div>
+                    ) : (
+                      <p>빈 자리</p>
+                    )}
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
-              </div>
-              <div className='input-area'>
-                <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요...' />
-                <button onClick={sendMessage}>전송</button>
+            </div>
+            <div className='chat-area'>
+              {' '}
+              <div className='chat-container'>
+                <div className='messages'>
+                  {messages.map((msg, index) => (
+                    <div key={index} className='message'>
+                      <span className='text'>{msg.text}</span>
+                      <div className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+                <div className='input-area'>
+                  <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요...' />
+                  <button onClick={sendMessage}>전송</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className='sing-area' ref={containerRef}>
-          <div className='information-area'>
-            <p>현재곡</p>
-            <p>가수</p>
-            <p>곡번호</p>
-          </div>
-          {/* 오디오 상태 표시 */}
-          {/* <div className="audio-status">
+          <div className='sing-area' ref={containerRef}>
+            <div className='information-area'>
+              <p>현재곡</p>
+              <p>가수</p>
+              <p>곡번호</p>
+            </div>
+            {/* 오디오 상태 표시 */}
+            {/* <div className="audio-status">
                         {audioLoaded ? (
                             <div>
                                 <p>오디오 로드 완료 - 길이: {duration.toFixed(2)}초</p>
@@ -764,62 +769,61 @@ function MultiPlay() {
                         )}
                     </div> */}
 
-          <div className='pitch-graph-multi'>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
-          </div>
+            <div className='pitch-graph-multi'>
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+            </div>
 
-          {/* Seek Bar */}
-          {/* <div className='seek-bar-container'>
+            {/* Seek Bar */}
+            {/* <div className='seek-bar-container'>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} className='range-slider' disabled={!audioLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {duration.toFixed(2)} 초
             </div>
           </div> */}
 
-          {/* 현재 재생 중인 가사 출력 */}
-          <div className='karaoke-lyrics'>
-            <p className='prev-lyrics'>{prevLyric}</p>
-            <p className='curr-lyrics'>{currentLyric}</p>
-            <p className='next-lyrics'>{nextLyric}</p>
-          </div>
-
-          <div className='button-area'>
-            {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
-              {audioLoaded ? '노래 시작' : '로딩 중...'}
-            </button>
-
-            {/* 마이크 토글 버튼 */}
-            <button
-              className={`button mic-button`} // 버튼 스타일 변경
-              onClick={isMicOn ? micOff : micOn}
-            >
-              {isMicOn ? '마이크 끄기' : '마이크 켜기'}
-            </button>
-
-            <button className='button reservation-button' onClick={OnPopup}>
-              시작하기 or 예약하기
-            </button>
-            <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
-              {useCorrection ? '보정끄기' : '보정켜기'}
-            </button>
-            <h3>networkLatency: {networkLatency}</h3>
-            <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
-            {/* 오디오 엘리먼트들 */}
-            <audio id='localAudio' autoPlay muted />
-            <div className='remote-audios' style={{ display: 'none' }}>
-              {players.map((player) => (
-                <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
-              ))}
+            {/* 현재 재생 중인 가사 출력 */}
+            <div className='karaoke-lyrics'>
+              <p className='prev-lyrics'>{prevLyric}</p>
+              <p className='curr-lyrics'>{currentLyric}</p>
+              <p className='next-lyrics'>{nextLyric}</p>
             </div>
+
+            <div className='button-area'>
+              {/* 시작 버튼 */}
+              <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+                {audioLoaded ? '노래 시작' : '로딩 중...'}
+              </button>
+
+              {/* 마이크 토글 버튼 */}
+              <button
+                className={`button mic-button`} // 버튼 스타일 변경
+                onClick={isMicOn ? micOff : micOn}>
+                {isMicOn ? '마이크 끄기' : '마이크 켜기'}
+              </button>
+
+              <button className='button reservation-button' onClick={OnPopup}>
+                시작하기 or 예약하기
+              </button>
+              <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
+                {useCorrection ? '보정끄기' : '보정켜기'}
+              </button>
+              <h3>networkLatency: {networkLatency}</h3>
+              <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
+              {/* 오디오 엘리먼트들 */}
+              <audio id='localAudio' autoPlay muted />
+              <div className='remote-audios' style={{ display: 'none' }}>
+                {players.map((player) => (
+                  <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
+                ))}
+              </div>
+            </div>
+
+            {/* 조건부 렌더링 부분 popup */}
+            {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
+
+            {/* AudioPlayer 컴포넌트 */}
+            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
           </div>
-
-          {/* 조건부 렌더링 부분 popup */}
-          {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
-
-          {/* AudioPlayer 컴포넌트 */}
-          <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
-        </div>
         </div>
       </div>
     </div>

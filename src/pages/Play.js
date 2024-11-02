@@ -142,9 +142,7 @@ const Play = () => {
             const processedPitchArray = doubleDataFrequency(pitchArray);
             setEntireReferData(processedPitchArray);
 
-            setEntireGraphData(
-              new Array(processedPitchArray.length).fill(null)
-            );
+            setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
             setPitchLoaded(true);
           } catch (parseError) {
@@ -228,14 +226,7 @@ const Play = () => {
         <div className='flex-col' ref={containerRef}>
           {/* Pitch Graph */}
           <div className='pitch-graph'>
-            <PitchGraph
-              dimensions={dimensions}
-              realtimeData={entireGraphData}
-              referenceData={entireReferData}
-              dataPointCount={dataPointCount}
-              currentTimeIndex={playbackPosition * 40}
-              songimageProps={song}
-            />
+            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={song} />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
@@ -250,45 +241,20 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input
-              type='range'
-              min='0'
-              max={duration}
-              step='0.025'
-              value={playbackPosition}
-              onChange={handlePlaybackPositionChange}
-              className='range-slider'
-              disabled={!dataLoaded}
-            />
+            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
 
             <div className='speed-control'>
               <label>속도 조절:</label>
-              <input
-                type='range'
-                min='0.5'
-                max='2'
-                step='0.1'
-                value={playbackSpeed}
-                onChange={handlePlaybackSpeedChange}
-                className='range-slider'
-              />
+              <input type='range' min='0.5' max='2' step='0.1' value={playbackSpeed} onChange={handlePlaybackSpeedChange} className='range-slider' />
               <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
             </div>
 
             <div className='speed-control'>
               <label>렌더링 사이즈:</label>
-              <input
-                type='range'
-                min='25'
-                max='300'
-                step='1'
-                value={dataPointCount}
-                onChange={handleSpeedChange}
-                className='range-slider'
-              />
+              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='range-slider' />
               <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
             </div>
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
