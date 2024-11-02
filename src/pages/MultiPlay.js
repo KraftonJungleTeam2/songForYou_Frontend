@@ -870,7 +870,7 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              <input type='range' className='range-slider' min={0} max={2} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>networkLatency: {networkLatency}</h3>
               <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
               {/* 오디오 엘리먼트들 */}
