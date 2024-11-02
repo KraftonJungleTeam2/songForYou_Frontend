@@ -20,6 +20,14 @@
   height: 50%;
   border-bottom: 3px solid #ddd;
 }
+
+/* Setting Area 스타일 */
+.setting-area {
+  display: flex;
+  flex-direction: column;
+  height: 50%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
+}
+
 /* Content area */
 .play-content-area {
   width: 80%;
@@ -28,6 +36,7 @@
 .pitch-graph-play{
   height: 50%;
 }
+
 /* Karaoke Lyrics */
 .karaoke-lyrics {
   /* height: 150px; */
@@ -62,15 +71,27 @@
   cursor: pointer;
 }
 
+/* 세로 슬라이더 */
+.vertical-slider {
+  width: 100px; /* 슬라이더의 가로 길이 */
+}
+
 .range-slider {
   width: 100%;
 }
 
 .playback-info {
   margin-top: 10px;
+  
 }
 
-/* Speed Control */
+/* Speed Control 스타일 */
+.speed-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .speed-control label {
   margin-right: 5px;
 }
