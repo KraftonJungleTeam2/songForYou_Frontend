@@ -1,3 +1,4 @@
+// src/pages/Play.js
 import React, { useState, useEffect, useRef } from 'react';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { getNote } from '../utils/NoteUtils';
@@ -6,8 +7,9 @@ import AudioPlayer from '../components/AudioPlayer';
 import '../css/slider.css';
 import '../css/karaoke-lyrics.css';
 import '../css/Play.css';
-import { useLocation, useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
+import { useLocation, useParams } from 'react-router-dom';
 import TopBar from '../components/TopBar';
+import { useNavigate } from 'react-router-dom';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -28,12 +30,13 @@ function doubleDataFrequency(dataArray) {
 }
 
 const Play = () => {
+  const navigate = useNavigate();
   // song State 받아옴
   const location = useLocation();
   const { song } = location.state || {};
   const { id: songId } = useParams(); // URL에서 songId 추출
 
-  const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 100, height: 600 });
   const containerRef = useRef(null);
   const targetStreamRef = useRef(null);
 
@@ -68,7 +71,7 @@ const Play = () => {
   const [lyricsData, setLyricsData] = useState(null);
 
   // 렌더링 크기 및 속도 상태
-  const [dataPointCount, setDataPointCount] = useState(200);
+  const [dataPointCount, setDataPointCount] = useState(100);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
   const handlePlaybackPositionChange = (e) => {
@@ -137,18 +140,10 @@ const Play = () => {
           try {
             const pitchArray = JSON.parse(pitchString);
             const processedPitchArray = doubleDataFrequency(pitchArray);
-            setEntireReferData(
-              processedPitchArray.map((pitch, index) => ({
-                time: index * 25,
-                pitch,
-              }))
-            );
+            setEntireReferData(processedPitchArray);
 
             setEntireGraphData(
-              processedPitchArray.map((_, index) => ({
-                time: index * 25,
-                pitch: null,
-              }))
+              new Array(processedPitchArray.length).fill(null)
             );
 
             setPitchLoaded(true);
@@ -206,14 +201,14 @@ const Play = () => {
 
   useEffect(() => {
     async function setUpMediaStream() {
-      targetStreamRef.current =  await navigator.mediaDevices.getUserMedia({
+      targetStreamRef.current = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: false,
         },
       });
-    };
+    }
     setUpMediaStream();
   }, []);
 
@@ -224,10 +219,23 @@ const Play = () => {
     <div className='single-page'>
       <div className='main-content-play'>
         <TopBar />
+        <button
+          className='play-nav-button'
+          onClick={() => navigate('/single')} // 또는 원하는 경로
+        >
+          🏠
+        </button>
         <div className='flex-col' ref={containerRef}>
           {/* Pitch Graph */}
           <div className='pitch-graph'>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={song} />
+            <PitchGraph
+              dimensions={dimensions}
+              realtimeData={entireGraphData}
+              referenceData={entireReferData}
+              dataPointCount={dataPointCount}
+              currentTimeIndex={playbackPosition * 40}
+              songimageProps={song}
+            />
           </div>
 
           {/* 현재 재생 중인 가사 출력 */}
@@ -242,20 +250,45 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
+            <input
+              type='range'
+              min='0'
+              max={duration}
+              step='0.025'
+              value={playbackPosition}
+              onChange={handlePlaybackPositionChange}
+              className='range-slider'
+              disabled={!dataLoaded}
+            />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
 
             <div className='speed-control'>
               <label>속도 조절:</label>
-              <input type='range' min='0.5' max='2' step='0.1' value={playbackSpeed} onChange={handlePlaybackSpeedChange} className='range-slider' />
+              <input
+                type='range'
+                min='0.5'
+                max='2'
+                step='0.1'
+                value={playbackSpeed}
+                onChange={handlePlaybackSpeedChange}
+                className='range-slider'
+              />
               <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
             </div>
 
             <div className='speed-control'>
               <label>렌더링 사이즈:</label>
-              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='range-slider' />
+              <input
+                type='range'
+                min='25'
+                max='300'
+                step='1'
+                value={dataPointCount}
+                onChange={handleSpeedChange}
+                className='range-slider'
+              />
               <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
             </div>
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}

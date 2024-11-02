@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 function RoomCreation({ onCancel }) {
   const [roomTitle, setRoomTitle] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
-  const [max_peers, setMax_peers] = useState(2);
+  const [max_peers, setMax_peers] = useState(4);
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
