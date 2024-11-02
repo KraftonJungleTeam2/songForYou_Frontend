@@ -477,7 +477,9 @@ function MultiPlay() {
       try {
         if (currentDataRef.current === null) {
           setcurrentData(data);
-          loadData(data);
+          if(!audioLoadedRef.current){
+            loadData(data);
+          }
           console.log('소켓 수신 데이터 current' ,currentDataRef.current);
           console.log('소켓 수신 데이터 current' ,nextDataRef.current);
         } else {
