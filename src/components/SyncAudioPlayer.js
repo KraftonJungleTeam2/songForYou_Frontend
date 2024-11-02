@@ -12,6 +12,7 @@ const AudioPlayer = ({
   setIsWaiting,
   setIsMicOn,
   latencyOffset,
+  musicGain,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -21,6 +22,7 @@ const AudioPlayer = ({
   const playbackPositionRef = useRef(0); // 현재 재생 위치를 저장, 일시정지 및 재생 위치를 추적하는 데 사용
   const animationFrameRef = useRef(null); // requestAnimationFrame의 ID를 저장하여 애니메이션 업데이트 관리에 사용
   const rateTimeoutRef = useRef(null);
+  const gainControlRef = useRef(null);
   const FRAME_RATE = 0.025; // 프레임 속도, 25ms 단위로 업데이트하여 일정한 타이밍으로 재생 위치를 업데이트
   const SPEEDFORWARD = 2.0;
   const SPEEDBACKWARD = 0.5;
@@ -56,6 +58,16 @@ const AudioPlayer = ({
     };
   }, [audioBlob]);
 
+  const handleStopAudio = () => {
+    playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
+    setStarttime(null);
+    setAudioLoaded(false);
+    setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  }
+
   // 오디오 재생 함수
   const playSyncAudio = (starttime) => {
     const audioContext = audioContextRef.current;
@@ -63,18 +75,18 @@ const AudioPlayer = ({
     if (!audioBuffer || !audioContext) return;
     if (sourceRef.current) sourceRef.current.stop(); // 이전에 재생 중이던 소스를 중지
 
+    gainControlRef.current = audioContext.createGain();
     // 새로운 소스 생성 및 연결
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.playbackRate.value = playbackSpeed; // 재생 속도 설정
-    source.connect(audioContext.destination);
+    source.connect(gainControlRef.current).connect(audioContext.destination);
     sourceRef.current = source;
-
+    
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
     const offset = (performance.now() - starttime) / 1000;
-    // while (performance.now() < starttime) {}
-    // source.start();
-
+    // 볼륨 설정
+    gainControlRef.current.gain.value = musicGain;
     //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
     if (offset < 0) {
       source.start(audioContext.currentTime - offset);
@@ -87,18 +99,15 @@ const AudioPlayer = ({
     resumeTimeRef.current = audioContext.currentTime - offset;
 
     // 재생 완료 시 호출되는 콜백 설정
-    source.onended = () => {
-      setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
-      playbackPositionRef.current = 0; // 재생 위치를 초기화
-      setStarttime(null);
-      //곡 종료 현재 오디오 없음.
-      setAudioLoaded(false);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
+    source.onended = handleStopAudio;
   };
+  
+  // 음정 조절
+  const setPitch = (tone) => {
+    const source = sourceRef.current;
 
+    source.detune.value = - tone * 1200; // 예: semitoneChange가 1일 경우, 음정을 한 세미톤 올림
+  }
   // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
   const setPlaybackRate = (rate) => {
     const audioContext = audioContextRef.current;
@@ -134,14 +143,18 @@ const AudioPlayer = ({
     console.log('target: ' + targetTime + ' overrun:' + overrun);
 
     setPlaybackRate(transitionSpeed);
+    
+    setPitch(1);
+
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
+      setPitch(-1);
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
 
-  // 재생 및 일시정지 상태, 속도 변경 시 처리
+  // 재생 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
 
@@ -149,6 +162,9 @@ const AudioPlayer = ({
       if (!isPlaying) {
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
       }
+    } else {
+      sourceRef.current.stop();
+      // handleStopAudio();
     }
 
     return () => {
@@ -192,6 +208,12 @@ const AudioPlayer = ({
     };
   }, [isPlaying, playbackSpeed, latencyOffset]);
 
+  // 음악 볼륨 조절
+  useEffect(() => {
+    if (gainControlRef.current) {
+        gainControlRef.current.gain.value = musicGain;
+    }
+  }, [musicGain]);
   // 컴포넌트 언마운트 시 자원 정리
   useEffect(() => {
     return () => {
