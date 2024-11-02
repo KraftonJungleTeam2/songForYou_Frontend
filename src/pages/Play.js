@@ -141,9 +141,7 @@ const Play = () => {
             const processedPitchArray = doubleDataFrequency(pitchArray);
             setEntireReferData(processedPitchArray);
 
-            setEntireGraphData(
-              new Array(processedPitchArray.length).fill(null)
-            );
+            setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
             setPitchLoaded(true);
           } catch (parseError) {
@@ -276,16 +274,7 @@ const Play = () => {
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
-            <input
-              type='range'
-              min='0'
-              max={duration}
-              step='0.025'
-              value={playbackPosition}
-              onChange={handlePlaybackPositionChange}
-              className='range-slider'
-              disabled={!dataLoaded}
-            />
+            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
             <div className='playback-info'>
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
