@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData) => {
+export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData, connections = []) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -22,6 +22,10 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
   const potentialPitchCountRef = useRef(0);
   const lastPitchTimeRef = useRef(0);
 
+  // 멀티플레이 용
+  const pitchCountRef = useRef(0);
+  const pitchBufferRef = useRef([]);
+
   const PITCH_CONFIG = {
     MIN_VALID_PITCH: 50,
     MAX_VALID_PITCH: 1500,
@@ -31,18 +35,42 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     CONFIRMATION_THRESHOLD: 3,
     JUMP_TOLERANCE_TIME: 10,
   };
-  
+
   const lastIndex = useRef(0);
   const round = (i) => {
     const idx = Math.floor(i);
     if (idx == lastIndex.current) {
-        lastIndex.current = idx+1;
-        return idx + 1;
+      lastIndex.current = idx + 1;
+      return idx + 1;
     } else {
-        lastIndex.current = idx;
-        return idx;
+      lastIndex.current = idx;
+      return idx;
     }
   }
+  // WebRTC를 통한 데이터 전송 함수
+  const sendPitchData = (pitchData, index) => {
+    pitchBufferRef.current.push({ pitch: pitchData, index });
+    pitchCountRef.current += 1;
+
+    // 4개의 피치 데이터가 모였을 때 전송
+    if (pitchCountRef.current >= 4) {
+      const dataToSend = {
+        type: 'pitch-data',
+        pitches: pitchBufferRef.current
+      };
+
+      // 모든 connection으로 데이터 전송
+      Object.values(connections).forEach((channel) => {
+        if (channel.readyState === 'open') {
+          channel.send(JSON.stringify(dataToSend));
+        }
+      });
+
+      // 버퍼 초기화
+      pitchBufferRef.current = [];
+      pitchCountRef.current = 0;
+    }
+  };
   useEffect(() => {
     pitchRef.current = pitch;
   }, [pitch]);
@@ -136,7 +164,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         console.error('Error accessing the microphone', error);
       }
     }
-      setupAudio();
+    setupAudio();
 
     return () => {
       if (sourceRef.current) {
@@ -180,54 +208,66 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
             // Update entireGraphData based on playbackPosition
             const playbackPos = playbackPositionRef.current; // seconds
             const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
-    
+
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
-              
+
               prevData[index] = smoothedPitch;
               return prevData;
             });
+            if (Object.keys(connections).length > 0) {
+              sendPitchData(smoothedPitch, index);
+            }
           } else {
             // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
             const playbackPos = playbackPositionRef.current;
             const index = round(playbackPos * 40);
-            
+
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
-              
+
               prevData[index] = pitchRef.current > 0 ? pitchRef.current : null;
               return prevData;
             });
+            if (Object.keys(connections).length > 0) {
+              sendPitchData(pitchRef.current > 0 ? pitchRef.current : 0, index);
+            }
           }
         } else {
           // 유효하지 않은 피치인 경우
           const playbackPos = playbackPositionRef.current;
           const index = round(playbackPos * 40);
-          
+
 
           setEntireGraphData((prevData) => {
             if (index < 0 || index >= prevData.length) return prevData;
 
             prevData[index] = null;
-              return prevData;
+            return prevData;
           });
 
           setPitch(0);
+          if (Object.keys(connections).length > 0) {
+            sendPitchData(0, index);
+          }
         }
       } else {
         setPitch(0);
         const playbackPos = playbackPositionRef.current;
         const index = round(playbackPos * 40);
-        
+
 
         setEntireGraphData((prevData) => {
           if (index < 0 || index >= prevData.length) return prevData;
 
           prevData[index] = null;
-            return prevData;
+          return prevData;
         });
+        if (Object.keys(connections).length > 0) {
+          sendPitchData(0, index);
+        }
       }
     }
 
