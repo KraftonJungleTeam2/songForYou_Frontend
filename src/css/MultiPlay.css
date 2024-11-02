@@ -1,3 +1,13 @@
+.multi-content {
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+.multi-content.shifted {
+  margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
+}
+  
 .multiPlay-page {
   display: flex;
   flex-direction: column;
@@ -5,14 +15,14 @@
   overflow: hidden; /* 페이지 전체 스크롤 방지 */
 }
 
-.multi-content {
+.multi-content-area {
   display: flex;
   flex-grow: 1;
-  /* justify-content: center; */
-  /* align-items: center; */
   width: 100%;
+  height: calc(100% - var(--top-bar-height));
   overflow: hidden; /* 컨텐츠 영역 스크롤 방지 */
 }
+
 .players-chat {
   display: flex;
   flex-direction: column;
@@ -109,7 +119,7 @@
   display: flex;
   flex-direction: column;
   width: 80%;
-  height: calc(100% - var(--top-bar-height));
+  height: 100%;
 }
 
 .information-area {
@@ -128,18 +138,15 @@
 }
 
 .multiplay-nav-button {
-  position: absolute;
   top: 20px;
   left: 20px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
   z-index: 1000;
 }
 
 .multiplay-nav-button:hover {
   background-color: #0056b3;
+}
+
+.pitch-graph-multi {
+  height: 50%;
 }
