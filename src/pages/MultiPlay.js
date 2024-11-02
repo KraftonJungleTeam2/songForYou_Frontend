@@ -165,7 +165,7 @@ function MultiPlay() {
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
     fetchSongLists();
-  }, [fetchSongLists]);
+  }, []);
 
   // 재생 위치에 따라 가사 업데이트
   useEffect(() => {
