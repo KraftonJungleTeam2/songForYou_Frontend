@@ -58,6 +58,16 @@ const AudioPlayer = ({
     };
   }, [audioBlob]);
 
+  const handleStopAudio = () => {
+    playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
+    setStarttime(null);
+    setAudioLoaded(false);
+    setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  }
+
   // 오디오 재생 함수
   const playSyncAudio = (starttime) => {
     const audioContext = audioContextRef.current;
@@ -72,11 +82,10 @@ const AudioPlayer = ({
     source.playbackRate.value = playbackSpeed; // 재생 속도 설정
     source.connect(gainControlRef.current).connect(audioContext.destination);
     sourceRef.current = source;
-
+    
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
     const offset = (performance.now() - starttime) / 1000;
-    // while (performance.now() < starttime) {}
-    // source.start();
+    // 볼륨 설정
     gainControlRef.current.gain.value = musicGain;
     //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
     if (offset < 0) {
@@ -90,16 +99,7 @@ const AudioPlayer = ({
     resumeTimeRef.current = audioContext.currentTime - offset;
 
     // 재생 완료 시 호출되는 콜백 설정
-    source.onended = () => {
-      setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
-      playbackPositionRef.current = 0; // 재생 위치를 초기화
-      setStarttime(null);
-      //곡 종료 현재 오디오 없음.
-      setAudioLoaded(false);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
+    source.onended = handleStopAudio;
   };
 
   // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
@@ -152,6 +152,9 @@ const AudioPlayer = ({
       if (!isPlaying) {
         playSyncAudio(starttime); // 재생 위치와 속도로 재생
       }
+    } else {
+      sourceRef.current.stop();
+      // handleStopAudio();
     }
 
     return () => {
