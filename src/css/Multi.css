@@ -6,7 +6,7 @@
 }
 
 .main-content.shifted {
-  margin-left: 200px; /* Sidebar의 너비와 일치 */
+  margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
 }
 
 /* content-area: 내부 요소를 세로로 정렬 */
