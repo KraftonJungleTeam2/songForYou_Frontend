@@ -385,7 +385,7 @@ function MultiPlay() {
         });
       });
     });
-
+    
     // Offer 처리
     socketRef.current.on('offer', async ({ offer, callerId }) => {
       const peerConnection = await createPeerConnection(callerId);
