@@ -13,6 +13,7 @@ import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
 import measureLatency from '../components/LatencyCalc';
+import '../css/slider.css';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -121,16 +122,21 @@ function MultiPlay() {
   const MAXPING = 50;
   const MINPING = 10;
   // 최대 허용 오차(ms)
-  const MAXERROR = 10;
+  const MAXERROR = 7;
   const [audioLatency, setAudioLatency] = useState(0);
   const [networkLatency, setNetworkLatency] = useState(0);
   const [optionLatency, setOptionLatency] = useState(0);
   const [jitterLatency, setJitterLatency] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
+  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
+  const micStatRef = useRef({});
 
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
   const oldPlayoutDelay = useRef(0);
+
+  // 볼륨 조절 용. 0.0-1.0의 값
+  const [musicGain, setMusicGain] = useState(1);
 
   useEffect(() => {
     currentDataRef.current = currentData;
@@ -618,7 +624,7 @@ function MultiPlay() {
 
   // 레이턴시 측정
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -686,6 +692,10 @@ function MultiPlay() {
     socketRef.current.emit('requestStartTimeWithDelay', {
       roomId: roomId,
     });
+  };
+
+  const handleVolumeChange = (event) => {
+    setMusicGain(parseFloat(event.target.value));
   };
 
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -814,6 +824,7 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>networkLatency: {networkLatency}</h3>
               <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
               {/* 오디오 엘리먼트들 */}
@@ -829,7 +840,7 @@ function MultiPlay() {
             {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
 
             {/* AudioPlayer 컴포넌트 */}
-            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} />
+            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} />
           </div>
         </div>
       </div>
