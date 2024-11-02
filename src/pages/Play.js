@@ -90,13 +90,13 @@ const Play = () => {
     setPlaybackSpeed(newPlaybackSpeed);
   };
 
-  // 화면 조정 시 감지
+  // 화면 비율 조정 감지
   useEffect(() => {
     function handleResize() {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: 500,
+          height: containerRef.current.offsetHeight*0.5,
         });
       }
     }
@@ -216,54 +216,22 @@ const Play = () => {
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
-    <div className='single-page'>
-      <div className='main-content-play'>
-        <TopBar />
+    <div className='play-page'>
+        <TopBar className='top-bar'/>
         <button
           className='play-nav-button'
           onClick={() => navigate('/single')} // 또는 원하는 경로
         >
           🏠
         </button>
-        <div className='flex-col' ref={containerRef}>
-          {/* Pitch Graph */}
-          <div className='pitch-graph'>
-            <PitchGraph
-              dimensions={dimensions}
-              realtimeData={entireGraphData}
-              referenceData={entireReferData}
-              dataPointCount={dataPointCount}
-              currentTimeIndex={playbackPosition * 40}
-              songimageProps={song}
-            />
+      <div className='main-content-play'>
+        <div className='score-setting-area'>
+          <div className='score-area'>
+            실시간 점수
           </div>
-
-          {/* 현재 재생 중인 가사 출력 */}
-          <div className='karaoke-lyrics'>
-            <p className='prev-lyrics'>{prevLyric}</p>
-            <p className='curr-lyrics'>{currentLyric}</p>
-            <p className='next-lyrics'>{nextLyric}</p>
-          </div>
-
-          {/* 오디오 플레이어 컨트롤 */}
-          <div className='audio-controls'>
-            <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
-              {isPlaying ? '일시정지' : '재생'}
-            </button>
-            <input
-              type='range'
-              min='0'
-              max={duration}
-              step='0.025'
-              value={playbackPosition}
-              onChange={handlePlaybackPositionChange}
-              className='range-slider'
-              disabled={!dataLoaded}
-            />
-            <div className='playback-info'>
-              {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
-            </div>
-
+          
+          <div className='setting-area'>
+            
             <div className='speed-control'>
               <label>속도 조절:</label>
               <input
@@ -291,8 +259,54 @@ const Play = () => {
               />
               <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
             </div>
+
+          </div>
+        </div>
+
+        <div className='play-content-area' ref={containerRef}>
+          
+          {/* Pitch Graph */}
+          <div className='pitch-graph-play'>
+            <PitchGraph
+              dimensions={dimensions}
+              realtimeData={entireGraphData}
+              referenceData={entireReferData}
+              dataPointCount={dataPointCount}
+              currentTimeIndex={playbackPosition * 40}
+              songimageProps={song}
+            />
+          </div>
+          
+
+          {/* 현재 재생 중인 가사 출력 */}
+          <div className='karaoke-lyrics'>
+            <p className='prev-lyrics'>{prevLyric}</p>
+            <p className='curr-lyrics'>{currentLyric}</p>
+            <p className='next-lyrics'>{nextLyric}</p>
+          </div>
+
+                 {/* 오디오 플레이어 컨트롤 */}
+                 <div className='audio-controls'>
+            <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
+              {isPlaying ? '일시정지' : '재생'}
+            </button>
+            <input
+              type='range'
+              min='0'
+              max={duration}
+              step='0.025'
+              value={playbackPosition}
+              onChange={handlePlaybackPositionChange}
+              className='range-slider'
+              disabled={!dataLoaded}
+            />
+            <div className='playback-info'>
+              {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
+            </div>
+
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
           </div>
+
 
           {/* 오디오 플레이어 컴포넌트 */}
           <AudioPlayer
