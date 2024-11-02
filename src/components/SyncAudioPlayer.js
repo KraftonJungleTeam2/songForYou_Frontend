@@ -102,8 +102,6 @@ const AudioPlayer = ({
     source.onended = handleStopAudio;
   };
   
-  // 음정 조절
- 
   // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
   const setPlaybackRate = (rate) => {
     const audioContext = audioContextRef.current;
@@ -143,6 +141,7 @@ const AudioPlayer = ({
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
+
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
