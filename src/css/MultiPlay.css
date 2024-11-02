@@ -1,13 +1,13 @@
 .multi-content {
-    flex-grow: 1;
-    transition: margin-left 0.3s ease;
-    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
+  flex-grow: 1;
+  transition: margin-left 0.3s ease;
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .multi-content.shifted {
   margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
 }
-  
+
 .multiPlay-page {
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
 
 .messages {
   flex: 1;
-  overflow-y: auto; 
+  overflow-y: auto;
   /* 메시지 영역만 스크롤 허용 */
   padding: 10px;
   display: flex;
