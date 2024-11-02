@@ -101,7 +101,13 @@ const AudioPlayer = ({
     // 재생 완료 시 호출되는 콜백 설정
     source.onended = handleStopAudio;
   };
+  
+  // 음정 조절
+  const setPitch = (tone) => {
+    const source = sourceRef.current;
 
+    source.detune.value = - tone * 1200; // 예: semitoneChange가 1일 경우, 음정을 한 세미톤 올림
+  }
   // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
   const setPlaybackRate = (rate) => {
     const audioContext = audioContextRef.current;
@@ -137,14 +143,18 @@ const AudioPlayer = ({
     console.log('target: ' + targetTime + ' overrun:' + overrun);
 
     setPlaybackRate(transitionSpeed);
+    
+    setPitch(1);
+
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
+      setPitch(-1);
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
 
-  // 재생 및 일시정지 상태, 속도 변경 시 처리
+  // 재생 처리
   useEffect(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
 
