@@ -38,6 +38,7 @@ const Play = () => {
 
   const [dimensions, setDimensions] = useState({ width: 100, height: 600 });
   const containerRef = useRef(null);
+  const localStreamRef = useRef(null);
 
   // 재생 제어
   const [isPlaying, setIsPlaying] = useState(false);
@@ -112,6 +113,32 @@ const Play = () => {
   // 서버에서 데이터 로딩 후 배열 생성
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
+
+  // 마이크 스트림 획득
+  const getLocalStream = async () => {
+    try {
+      // 기존 스트림이 있다면 정리
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+        video: false,
+      });
+
+      localStreamRef.current = stream;
+    } catch (error) {
+      console.error('Error getting local stream:', error);
+      // throw error;
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,8 +223,12 @@ const Play = () => {
     setNextLyric(segments[curr_idx + 1]?.text || ' ');
   }, [playbackPosition, lyricsData]);
 
+  useEffect(() => {
+    getLocalStream();
+  }, []);
+
   // Use the custom hook and pass necessary parameters
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, {}, null);
 
   return (
     <div className='play-page'>

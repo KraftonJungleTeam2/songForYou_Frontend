@@ -113,7 +113,8 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
-  const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
+  const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
+  const pitchArraysRef = useRef({});  //  pitchArrays
 
   const [useCorrection, setUseCorrection] = useState(false);
 
@@ -230,6 +231,9 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
+          Object.keys(dataChannelsRef.current).forEach(key => {
+            pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
+          });
           setPitchLoaded(true);
         } catch (error) {
           console.error('Error processing pitch data:', error);
@@ -659,8 +663,12 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log(JSON.parse(event.data));
-    };
+      const data = JSON.parse(event.data);
+      data.pitches.forEach((pitchData) => {
+        pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
+      });
+      console.log(pitchArraysRef.current[data.id]);
+    }
   };
 
   useEffect(() => {
@@ -763,7 +771,7 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
 
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData, dataChannelsRef.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
 
   return (
     <div className='multiPlay-page'>
