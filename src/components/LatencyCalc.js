@@ -1,6 +1,6 @@
 
 // 지연 시간 측정 함수
-async function MeasureLatency(peerConnectionsRef, samples, delay, state) {
+async function MeasureLatency(peerConnectionsRef, samples, delay, micStatRef) {
 
   for (let key in peerConnectionsRef.current) {
     const peerConnection = peerConnectionsRef.current[key];
