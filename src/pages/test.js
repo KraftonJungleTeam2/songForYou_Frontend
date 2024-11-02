@@ -121,8 +121,7 @@ const AudioPlayer = ({
     scriptProcessorRef.current = scriptProcessor;
 
     let offset = (performance.now() - starttime) / 1000;
-    let position = 0;
-
+   
     scriptProcessor.onaudioprocess = (e) => {
       const outputL = e.outputBuffer.getChannelData(0);
       const outputR = audioBuffer.numberOfChannels > 1 ? e.outputBuffer.getChannelData(1) : null;
