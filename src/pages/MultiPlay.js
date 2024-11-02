@@ -42,9 +42,9 @@ function MultiPlay() {
 
   const { roomId } = useParams(); // URL에서 songId 추출
 
-  const [socketId, setSocketId] = useState('');
+  const socketId = useRef(null); // 나의 소켓 id
   const [players, setPlayers] = useState([]); // 4자리 초기화
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false); // isPlaying을 여기서 유저가 변경하게 하지 말 것. starttime을 set하여 시작.
 
   // 곡 리스트 불러오는 context
   const { songLists, fetchSongLists } = useSongs();
@@ -86,7 +86,7 @@ function MultiPlay() {
   const serverTimeDiff = useRef(null);
 
   //오디오 조절을 위한 state
-  const [starttime, setStarttime] = useState();
+  const [starttime, setStarttime] = useState(null);
   const [isMicOn, setIsMicOn] = useState(true);
   const [showPopup, setshowPopup] = useState(false); // 예약 팝업 띄우는 state
 
@@ -270,6 +270,7 @@ function MultiPlay() {
   };
 
   const updatePlayerMic = (userId, micBool) => {
+    console.log('update mic of', userId)
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
   };
 
@@ -357,7 +358,7 @@ function MultiPlay() {
     // Room 이벤트 핸들러
     socketRef.current.on('joinedRoom', ({ roomId, roomInfo, userId }) => {
       const users = roomInfo.users;
-      setSocketId(userId);
+      socketId.current = userId;
       users.forEach((user) => {
         addPlayer(user.nickname, user.id, user.mic);
       });
@@ -446,12 +447,10 @@ function MultiPlay() {
     });
 
     socketRef.current.on('micOn', ({ userId }) => {
-      console.log(userId, 'is on the mic');
       updatePlayerMic(userId, true);
     });
 
     socketRef.current.on('micOff', ({ userId }) => {
-      console.log(userId, 'is off the mic');
       updatePlayerMic(userId, false);
     });
 
@@ -473,6 +472,10 @@ function MultiPlay() {
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
       micOff();
+    });
+
+    socketRef.current.on('stopMusic', (data) => {
+      setStarttime(null);
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
@@ -537,7 +540,7 @@ function MultiPlay() {
 
         setIsMicOn(true);
         socketRef.current.emit('userMicOn', { roomId });
-        updatePlayerMic(socketId, true);
+        updatePlayerMic(socketId.current, true);
 
         setAudioLatency(200);
       }
@@ -556,7 +559,8 @@ function MultiPlay() {
           audioTrack.enabled = false;
           setIsMicOn(false);
           socketRef.current.emit('userMicOff', { roomId });
-          updatePlayerMic(socketId, false);
+
+          updatePlayerMic(socketId.current, false);
         }
       }
       setAudioLatency(0);
@@ -666,20 +670,23 @@ function MultiPlay() {
     
     setcurrentData(nextData);
     setnextData(null);
-
-    console.log('시작버튼' ,currentDataRef.current);
-    console.log('시작버튼' ,nextDataRef.current);
     setIsWaiting(true);
     if (!audioLoaded) {
       alert('오디오가 아직 로딩되지 않았습니다.');
       setIsWaiting(false);
       return;
     }
-    // 서버에 시작 요청 보내기 임시임
+    // 서버에 시작 요청 보내기
     socketRef.current.emit('requestStartTimeWithDelay', {
       roomId: roomId,
     });
   };
+
+  const handleStopClick = () => {
+    socketRef.current.emit('requestStopMusic', {
+      roomId: roomId,
+    });
+  }
 
   const handleVolumeChange = (event) => {
     setMusicGain(parseFloat(event.target.value));
@@ -795,8 +802,8 @@ function MultiPlay() {
 
           <div className='button-area'>
             {/* 시작 버튼 */}
-            <button onClick={handleStartClick} disabled={!audioLoaded || isPlaying || isWaiting || starttime != null || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
-              {audioLoaded ? '노래 시작' : '로딩 중...'}
+            <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+              {audioLoaded ? isPlaying ? '노래 멈추기' : '노래 시작' : '로딩 중...'}
             </button>
 
             {/* 마이크 토글 버튼 */}
