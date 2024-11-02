@@ -90,13 +90,13 @@ const Play = () => {
     setPlaybackSpeed(newPlaybackSpeed);
   };
 
-  // 화면 조정 시 감지
+  // 화면 비율 조정 감지
   useEffect(() => {
     function handleResize() {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: 500,
+          height: containerRef.current.offsetHeight*0.5,
         });
       }
     }
@@ -214,20 +214,67 @@ const Play = () => {
   usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
-    <div className='single-page'>
-      <div className='main-content-play'>
-        <TopBar />
+    <div className='play-page'>
+        <TopBar className='top-bar'/>
         <button
           className='play-nav-button'
           onClick={() => navigate('/single')} // 또는 원하는 경로
         >
           🏠
         </button>
-        <div className='flex-col' ref={containerRef}>
-          {/* Pitch Graph */}
-          <div className='pitch-graph'>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={song} />
+      <div className='main-content-play'>
+        <div className='score-setting-area'>
+          <div className='score-area'>
+            실시간 점수
           </div>
+
+          <div className='setting-area'>
+            
+            <div className='speed-control'>
+              <label>속도 조절:</label>
+              <input
+                type='range'
+                min='0.5'
+                max='2'
+                step='0.1'
+                value={playbackSpeed}
+                onChange={handlePlaybackSpeedChange}
+                className='range-slider'
+              />
+              <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
+            </div>
+
+            <div className='speed-control'>
+              <label>렌더링 사이즈:</label>
+              <input
+                type='range'
+                min='25'
+                max='300'
+                step='1'
+                value={dataPointCount}
+                onChange={handleSpeedChange}
+                className='range-slider'
+              />
+              <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div className='play-content-area' ref={containerRef}>
+          
+          {/* Pitch Graph */}
+          <div className='pitch-graph-play'>
+            <PitchGraph
+              dimensions={dimensions}
+              realtimeData={entireGraphData}
+              referenceData={entireReferData}
+              dataPointCount={dataPointCount}
+              currentTimeIndex={playbackPosition * 40}
+              songimageProps={song}
+            />
+          </div>
+          
 
           {/* 현재 재생 중인 가사 출력 */}
           <div className='karaoke-lyrics'>
@@ -236,8 +283,8 @@ const Play = () => {
             <p className='next-lyrics'>{nextLyric}</p>
           </div>
 
-          {/* 오디오 플레이어 컨트롤 */}
-          <div className='audio-controls'>
+                 {/* 오디오 플레이어 컨트롤 */}
+                 <div className='audio-controls'>
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
@@ -246,19 +293,9 @@ const Play = () => {
               {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
             </div>
 
-            <div className='speed-control'>
-              <label>속도 조절:</label>
-              <input type='range' min='0.5' max='2' step='0.1' value={playbackSpeed} onChange={handlePlaybackSpeedChange} className='range-slider' />
-              <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
-            </div>
-
-            <div className='speed-control'>
-              <label>렌더링 사이즈:</label>
-              <input type='range' min='25' max='300' step='1' value={dataPointCount} onChange={handleSpeedChange} className='range-slider' />
-              <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
-            </div>
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
           </div>
+
 
           {/* 오디오 플레이어 컴포넌트 */}
           <AudioPlayer
