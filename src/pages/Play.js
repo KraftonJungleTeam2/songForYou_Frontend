@@ -229,7 +229,7 @@ const Play = () => {
           <div className='score-area'>
             실시간 점수
           </div>
-          
+
           <div className='setting-area'>
             
             <div className='speed-control'>
