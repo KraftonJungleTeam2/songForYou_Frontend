@@ -45,6 +45,9 @@ function MultiPlay() {
 
   const socketId = useRef(null); // 나의 소켓 id
   const [players, setPlayers] = useState([]); // 4자리 초기화
+  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
+  // player 정보 갱신할 때 이 ref도 다뤄주세요
+  const micStatRef = useRef({});
   const [isPlaying, setIsPlaying] = useState(false); // isPlaying을 여기서 유저가 변경하게 하지 말 것. starttime을 set하여 시작.
 
   // 곡 리스트 불러오는 context
@@ -123,17 +126,15 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const [audioLatency, setAudioLatency] = useState(0);
-  const [networkLatency, setNetworkLatency] = useState(0);
-  const [optionLatency, setOptionLatency] = useState(0);
-  const [jitterLatency, setJitterLatency] = useState(0);
+  const [audioDelay, setAudioDelay] = useState(0);
+  const [networkDelay, setNetworkDelay] = useState(0);
+  const [optionDelay, setOptionDelay] = useState(0);
+  const [jitterDelay, setJitterDelay] = useState(0);
+  const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
-  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
-  const micStatRef = useRef({});
 
   // latencyCalc.js에서 사용
-  const oldSamplesCount = useRef(0);
-  const oldPlayoutDelay = useRef(0);
+  const latencyCalcRef = useRef({});
 
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
@@ -258,18 +259,20 @@ function MultiPlay() {
       mic: mic,
       isAudioActive: false,
     };
-
     setPlayers((prevPlayers) => [...prevPlayers, newPlayer]);
+    micStatRef.current[userId] = mic;
   };
 
   // player 삭제하기
   const removePlayer = (userId) => {
     setPlayers((prevPlayers) => prevPlayers.filter((player) => player.userId !== userId));
+    delete micStatRef.current[userId];
   };
 
   const updatePlayerMic = (userId, micBool) => {
     console.log('update mic of', userId)
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
+    micStatRef.current[userId] = micBool;
   };
 
   // 마이크 스트림 획득
@@ -426,9 +429,7 @@ function MultiPlay() {
           });
         }
       };
-      console.log('ddfsfwegewggweg');
       if (peerConnection) {
-        console.log('ddfsfwegewggweg');
         await peerConnection.setRemoteDescription(answer);
       }
     });
@@ -557,7 +558,7 @@ function MultiPlay() {
         socketRef.current.emit('userMicOn', { roomId });
         updatePlayerMic(socketId.current, true);
 
-        setAudioLatency(200);
+        setAudioDelay(200);
       }
     } catch (error) {
       console.error('Error in micOn:', error);
@@ -578,7 +579,7 @@ function MultiPlay() {
           updatePlayerMic(socketId.current, false);
         }
       }
-      setAudioLatency(0);
+      setAudioDelay(0);
     } catch (error) {
       console.error('Error in micOff:', error);
     }
@@ -663,12 +664,12 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log(JSON.parse(event.data));
+      console.log(event.data);
     }
   };
 
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -758,14 +759,14 @@ function MultiPlay() {
   useEffect(() => {
     if (useCorrection) {
       if (isMicOn) {
-        setLatencyOffset(-audioLatency - networkLatency - optionLatency);
+        setLatencyOffset(-audioDelay - networkDelay - optionDelay);
       } else {
-        setLatencyOffset(jitterLatency);
+        setLatencyOffset(jitterDelay);
       }
     } else {
       setLatencyOffset(0);
     }
-  }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
+  }, [audioDelay, networkDelay, optionDelay, jitterDelay, isMicOn, useCorrection]);
 
   usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData, dataChannelsRef.current);
 
@@ -872,8 +873,8 @@ function MultiPlay() {
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              <h3>networkLatency: {networkLatency}</h3>
-              <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
+              <h3>networkDelay: {networkDelay}</h3>
+              <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(e.target.value)}></input>
               {/* 오디오 엘리먼트들 */}
               <audio id='localAudio' autoPlay muted />
               <div className='remote-audios' style={{ display: 'none' }}>
