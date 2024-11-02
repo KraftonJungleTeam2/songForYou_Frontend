@@ -1,12 +1,11 @@
-export const setupAudioContext = async (stream) => {
-  // const stream = await navigator.mediaDevices.getUserMedia({
-  //   audio: {
-  //     echoCancellation: true,
-  //     noiseSuppression: true,
-  //     autoGainControl: false,
-  //   },
-  // });
-  // console.log(stream);
+export const setupAudioContext = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false,
+    },
+  });
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const analyser = audioContext.createAnalyser();
   const source = audioContext.createMediaStreamSource(stream);
