@@ -131,12 +131,7 @@ function MultiPlay() {
   // latencyCalc.js에서 사용
   const oldSamplesCount = useRef(0);
   const oldPlayoutDelay = useRef(0);
-
-  // 섬네일 업데이트 로직 (미완)
-  useEffect(() => {
-    if (reservedSongs.length > 0) {
-    }
-  }, [reservedSongs]);
+  
 
   useEffect(() => {
     currentDataRef.current = currentData;
@@ -663,13 +658,8 @@ function MultiPlay() {
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
     
-    setcurrentData(nextData, () => {
-      setnextData(null, () => {
-        socketRef.current.emit('requestStartTimeWithDelay', {
-          roomId: roomId,
-        });
-      })
-    });
+    setcurrentData(nextData);
+    setnextData(null);
 
     console.log('시작버튼' ,currentDataRef.current);
     console.log('시작버튼' ,nextDataRef.current);
@@ -775,7 +765,7 @@ function MultiPlay() {
                     </div> */}
 
           <div className='pitch-graph-multi'>
-            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songState={reservedSongs[0]} />
+            <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
           </div>
 
           {/* Seek Bar */}

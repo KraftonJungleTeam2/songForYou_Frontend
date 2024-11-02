@@ -23,17 +23,19 @@ const PitchGraph = ({
   const [imageSrc, setImageSrc] = useState(null);
 
   // 이미지 데이터를 처리하여 src 생성
-  // useEffect(() => {
-  //   if (songimageProps?.image?.data) {
-  //     // ArrayBuffer를 Base64 문자열로 변환
-  //     const base64String = arrayBufferToBase64(songimageProps.image.data);
-  //     // 이미지의 MIME 타입을 지정 (예: 'image/png' 또는 'image/jpeg')
-  //     const mimeType = 'image/png'; // 필요에 따라 변경
-  //     // 데이터 URL 생성
-  //     const dataUrl = `data:${mimeType};base64,${base64String}`;
-  //     setImageSrc(dataUrl);
-  //   }
-  // }, [songimageProps]);
+  useEffect(() => {
+
+    console.log('안녕', songimageProps);
+    if (songimageProps?.image?.data) {
+      // ArrayBuffer를 Base64 문자열로 변환
+      const base64String = arrayBufferToBase64(songimageProps.image.data);
+      // 이미지의 MIME 타입을 지정 (예: 'image/png' 또는 'image/jpeg')
+      const mimeType = 'image/png'; // 필요에 따라 변경
+      // 데이터 URL 생성
+      const dataUrl = `data:${mimeType};base64,${base64String}`;
+      setImageSrc(dataUrl);
+    }
+  }, [songimageProps]);
 
   // Worker와 OffscreenCanvas 초기화
   useEffect(() => {
