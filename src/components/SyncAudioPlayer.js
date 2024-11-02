@@ -60,6 +60,7 @@ const AudioPlayer = ({
 
   const handleStopAudio = () => {
     playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
+    console.log("handlestopaudio");
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경

@@ -480,6 +480,7 @@ function MultiPlay() {
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
+    // 이름은 playSong이지만 사실 다음 노래 다운로드 받는 겅미.
     socketRef.current.on('playSong', (data) => {
       try {
         if (currentDataRef.current === null) {
