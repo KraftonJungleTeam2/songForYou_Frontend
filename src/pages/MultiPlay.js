@@ -113,10 +113,9 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
+  const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
 
   const [useCorrection, setUseCorrection] = useState(false);
-
-  const targetStreamRef = useRef(null);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -214,7 +213,7 @@ function MultiPlay() {
       const fileUrl = data.mrUrl;
       if (fileUrl) {
         const fileResponse = await fetch(fileUrl);
-        const fileBlob = await fileResponse.blob();
+        const fileBlob = fileResponse;
         setMrDataBlob(fileBlob); // Blob 데이터 저장
       } else {
         console.error('Error: file URL not found in the response');
@@ -229,7 +228,9 @@ function MultiPlay() {
 
           setEntireReferData(processedPitchArray);
 
-          setEntireGraphData(new Array(processedPitchArray.length).fill(null));
+          setEntireGraphData(
+            new Array(processedPitchArray.length).fill(null)
+          );
 
           setPitchLoaded(true);
         } catch (error) {
@@ -504,6 +505,9 @@ function MultiPlay() {
         connection.close();
       });
 
+      Object.values(dataChannelsRef.current).forEach((channel) => {
+        channel.close();
+      })
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
           track.stop();
@@ -604,6 +608,24 @@ function MultiPlay() {
       }
     };
 
+    // Caller로서 DataChannel 생성 (연결을 시작하는 쪽)
+    if (!dataChannelsRef.current[userId]) {
+      const dataChannel = peerConnection.createDataChannel(`dataChannel-${userId}`, {
+        ordered: true,
+        maxRetransmits: 3
+      });
+
+      setupDataChannel(dataChannel, userId);
+      dataChannelsRef.current[userId] = dataChannel;
+    }
+
+    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
+    peerConnection.ondatachannel = (event) => {
+      const dataChannel = event.channel;
+      setupDataChannel(dataChannel, userId);
+      dataChannelsRef.current[userId] = dataChannel;
+    };
+
     peerConnection.ontrack = (event) => {
       const audioElement = document.getElementById(`remoteAudio_${userId}`);
       if (audioElement && event.streams[0]) {
@@ -629,7 +651,21 @@ function MultiPlay() {
     return peerConnection;
   };
 
-  // 레이턴시 측정
+  // DataChannel 설정 함수
+  const setupDataChannel = (dataChannel, targetId) => {
+    dataChannel.addEventListener("open", (event) => {
+      console.log(`connection with ${targetId} opened`);
+    });
+
+    dataChannel.addEventListener("close", (event) => {
+      console.log(`connection with ${targetId} closed`);
+    });
+
+    dataChannel.onmessage = (event) => {
+      console.log(JSON.parse(event.data));
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
@@ -730,7 +766,7 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
 
-  usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData, dataChannelsRef.current);
 
   return (
     <div className='multiPlay-page'>
