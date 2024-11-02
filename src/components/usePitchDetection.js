@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEntireGraphData, connections = []) => {
+export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, connections = [], socketId) => {
   const [pitch, setPitch] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [decibel, setDecibel] = useState(-Infinity);
@@ -53,10 +53,11 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     pitchCountRef.current += 1;
 
     // 4개의 피치 데이터가 모였을 때 전송
-    if (pitchCountRef.current >= 4) {
+    if (pitchCountRef.current >= 4 && socketId) {
       const dataToSend = {
         type: 'pitch-data',
-        pitches: pitchBufferRef.current
+        pitches: pitchBufferRef.current,
+        id: socketId
       };
 
       // 모든 connection으로 데이터 전송
@@ -150,7 +151,7 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
     let stopStreamFunction;
     async function setupAudio() {
       try {
-        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext();
+        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext(targetStream);
         stopStreamFunction = stopStream;
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
@@ -164,7 +165,8 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         console.error('Error accessing the microphone', error);
       }
     }
-    setupAudio();
+    if (targetStream)
+      setupAudio();
 
     return () => {
       if (sourceRef.current) {
@@ -178,12 +180,13 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
         stopStreamFunction();
       }
     };
-  }, []);
+  }, [targetStream]);
 
   useEffect(() => {
     let intervalId;
 
     function updatePitch() {
+
       if (!analyserRef.current || !detectorRef.current) return;
 
       const input = new Float32Array(analyserRef.current.fftSize);
@@ -240,7 +243,6 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
           const playbackPos = playbackPositionRef.current;
           const index = round(playbackPos * 40);
 
-
           setEntireGraphData((prevData) => {
             if (index < 0 || index >= prevData.length) return prevData;
 
@@ -271,14 +273,14 @@ export const usePitchDetection = (isPlaying = true, playbackPositionRef, setEnti
       }
     }
 
-    if (isPlaying) {
+    if (isPlaying && isMicOn) {
       intervalId = setInterval(updatePitch, 25);
     }
 
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isPlaying, playbackPositionRef, setEntireGraphData]);
+  }, [isPlaying, isMicOn, playbackPositionRef, setEntireGraphData]);
 
   return { pitch, clarity, decibel };
 };
