@@ -88,7 +88,7 @@ const AudioPlayer = ({
 
     // 재생 완료 시 호출되는 콜백 설정
     source.onended = () => {
-      setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
+      // setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       playbackPositionRef.current = 0; // 재생 위치를 초기화
       setStarttime(null);
       //곡 종료 현재 오디오 없음.

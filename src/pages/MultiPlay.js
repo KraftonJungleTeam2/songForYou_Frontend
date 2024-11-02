@@ -107,10 +107,9 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
+  const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
 
   const [useCorrection, setUseCorrection] = useState(false);
-
-  const targetStreamRef = useRef(null);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -214,7 +213,7 @@ function MultiPlay() {
       const fileUrl = data.mrUrl;
       if (fileUrl) {
         const fileResponse = await fetch(fileUrl);
-        const fileBlob = await fileResponse.blob();
+        const fileBlob = fileResponse;
         setMrDataBlob(fileBlob); // Blob 데이터 저장
       } else {
         console.error('Error: file URL not found in the response');
@@ -230,11 +229,11 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
 
-            setEntireReferData(processedPitchArray);
+          setEntireReferData(processedPitchArray);
 
-            setEntireGraphData(
-              new Array(processedPitchArray.length).fill(null)
-            );
+          setEntireGraphData(
+            new Array(processedPitchArray.length).fill(null)
+          );
 
           setPitchLoaded(true);
         } catch (error) {
@@ -485,6 +484,10 @@ function MultiPlay() {
         connection.close();
       });
 
+      Object.values(dataChannelsRef.current).forEach((channel) => {
+        channel.close();
+      })
+
       if (socketRef.current?.connected) {
         socketRef.current.disconnect();
       }
@@ -505,7 +508,6 @@ function MultiPlay() {
 
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
-        console.log('reachere??');
         audioTrack.enabled = true;
 
         // peer connections 업데이트
@@ -553,6 +555,24 @@ function MultiPlay() {
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
 
+    // Caller로서 DataChannel 생성 (연결을 시작하는 쪽)
+    if (!dataChannelsRef.current[userId]) {
+      const dataChannel = peerConnection.createDataChannel(`dataChannel-${userId}`, {
+        ordered: true,
+        maxRetransmits: 3
+      });
+
+      setupDataChannel(dataChannel, userId);
+      dataChannelsRef.current[userId] = dataChannel;
+    }
+
+    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
+    peerConnection.ondatachannel = (event) => {
+      const dataChannel = event.channel;
+      setupDataChannel(dataChannel, userId);
+      dataChannelsRef.current[userId] = dataChannel;
+    };
+
     peerConnection.ontrack = (event) => {
       const audioElement = document.getElementById(`remoteAudio_${userId}`);
       if (audioElement && event.streams[0]) {
@@ -577,8 +597,36 @@ function MultiPlay() {
     return peerConnection;
   };
 
+  // DataChannel 설정 함수
+  const setupDataChannel = (dataChannel, targetId) => {
+    dataChannel.addEventListener("open", (event) => {
+      console.log(`connection with ${targetId} opened`);
+    });
+
+    dataChannel.addEventListener("close", (event) => {
+      console.log(`connection with ${targetId} closed`);
+    });
+
+    dataChannel.onmessage = (event) => {
+      console.log(event.data);
+    }
+  };
+
+  // 고쳐야함 ...
   useEffect(() => {
-    const interval = setInterval(()=>measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
+    const interval = setInterval(() => {
+      Object.values(dataChannelsRef.current).forEach((channel) => {
+        if (channel.readyState === 'open') {
+          channel.send(entireGraphData);
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -662,7 +710,7 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, isMicOn, useCorrection]);
 
-  usePitchDetection(targetStreamRef, isPlaying, playbackPositionRef, setEntireGraphData);
+  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData);
 
   return (
     <div className='multiPlay-page'>
@@ -761,7 +809,7 @@ function MultiPlay() {
             <button
               className={`button mic-button ${!isPlaying ? 'is-disabled' : ''}`} // 버튼 스타일 변경
               onClick={isMicOn ? micOff : micOn}
-              //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
+            //   disabled={!isPlaying} // isPlaying이 false일 때 버튼 비활성화
             >
               {isMicOn ? '마이크 끄기' : '마이크 켜기'}
             </button>
