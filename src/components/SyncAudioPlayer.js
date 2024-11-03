@@ -13,6 +13,8 @@ const AudioPlayer = ({
   setIsMicOn,
   latencyOffset,
   musicGain,
+  playoutDelay,
+  setPlayoutDelay,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
 }) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
@@ -209,6 +211,12 @@ const AudioPlayer = ({
   }, [musicGain]);
   // 컴포넌트 언마운트 시 자원 정리
   useEffect(() => {
+    // 출력 지연 반영
+    setInterval((audioContext = audioContextRef.current) => {
+      if (audioContext)
+        setPlayoutDelay(audioContext.outputLatency*1000);
+    }, 5000) ;
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
