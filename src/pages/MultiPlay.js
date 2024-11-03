@@ -529,7 +529,7 @@ function MultiPlay() {
         });
       }
 
-      socketRef.current.emit('leaveRoom', { roomId });
+      // socketRef.current.emit('leaveRoom', { roomId });
 
       if (socketRef.current?.connected) {
         socketRef.current.disconnect();
