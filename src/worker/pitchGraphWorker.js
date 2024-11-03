@@ -16,7 +16,7 @@ self.onmessage = (event) => {
 
   // canvas와 dimensions 초기화 여부 확인
   if (data.canvas) {
-    
+
     dataCanvas = data.canvas;
     dataCtx = dataCanvas.getContext('2d');
 
@@ -30,9 +30,8 @@ self.onmessage = (event) => {
   }
 
   // dimensions 값이 변경되었는지 확인
-  else if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) 
-    {
-    
+  else if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) {
+
     // console.log("Updating dimensions:", data.dimensions);
     setDimensions(data.dimensions);  // dataCanvas와 backgroundCanvas 모두 업데이트
     updateBackground();
@@ -44,7 +43,7 @@ self.onmessage = (event) => {
     console.log('이미지 데이터 수신:', songURL);
     updateBackground(); // 이미지 데이터를 받은 후 배경 업데이트
   }
-    
+
   // 프레임을 그리는 함수 호출
   if (data.realtimeData && data.referenceData && Array.isArray(data.realtimeData) && Array.isArray(data.referenceData)) {
     drawFrame(
@@ -95,7 +94,6 @@ async function updateBackground() {
       drawDefaultBackground(backgroundCtx);
     }
   } else {
-    console.log('fucking');
     drawDefaultBackground(backgroundCtx);
   }
 }
@@ -153,9 +151,12 @@ function drawFrame(
 
   drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
   drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
-  Object.values(multiRealDatas).forEach((multiData) => {
-    drawPitchData(multiData, '#FFFFFF', 'coral', currentTimeIndex, true, dataPointCount);
-  });
+  //  다른 참가자 데이터 그리기
+  if (multiRealDatas) {
+    Object.values(multiRealDatas).forEach((multiData) => {
+      drawPitchData(multiData, '#FFFFFF', 'coral', currentTimeIndex, true, dataPointCount);
+    });
+  }
 }
 
 function drawPitchData(
