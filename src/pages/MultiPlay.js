@@ -12,7 +12,8 @@ import { useSongs } from '../Context/SongContext';
 import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
-import measureLatency from '../components/LatencyCalc';
+// 콘솔로그 그만
+// import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -114,6 +115,7 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
+  const pitchArraysRef = useRef({});  //  pitchArrays
 
   const [useCorrection, setUseCorrection] = useState(false);
 
@@ -232,6 +234,9 @@ function MultiPlay() {
             new Array(processedPitchArray.length).fill(null)
           );
 
+          Object.keys(dataChannelsRef.current).forEach(key => {
+            pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
+          });
           setPitchLoaded(true);
         } catch (error) {
           console.error('Error processing pitch data:', error);
@@ -596,13 +601,6 @@ function MultiPlay() {
         // 기존 코드
         delete peerConnectionsRef.current[userId];
 
-        // 트랙 정리
-        peerConnection.getSenders().forEach((sender) => {
-          if (sender.track) {
-            sender.track.stop();
-          }
-        });
-
         // 추가 정리
         peerConnection.close();
       }
@@ -662,15 +660,18 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log(JSON.parse(event.data));
+      const data = JSON.parse(event.data);
+      data.pitches.forEach((pitchData) => {
+        pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
+      });
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -766,7 +767,7 @@ function MultiPlay() {
     }
   }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
 
-  usePitchDetection(isPlaying, playbackPositionRef, setEntireGraphData, dataChannelsRef.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
 
   return (
     <div className='multiPlay-page'>
@@ -833,7 +834,7 @@ function MultiPlay() {
                     </div> */}
 
             <div className='pitch-graph-multi'>
-              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
             </div>
 
             {/* Seek Bar */}
