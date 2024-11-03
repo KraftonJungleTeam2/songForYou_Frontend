@@ -647,7 +647,6 @@ function MultiPlay() {
     const setupLatencyDataChannel = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === "listenerLatency") {
-        console.log("data received: ", data);
         singersDelay.current[data.singer] = data.setAs;
 
         let sum = 0;

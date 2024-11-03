@@ -23,7 +23,7 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
           const jitterDelay = (newDelay - peerData.jitter.delay) / (newCount - peerData.jitter.count) * 1000;
           
           if (jitterDelay > 0) {
-            console.log(key, " JitterDelay: ", jitterDelay);
+            // console.log(key, " JitterDelay: ", jitterDelay);
             jitters.push(jitterDelay);
           }
           else if (report.type === 'media-source') {
@@ -38,7 +38,7 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
         // 상대방에게 가는 내 음성의 지연
         if (micStatRef.current[key] === false && report.type === 'remote-inbound-rtp' && report.kind === "audio") {
           const RTT = report.roundTripTime*1000;
-          console.log(key, " inbound RTT: ", RTT);
+          // console.log(key, " inbound RTT: ", RTT);
           
           RTTs.push(RTT);
           listeners.push({userId: key, value: RTT});
