@@ -83,7 +83,8 @@ function MultiPlay() {
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(true);
-
+  //
+  const audioPlayerRef = useRef();
   // 지연시간 ping을 위한 state
   const serverTimeDiff = useRef(null);
 
@@ -481,7 +482,9 @@ function MultiPlay() {
     });
 
     socketRef.current.on('stopMusic', (data) => {
-      setStarttime(null);
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.stopAudio(); // handleStopAudio 함수를 호출
+      }
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
@@ -897,7 +900,7 @@ function MultiPlay() {
             {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
 
             {/* AudioPlayer 컴포넌트 */}
-            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} />
+            <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} />
           </div>
         </div>
       </div>
