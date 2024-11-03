@@ -563,7 +563,7 @@ function MultiPlay() {
         socketRef.current.emit('userMicOn', { roomId });
         updatePlayerMic(socketId.current, true);
 
-        setAudioDelay(200);
+        setAudioDelay(150); // 음원 디코딩부터 마이크 신호 인코딩까지 지연 추정값
       }
     } catch (error) {
       console.error('Error in micOn:', error);
@@ -670,7 +670,7 @@ function MultiPlay() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay, playoutDelay, setPlayoutDelay), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -762,7 +762,7 @@ function MultiPlay() {
       if (isMicOn) {
         setLatencyOffset(-audioDelay - networkDelay - optionDelay);
       } else {
-        setLatencyOffset(jitterDelay);
+        setLatencyOffset(jitterDelay + playoutDelay);
       }
     } else {
       setLatencyOffset(0);
@@ -874,8 +874,10 @@ function MultiPlay() {
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              <h3>networkDelay: {networkDelay}</h3>
-              <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(e.target.value)}></input>
+              <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}</h3>
+              <h3>audioDelay: {audioDelay.toFixed(2)}, networkDelay: {networkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
+              <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
+              <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
               {/* 오디오 엘리먼트들 */}
               <audio id='localAudio' autoPlay muted />
               <div className='remote-audios' style={{ display: 'none' }}>
