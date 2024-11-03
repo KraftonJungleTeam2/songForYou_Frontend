@@ -133,7 +133,7 @@ function MultiPlay() {
   const audioConstant = 150;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
   const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
-  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(-10.0);
+  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
   const [playoutDelay, setPlayoutDelay] = useState(0);
@@ -659,8 +659,10 @@ function MultiPlay() {
             i++;
           }
         });
-        if (i > 0)
+        if (i > 0) {
           setListenerNetworkDelay(sum/i);
+          console.log("setlistener lat");
+        }
       }
     };
     // Caller 레이턴시 값 교환용 데이터채널 생성
