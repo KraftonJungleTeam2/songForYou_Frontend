@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
 
-const AudioPlayer = ({
+const AudioPlayer = forwardRef(({
   isPlaying, // 재생 여부를 나타내는 bool 값, true면 재생 중, false면 일시정지 상태
   setIsPlaying, // 재생 상태를 제어하는 함수, 외부에서 재생/일시정지 상태를 변경할 수 있음
   audioBlob, // 오디오 데이터가 담긴 Blob 객체, 로컬이나 서버에서 가져온 파일 데이터
@@ -16,7 +16,7 @@ const AudioPlayer = ({
   playoutDelay,
   setPlayoutDelay,
   playbackSpeed = 1, // 재생 속도를 제어하는 값, 기본 속도는 1배속이며 조절 가능
-}) => {
+}, ref) => {
   const audioContextRef = useRef(null); // AudioContext 객체를 참조, 오디오 처리 및 재생에 사용됨
   const audioBufferRef = useRef(null); // 오디오 데이터가 담긴 AudioBuffer를 참조, 로드된 오디오 데이터를 담고 있음
   const sourceRef = useRef(null); // AudioBufferSourceNode를 참조, 오디오 재생에 사용하는 소스 노드
@@ -66,11 +66,18 @@ const AudioPlayer = ({
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
+    onPlaybackPositionChange(0);
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
   }
 
+  // ref에 접근할 수 있도록 useImperativeHandle 사용
+  useImperativeHandle(ref, () => ({
+    stopAudio: handleStopAudio, // stopAudio를 ref로 노출시킴
+  }));
+
+    
   // 오디오 재생 함수
   const playSyncAudio = (starttime) => {
     const audioContext = audioContextRef.current;
@@ -228,6 +235,6 @@ const AudioPlayer = ({
   }, []);
 
   return null;
-};
+});
 
 export default AudioPlayer;
