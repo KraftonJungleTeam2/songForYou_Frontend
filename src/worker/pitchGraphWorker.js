@@ -49,6 +49,7 @@ self.onmessage = (event) => {
   if (data.realtimeData && data.referenceData && Array.isArray(data.realtimeData) && Array.isArray(data.referenceData)) {
     drawFrame(
       data.realtimeData,
+      data.multiRealDatas,
       data.referenceData,
       data.dataPointCount,
       data.currentTimeIndex
@@ -141,6 +142,7 @@ function drawGuidelinesAndLabels(targetCtx) {
 
 function drawFrame(
   realtimeData,
+  multiRealDatas,
   referenceData,
   dataPointCount,
   currentTimeIndex
@@ -151,6 +153,9 @@ function drawFrame(
 
   drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
   drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
+  Object.values(multiRealDatas).forEach((multiData) => {
+    drawPitchData(multiData, '#FFFFFF', 'coral', currentTimeIndex, true, dataPointCount);
+  });
 }
 
 function drawPitchData(
