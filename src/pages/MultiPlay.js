@@ -465,12 +465,16 @@ function MultiPlay() {
     });
 
     socketRef.current.on('startTime', (data) => {
+      const nextman = nextDataRef.current
+      setcurrentData(nextman);
+      setnextData(null);
+
+      setIsWaiting(true);
+
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
-      // console.log(serverStartTime);
-      // console.log(serverTimeDiff.current);
-      // console.log(serverStartTime);
+    
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
       micOff();
@@ -481,7 +485,7 @@ function MultiPlay() {
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
-    socketRef.current.on('playSong', (data) => {
+    socketRef.current.on('reservedData', (data) => {
       try {
         if (currentDataRef.current === null) {
           setcurrentData(data);
@@ -500,6 +504,15 @@ function MultiPlay() {
           }
         }
       } catch (error) {
+        console.error('Error processing download playsong data:', error);
+      }
+    });
+
+    socketRef.current.on('songAdded', (data) => {
+      try{
+        setReservedSongs((prev) => [...prev, data.songdata]);
+      }
+      catch (error){
         console.error('Error processing download playsong data:', error);
       }
     });
@@ -721,9 +734,6 @@ function MultiPlay() {
 
   // 시작 버튼 누르면 곡 시작하게 하는 부분.
   const handleStartClick = () => {
-    setcurrentData(nextData);
-    setnextData(null);
-    setIsWaiting(true);
     if (!audioLoaded) {
       alert('오디오가 아직 로딩되지 않았습니다.');
       setIsWaiting(false);
