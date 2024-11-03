@@ -466,7 +466,7 @@ function MultiPlay() {
       const nextman = nextDataRef.current;
       setcurrentData(nextman);
       setnextData(null);
-      
+
       setIsWaiting(true);
 
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
