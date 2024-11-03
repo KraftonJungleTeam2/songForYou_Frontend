@@ -13,6 +13,7 @@ const arrayBufferToBase64 = (buffer) => {
 const PitchGraph = ({
   dimensions,
   realtimeData,
+  multiRealDatas,
   referenceData,
   dataPointCount,
   currentTimeIndex,
@@ -70,6 +71,7 @@ const PitchGraph = ({
     worker.postMessage({
       dimensions,
       realtimeData,
+      multiRealDatas,
       referenceData,
       dataPointCount,
       currentTimeIndex
@@ -77,6 +79,7 @@ const PitchGraph = ({
   }, [
     dimensions,
     realtimeData,
+    multiRealDatas,
     referenceData,
     dataPointCount,
     currentTimeIndex,
