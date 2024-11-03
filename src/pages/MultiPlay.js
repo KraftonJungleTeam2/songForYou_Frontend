@@ -129,8 +129,10 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const [audioDelay, setAudioDelay] = useState(0);
-  const [networkDelay, setNetworkDelay] = useState(0);
+  const audioConstant = 150;
+  const [audioDelay, setAudioDelay] = useState(audioConstant);
+  const [singerNetworkDelay, setSingerNetworkDelay] = useState(0);
+  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
   const [playoutDelay, setPlayoutDelay] = useState(0);
@@ -550,7 +552,7 @@ function MultiPlay() {
         socketRef.current?.off(event);
       });
 
-      socketRef.current.emit('leaveRoom', roomId);
+      // socketRef.current.emit('leaveRoom', roomId);
 
       if (socketRef.current?.connected) {
         socketRef.current.disconnect();
@@ -586,7 +588,7 @@ function MultiPlay() {
         socketRef.current.emit('userMicOn', { roomId });
         updatePlayerMic(socketId.current, true);
 
-        setAudioDelay(150); // 음원 디코딩부터 마이크 신호 인코딩까지 지연 추정값
+        setAudioDelay(audioConstant); // 음원 디코딩부터 마이크 신호 인코딩까지 지연 추정값
       }
     } catch (error) {
       console.error('Error in micOn:', error);
@@ -693,11 +695,11 @@ function MultiPlay() {
   };
 
   // 이거 지우지 마세요
-  // useEffect(() => {
-  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay), 1000);
+  useEffect(() => {
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, jitterDelay, setJitterDelay), 1000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -781,14 +783,14 @@ function MultiPlay() {
   useEffect(() => {
     if (useCorrection) {
       if (isMicOn) {
-        setLatencyOffset(-audioDelay - networkDelay - optionDelay - playoutDelay);
+        setLatencyOffset(-audioDelay - singerNetworkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterDelay);
+        setLatencyOffset(jitterDelay + listenerNetworkDelay);
       }
     } else {
       setLatencyOffset(0);
     }
-  }, [audioDelay, networkDelay, optionDelay, jitterDelay, isMicOn, useCorrection]);
+  }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
 
@@ -896,7 +898,7 @@ function MultiPlay() {
               </button>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}</h3>
-              <h3>audioDelay: {audioDelay.toFixed(2)}, networkDelay: {networkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
+              <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
               <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
               {/* 오디오 엘리먼트들 */}
