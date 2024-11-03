@@ -82,6 +82,7 @@ const arraysEqual = (arr1, arr2) => {
 };
 
 
+// drawGuidelinesAndLabels 함수 수정
 function drawGuidelinesAndLabels(targetCtx) {
   const graphWidth = dimensions.width;
 
@@ -121,7 +122,7 @@ function drawGuidelinesAndLabels(targetCtx) {
       // 옥타브 번호 계산 (C4를 기준으로)
       const octaveNumber = Math.round(Math.log2(freq/261.63)) + 4;
       targetCtx.fillText(`C${octaveNumber}`, 5, y);
-    
+      
     });
   }
 }

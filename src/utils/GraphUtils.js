@@ -10,8 +10,8 @@ export const getFrequencyRange = (minFrequency, maxFrequency) => {
   let maxOctave = Math.ceil(Math.log2(maxFrequency/baseFreq)) + 4;
   
   // 안전을 위해 범위 제한 (C0 ~ C8)
-  minOctave = Math.max(0, minOctave); // 한 옥타브 아래까지
-  maxOctave = Math.min(8, maxOctave); // 한 옥타브 위까지
+  minOctave = Math.max(0, minOctave - 1); 
+  maxOctave = Math.min(8, maxOctave); 
   
   // 각 옥타브의 C음 주파수 생성
   for (let octave = minOctave; octave <= maxOctave; octave++) {
@@ -27,7 +27,7 @@ export const logScale = (value, dimensions, cFrequencies) => {
   
   const minValue = cFrequencies[0];
   const maxValue = cFrequencies[cFrequencies.length - 1];
-  const minPixel = dimensions.height - 30; // 하단 여백
+  const minPixel = dimensions.height - 20; // 하단 여백
   const maxPixel = 20; // 상단 여백
   
   // 로그 스케일 변환
