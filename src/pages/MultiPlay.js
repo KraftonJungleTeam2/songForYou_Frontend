@@ -320,25 +320,6 @@ function MultiPlay() {
 
   // WebSocket 연결 설정
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // 페이지 새로고침 시 명시적으로 연결 종료
-      if (socketRef.current) {
-        socketRef.current.emit('leaveRoom', { roomId });
-
-        if (socketRef.current.connected) {
-          const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
-
-          events.forEach((event) => {
-            socketRef.current?.off(event);
-          });
-          socketRef.current.disconnect();
-        }
-        socketRef.current = null;
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
       path: '/wss',
       auth: {
@@ -482,7 +463,7 @@ function MultiPlay() {
     });
 
     socketRef.current.on('startTime', (data) => {
-      const nextman = nextDataRef.current
+      const nextman = nextDataRef.current;
       setcurrentData(nextman);
       setnextData(null);
 
@@ -491,7 +472,7 @@ function MultiPlay() {
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
-    
+
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
       micOff();
@@ -526,10 +507,9 @@ function MultiPlay() {
     });
 
     socketRef.current.on('songAdded', (data) => {
-      try{
+      try {
         setReservedSongs((prev) => [...prev, data.songdata]);
-      }
-      catch (error){
+      } catch (error) {
         console.error('Error processing download playsong data:', error);
       }
     });
@@ -539,6 +519,7 @@ function MultiPlay() {
       Object.values(peerConnectionsRef.current).forEach((connection) => {
         connection.close();
       });
+
       Object.values(dataChannelsRef.current).forEach((channel) => {
         channel.close();
       });
@@ -548,9 +529,15 @@ function MultiPlay() {
         });
       }
 
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      socketRef.current.emit('leaveRoom', { roomId });
 
-      handleBeforeUnload();
+      if (socketRef.current?.connected) {
+        socketRef.current.disconnect();
+      }
+
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
     };
   }, []);
 
