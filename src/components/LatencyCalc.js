@@ -1,7 +1,8 @@
 
 // 지연 시간 측정 함수
-async function MeasureLatency(peerConnectionsRef, ref, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay, playoutDelay, setPlayoutDelay) {
-  const counter = {playout: 0, jitter: 0, }
+async function MeasureLatency(peerConnectionsRef, ref, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay) {
+  const values = {playout: [], jitter: []};
+
   for (let key in peerConnectionsRef.current) {
     // 마이크 꺼져있는 사용자는 고려 x
     if (micStatRef.current[key] == undefined || micStatRef.current[key] === false) continue;
@@ -15,26 +16,14 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, networkDelay,
     const data = ref.current[key];
 
     stats.forEach((report) => {
-      if (report.type === 'media-playout') {
-        const newCount = report.totalSamplesCount; // cumulative
-        const newDelay = report.totalPlayoutDelay; // cumulative
-        const playoutDelay = (newDelay - data.playout.delay) / (newCount - data.playout.count) * 1000;
-        data.playout.count = newCount;
-        data.playout.delay = newDelay;
-      
-        if (playoutDelay > 0) {// 유효한 값이면
-          console.log(key, " playoutDelay: ", playoutDelay);
-          setPlayoutDelay(playoutDelay);
-        }
-      }
-      else if (report.type === 'inbound-rtp') {
+      if (report.type === 'inbound-rtp') {
         const newCount = report.jitterBufferEmittedCount; // cumulative
         const newDelay = report.jitterBufferTargetDelay; // cumulative
         const jitterDelay = (newDelay - data.jitter.delay) / (newCount - data.jitter.count) * 1000;
 
         if (jitterDelay > 0) {
           console.log(key, " JitterDelay: ", jitterDelay);
-          setJitterDelay(jitterDelay);
+          values.jitter.push(jitterDelay);
         }
       }
       else if (report.type === 'remote-inbound-rtp' && report.kind === "audio") {
@@ -49,7 +38,14 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, networkDelay,
         console.log(key, " RTT: ", report.currentRoundTripTime * 1000);
       }
     });
+    setJitterDelay(average(values.jitter));
   }
+}
+
+function average(arr) {
+  if (arr.length === 0) return 0; // 빈 배열일 경우 예외 처리
+  const sum = arr.reduce((acc, curr) => acc + curr, 0); // 배열 요소 합산
+  return sum / arr.length; // 평균 계산
 }
 
 export default MeasureLatency;

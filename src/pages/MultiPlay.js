@@ -120,7 +120,7 @@ function MultiPlay() {
   const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
   const pitchArraysRef = useRef({});  //  pitchArrays
 
-  const [useCorrection, setUseCorrection] = useState(false);
+  const [useCorrection, setUseCorrection] = useState(true);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -682,7 +682,7 @@ function MultiPlay() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay, playoutDelay, setPlayoutDelay), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -769,9 +769,9 @@ function MultiPlay() {
   useEffect(() => {
     if (useCorrection) {
       if (isMicOn) {
-        setLatencyOffset(-audioDelay - networkDelay - optionDelay);
+        setLatencyOffset(-audioDelay - networkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterDelay + playoutDelay);
+        setLatencyOffset(jitterDelay);
       }
     } else {
       setLatencyOffset(0);
@@ -900,7 +900,7 @@ function MultiPlay() {
             {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
 
             {/* AudioPlayer 컴포넌트 */}
-            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} />
+            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} />
           </div>
         </div>
       </div>
