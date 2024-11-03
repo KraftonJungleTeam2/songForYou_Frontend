@@ -37,6 +37,7 @@
   flex-grow: 1;
   width: 100%;
   height: 50%;
+  max-height: 50%;
   border: 1px solid #ccc;
 }
 
@@ -52,7 +53,7 @@
 }
 .chat-area {
   height: 50%;
-  max-height: calc((100vw - var(--top-bar-height)) * 0.5); /* height: 50% => 0.5로 맞춰줘야함 */
+  max-height: calc((100vh - var(--top-bar-height)) * 0.5); /* height: 50% => 0.5로 맞춰줘야함 */
   display: flex;
   flex-direction: column;
   border: 1px solid #000000;
