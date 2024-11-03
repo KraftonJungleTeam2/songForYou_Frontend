@@ -1,7 +1,7 @@
 /* eslint-env worker */
 /* eslint-disable no-restricted-globals */
 
-import { getCFrequencies, logScale } from '../utils/GraphUtils';
+import { getCFrequencies, logScale, stringToColor } from '../utils/GraphUtils';
 
 let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, cFrequencies;
 let songURL = null;
@@ -150,12 +150,16 @@ function drawFrame(
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
   drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
-  drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
-  //  다른 참가자 데이터 그리기
   if (multiRealDatas) {
-    Object.values(multiRealDatas).forEach((multiData) => {
-      drawPitchData(multiData, '#FFFFFF', 'coral', currentTimeIndex, true, dataPointCount);
+    Object.entries(multiRealDatas).forEach(([key, multiData]) => {
+      if (key !== 'myId') {
+        drawPitchData(multiData, stringToColor(key), 'coral', currentTimeIndex, true, dataPointCount);
+      } else {
+        drawPitchData(realtimeData, stringToColor(multiData), 'coral', currentTimeIndex, true, dataPointCount);
+      }
     });
+  } else {
+    drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
   }
 }
 
