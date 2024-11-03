@@ -320,6 +320,25 @@ function MultiPlay() {
 
   // WebSocket 연결 설정
   useEffect(() => {
+    const handleBeforeUnload = () => {
+      // 페이지 새로고침 시 명시적으로 연결 종료
+      if (socketRef.current) {
+        socketRef.current.emit('leaveRoom', { roomId });
+
+        if (socketRef.current.connected) {
+          const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
+
+          events.forEach((event) => {
+            socketRef.current?.off(event);
+          });
+          socketRef.current.disconnect();
+        }
+        socketRef.current = null;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     socketRef.current = io(`${process.env.REACT_APP_EXPRESS_APP}`, {
       path: '/wss',
       auth: {
@@ -507,7 +526,6 @@ function MultiPlay() {
       Object.values(peerConnectionsRef.current).forEach((connection) => {
         connection.close();
       });
-
       Object.values(dataChannelsRef.current).forEach((channel) => {
         channel.close();
       });
@@ -517,21 +535,9 @@ function MultiPlay() {
         });
       }
 
-      const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
+      window.removeEventListener('beforeunload', handleBeforeUnload);
 
-      events.forEach((event) => {
-        socketRef.current?.off(event);
-      });
-
-      socketRef.current.emit('leaveRoom', roomId);
-
-      if (socketRef.current?.connected) {
-        socketRef.current.disconnect();
-      }
-
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
+      handleBeforeUnload();
     };
   }, []);
 
@@ -661,7 +667,7 @@ function MultiPlay() {
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
-    }
+    };
   };
 
   // useEffect(() => {
