@@ -1,5 +1,3 @@
-import { rtt } from "three/webgpu";
-
 // 지연 시간 측정 함수
 async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, dataChannels, socketId) {
   const jitters = [];
@@ -48,7 +46,7 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
   }
   setJitterDelay(average(jitters));
 
-  const singerDelay = Math.max(...RTTs);
+  const singerDelay = average(RTTs);
   if (singerDelay > 0 ) {
     setSingerNetworkDelay(singerDelay);
     if (micStatRef.current[socketId]) {
