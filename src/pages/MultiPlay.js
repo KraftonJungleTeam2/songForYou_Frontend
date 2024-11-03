@@ -142,6 +142,14 @@ function MultiPlay() {
   const [musicGain, setMusicGain] = useState(1);
 
   useEffect(() => {
+    if(reservedSongs.length === 0){
+      setEntireGraphData([]);
+      setEntireReferData([]);
+      setLyricsData(null);
+    }
+  }, [reservedSongs])
+
+  useEffect(() => {
     currentDataRef.current = currentData;
     nextDataRef.current = nextData;
     console.log('use', currentDataRef.current);

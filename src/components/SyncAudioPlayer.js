@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
 
 const AudioPlayer = forwardRef(({
   isPlaying, // 재생 여부를 나타내는 bool 값, true면 재생 중, false면 일시정지 상태
@@ -69,9 +69,9 @@ const AudioPlayer = forwardRef(({
   }
 
   // ref에 접근할 수 있도록 useImperativeHandle 사용
-  // useImperativeHandle(ref, () => ({
-  //   stopAudio: handleStopAudio, // stopAudio를 ref로 노출시킴
-  // }));
+  useImperativeHandle(ref, () => ({
+    stopAudio: handleStopAudio, // stopAudio를 ref로 노출시킴
+  }));
 
     
   // 오디오 재생 함수
