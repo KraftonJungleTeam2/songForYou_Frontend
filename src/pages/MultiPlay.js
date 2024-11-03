@@ -692,11 +692,12 @@ function MultiPlay() {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay), 1000);
+  // 이거 지우지 마세요
+  // useEffect(() => {
+  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, networkDelay, setNetworkDelay, jitterDelay, setJitterDelay), 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
