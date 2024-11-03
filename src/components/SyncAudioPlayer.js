@@ -103,12 +103,6 @@ const AudioPlayer = ({
     source.onended = handleStopAudio;
   };
   
-  // 음정 조절
-  const setPitch = (tone) => {
-    const source = sourceRef.current;
-
-    source.detune.value = - tone * 1200; // 예: semitoneChange가 1일 경우, 음정을 한 세미톤 올림
-  }
   // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
   const setPlaybackRate = (rate) => {
     const audioContext = audioContextRef.current;
@@ -145,12 +139,10 @@ const AudioPlayer = ({
 
     setPlaybackRate(transitionSpeed);
     
-    setPitch(1);
-
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
-      setPitch(-1);
+
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
