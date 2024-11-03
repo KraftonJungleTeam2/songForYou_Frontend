@@ -36,6 +36,9 @@ const PitchGraph = ({
       const dataUrl = `data:${mimeType};base64,${base64String}`;
       setImageSrc(dataUrl);
     }
+    else{
+      setImageSrc(null);
+    }
   }, [songimageProps]);
 
   // Worker와 OffscreenCanvas 초기화
