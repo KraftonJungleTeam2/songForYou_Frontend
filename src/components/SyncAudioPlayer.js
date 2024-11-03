@@ -63,6 +63,7 @@ const AudioPlayer = forwardRef(({
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
+    onPlaybackPositionChange(0);
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
