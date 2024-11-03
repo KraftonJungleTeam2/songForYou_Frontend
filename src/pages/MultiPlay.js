@@ -529,14 +529,18 @@ function MultiPlay() {
         });
       }
 
-      // socketRef.current.emit('leaveRoom', { roomId });
-
       if (socketRef.current?.connected) {
-        socketRef.current.disconnect();
+        socketRef.current.emit('leaveRoom', { roomId });
+
+        const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
+
+        events.forEach((event) => {
+          socketRef.current?.off(event);
+        });
       }
 
       if (socketRef.current) {
-        socketRef.current.close();
+        socketRef.current.disconnect();
       }
     };
   }, []);
