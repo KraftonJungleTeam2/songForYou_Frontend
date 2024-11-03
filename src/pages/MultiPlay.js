@@ -653,9 +653,11 @@ function MultiPlay() {
 
         let sum = 0;
         let i = 0;
-        Object.keys(singersDelay.current).forEach((key) => {
-          sum += singersDelay.current[key];
-          i++;
+        Object.keys(singersDelay.current).forEach((userId) => {
+          if (micStatRef.current[userId] === true) {
+            sum += singersDelay.current[userId];
+            i++;
+          }
         });
         if (i > 0)
           setListenerNetworkDelay(sum/i);
