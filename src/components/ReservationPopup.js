@@ -17,25 +17,15 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
   const handleReserve = (e, song) => {
     e.stopPropagation();
 
-    setReservedSongs((prev) => [...prev, song]);
-
     if (nextData === null) {
-      socket.emit('playSong', { songId: song.id, roomId: roomid, getNow: true });
+      socket.emit('reserveSong', { song: song, roomId: roomid, getNow: true });
     } else {
-      socket.emit('playSong', { songId: song.id, roomId: roomid });
+      socket.emit('reserveSong', { song: song, roomId: roomid });
     }
   
   };
 
-  const handlePlay = (e, song) => {
-    e.stopPropagation();
-
-    
-
-    onClose();
-  };
-
-  const isReserved = (songId) => reservedSongs.includes(songId); // 예약 여부 확인
+  const isReserved = (song) => reservedSongs.includes(song); // 예약 여부 확인
 
   function arrayBufferToBase64(buffer) {
     let binary = '';
@@ -107,20 +97,14 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
                         style={{width: '8rem'}}>
                             <button
                               className={`button is-dark`}
-                              disabled={isReserved(song.id)}
-                              onClick={(e) => !isReserved(song.id) && handleReserve(e, song)}
+                              disabled={isReserved(song)}
+                              onClick={(e) => !isReserved(song) && handleReserve(e, song)}
                               style={{height: '2.2rem', width: '3rem'}}
                               >
                               {isReserved(song.id) ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}
                             </button>
                           
-                            <button 
-                              className='button play-button is-dark' 
-                              onClick={(e) => handlePlay(e, song)}
-                              style={{height: '2.2rem', width: '3rem'}}
-                              >
-                              <i className="fa-solid fa-play"></i>
-                            </button>
+              
                         </div>
                         
                 </div>
