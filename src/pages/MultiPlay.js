@@ -466,7 +466,7 @@ function MultiPlay() {
       const nextman = nextDataRef.current;
       setcurrentData(nextman);
       setnextData(null);
-
+      
       setIsWaiting(true);
 
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
@@ -529,17 +529,15 @@ function MultiPlay() {
         });
       }
 
-      if (socketRef.current?.connected) {
+      if (socketRef.current) {
         socketRef.current.emit('leaveRoom', { roomId });
 
         const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
 
         events.forEach((event) => {
-          socketRef.current?.off(event);
+          socketRef.current.off(event);
         });
-      }
 
-      if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
