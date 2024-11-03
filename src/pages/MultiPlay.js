@@ -119,6 +119,7 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
+  const latencyDataChannelsRef = useRef({}); // 레이턴시용 DataChannel 저장소 추가
   const pitchArraysRef = useRef({}); //  pitchArrays
 
   const [useCorrection, setUseCorrection] = useState(true);
@@ -131,12 +132,13 @@ function MultiPlay() {
   const MAXERROR = 7;
   const audioConstant = 150;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
-  const [singerNetworkDelay, setSingerNetworkDelay] = useState(0);
-  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0);
+  const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
+  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(-10.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
   const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
+  const singersDelay = useRef({});
 
   // latencyCalc.js에서 사용
   const latencyCalcRef = useRef({});
@@ -593,12 +595,11 @@ function MultiPlay() {
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack) {
           audioTrack.enabled = false;
-          setIsMicOn(false);
-          socketRef.current.emit('userMicOff', { roomId });
-
-          updatePlayerMic(socketId.current, false);
         }
       }
+      setIsMicOn(false);
+      updatePlayerMic(socketId.current, false);
+      socketRef.current.emit('userMicOff', { roomId });
       setAudioDelay(0);
     } catch (error) {
       console.error('Error in micOff:', error);
@@ -639,6 +640,41 @@ function MultiPlay() {
       const dataChannel = event.channel;
       setupDataChannel(dataChannel, userId);
       dataChannelsRef.current[userId] = dataChannel;
+    };
+
+
+    // 레이턴시 값 교환 데이터채널
+    const setupLatencyDataChannel = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "listenerLatency") {
+        console.log("data received: ", data);
+        singersDelay.current[data.singer] = data.setAs;
+
+        let sum = 0;
+        let i = 0;
+        Object.keys(singersDelay.current).forEach((key) => {
+          sum += singersDelay.current[key];
+          i++;
+        });
+        if (i > 0)
+          setListenerNetworkDelay(sum/i);
+      }
+    };
+    // Caller 레이턴시 값 교환용 데이터채널 생성
+    if (!latencyDataChannelsRef.current[userId]) {
+      const dataChannel = peerConnection.createDataChannel(`latencyDataChannel-${userId}`, {
+        ordered: true,
+        maxRetransmits: 0,
+      });
+
+      dataChannel.onmessage = setupLatencyDataChannel;
+      latencyDataChannelsRef.current[userId] = dataChannel;
+    }
+    // Callee 레이턴시 값 교환용 데이터채널 수신
+    peerConnection.ondatachannel = (event) => {
+      const dataChannel = event.channel;
+      dataChannel.onmessage = setupLatencyDataChannel;
+      latencyDataChannelsRef.current[userId] = dataChannel;
     };
 
     peerConnection.ontrack = (event) => {
@@ -686,7 +722,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, jitterDelay, setJitterDelay), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current), 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -798,10 +834,7 @@ function MultiPlay() {
                   <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}>
                     {players[index] ? (
                       <div>
-                        <p>{players[index].name}</p>{' '}
-                        <span role='img' aria-label='mic status'>
-                          {players[index].mic ? '🎤' : '🔇'}
-                        </span>
+                        <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
                       </div>
                     ) : (
                       <p>빈 자리</p>
@@ -887,7 +920,7 @@ function MultiPlay() {
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}</h3>
+              <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
               <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
               <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
