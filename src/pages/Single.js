@@ -6,11 +6,13 @@ import SongListArea from '../components/SongListArea';
 import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 import { useSongs } from '../Context/SongContext';
+import { useScreen } from '../Context/ScreenContext';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { songLists, fetchSongLists } = useSongs();
+  const { isMobile } = useScreen();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -26,7 +28,7 @@ function Single() {
 
   return (
     <div className='single-page'>
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      {!isMobile && <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> }
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>

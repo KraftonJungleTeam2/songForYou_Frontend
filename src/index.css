@@ -14,7 +14,14 @@ code {
 
 :root {
     color-scheme: light;
-    --top-bar-height: 4.5rem;
+    --top-bar-height: 7%;
     --preview-width: 25%;
-    --sidebar-width: 13rem;
+    --sidebar-width: 12%;
+}
+
+/* 모바일 화면일 때 --sidebar-width를 0%로 설정 */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 0%;
+  }
 }
