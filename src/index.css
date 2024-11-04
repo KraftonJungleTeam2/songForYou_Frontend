@@ -1,5 +1,14 @@
+body, html {
+  /* 꽉차게 하기 위해 스크롤을 없앰 그래야 맞음. */
+  overflow: hidden;
+}
+/* 모든 화면을 이렇게 맞춤 */
+.fullscreen-element {
+  width: 100vw;
+  height: 100vh;
+}
+
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -19,6 +28,7 @@ code {
     --sidebar-width: 12%;
     --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
 }
+
 
 /* 모바일 화면일 때 --sidebar-width를 0%로 설정 */
 @media (max-width: 1024px) {
