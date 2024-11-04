@@ -149,12 +149,12 @@ function MultiPlay() {
   const [musicGain, setMusicGain] = useState(1);
 
   useEffect(() => {
-    if(reservedSongs.length === 0){
+    if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
       setLyricsData(null);
     }
-  }, [reservedSongs])
+  }, [reservedSongs]);
 
   useEffect(() => {
     currentDataRef.current = currentData;
@@ -248,13 +248,9 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
-<<<<<<< HEAD
           pitchArraysRef.current['myId'] = socketId.current;
 
-          Object.keys(dataChannelsRef.current).forEach(key => {
-=======
           Object.keys(dataChannelsRef.current).forEach((key) => {
->>>>>>> 65a28a120c802afa965f3eeac799812d9d8c5bfd
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
@@ -652,11 +648,10 @@ function MultiPlay() {
       dataChannelsRef.current[userId] = dataChannel;
     };
 
-
     // 레이턴시 값 교환 데이터채널
     const setupLatencyDataChannel = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === "listenerLatency") {
+      if (data.type === 'listenerLatency') {
         singersDelay.current[data.singer] = data.setAs;
 
         let sum = 0;
@@ -668,8 +663,8 @@ function MultiPlay() {
           }
         });
         if (i > 0) {
-          setListenerNetworkDelay(sum/i);
-          console.log("setlistener lat");
+          setListenerNetworkDelay(sum / i);
+          console.log('setlistener lat');
         }
       }
     };
@@ -844,14 +839,12 @@ function MultiPlay() {
               {Array(4)
                 .fill(null)
                 .map((_, index) => (
-                  <div
-                    key={index}
-                    className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
-                    style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}
-                  >
+                  <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`} style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}>
                     {players[index] ? (
                       <div>
-                        <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
+                        <p>
+                          {players[index].name} {players[index].mic ? '🎤' : '  '}
+                        </p>
                       </div>
                     ) : (
                       <p>빈 자리</p>
@@ -937,8 +930,12 @@ function MultiPlay() {
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
-              <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
+              <h3>
+                DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}
+              </h3>
+              <h3>
+                audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}
+              </h3>
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
               <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
               {/* 오디오 엘리먼트들 */}
