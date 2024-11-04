@@ -7,6 +7,7 @@ import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 import { useSongs } from '../Context/SongContext';
 import { useScreen } from '../Context/ScreenContext';
+import SimpleSideBar from '../components/SimpleSideBar';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -28,7 +29,11 @@ function Single() {
 
   return (
     <div className='single-page'>
-      {!isMobile && <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> }
+      {isMobile ? (
+          <SimpleSideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        ) : (
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        )}
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
@@ -38,6 +43,7 @@ function Single() {
           </div>
         </div>
       </div>
+      
     </div>
   );
 }

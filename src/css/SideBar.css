@@ -38,8 +38,7 @@
 
 /* 토글 버튼 스타일 */
 .toggle-button {
-  /* padding: 10px; */
-  width: 3rem;
+  position: fixed;
   background-color: #333;
   color: white;
   border: none;
@@ -51,15 +50,15 @@
 }
 
 .toggle-button.open {
-  transform: translateX(var(--sidebar-width)); /* 사이드바 열렸을 때 버튼 위치 */
+  transform: translateX(var(--sidebar-width-px)); /* 사이드바 열렸을 때 */
 }
 
 .toggle-button.closed {
-  transform: translateX(0px); /* 사이드바가 닫혔을 때 화면 왼쪽에 붙임 */
+  transform: translateX(0%); /* 사이드바가 닫혔을 때 화면 왼쪽에 붙임 */
 }
 
 .close-button {
-    margin-left: calc(var(--sidebar-width) - 80px);
+    margin-left: calc(var(--sidebar-width));
     margin-bottom: 0.5rem;
     /* margin-right: 1rem; */
 }
