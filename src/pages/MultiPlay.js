@@ -13,8 +13,10 @@ import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
-// import measureLatency from '../components/LatencyCalc';
+import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
+
+import { stringToColor } from '../utils/GraphUtils';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -46,6 +48,9 @@ function MultiPlay() {
 
   const socketId = useRef(null); // 나의 소켓 id
   const [players, setPlayers] = useState([]); // 4자리 초기화
+  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
+  // player 정보 갱신할 때 이 ref도 다뤄주세요
+  const micStatRef = useRef({});
   const [isPlaying, setIsPlaying] = useState(false); // isPlaying을 여기서 유저가 변경하게 하지 말 것. starttime을 set하여 시작.
 
   // 곡 리스트 불러오는 context
@@ -83,7 +88,8 @@ function MultiPlay() {
 
   // 버튼 끄게 하는 state
   const [isWaiting, setIsWaiting] = useState(true);
-
+  //
+  const audioPlayerRef = useRef();
   // 지연시간 ping을 위한 state
   const serverTimeDiff = useRef(null);
 
@@ -115,9 +121,10 @@ function MultiPlay() {
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
+  const latencyDataChannelsRef = useRef({}); // 레이턴시용 DataChannel 저장소 추가
   const pitchArraysRef = useRef({}); //  pitchArrays
 
-  const [useCorrection, setUseCorrection] = useState(false);
+  const [useCorrection, setUseCorrection] = useState(true);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -125,20 +132,29 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const [audioLatency, setAudioLatency] = useState(0);
-  const [networkLatency, setNetworkLatency] = useState(0);
-  const [optionLatency, setOptionLatency] = useState(0);
-  const [jitterLatency, setJitterLatency] = useState(0);
+  const audioConstant = 150;
+  const [audioDelay, setAudioDelay] = useState(audioConstant);
+  const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
+  const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
+  const [optionDelay, setOptionDelay] = useState(0);
+  const [jitterDelay, setJitterDelay] = useState(0);
+  const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
-  // 네트워크 계산 시 사용할 {소켓id: 마이크 상태}
-  const micStatRef = useRef({});
+  const singersDelay = useRef({});
 
   // latencyCalc.js에서 사용
-  const oldSamplesCount = useRef(0);
-  const oldPlayoutDelay = useRef(0);
+  const latencyCalcRef = useRef({});
 
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
+
+  useEffect(() => {
+    if(reservedSongs.length === 0){
+      setEntireGraphData([]);
+      setEntireReferData([]);
+      setLyricsData(null);
+    }
+  }, [reservedSongs])
 
   useEffect(() => {
     currentDataRef.current = currentData;
@@ -232,7 +248,13 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
+<<<<<<< HEAD
+          pitchArraysRef.current['myId'] = socketId.current;
+
+          Object.keys(dataChannelsRef.current).forEach(key => {
+=======
           Object.keys(dataChannelsRef.current).forEach((key) => {
+>>>>>>> 65a28a120c802afa965f3eeac799812d9d8c5bfd
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
@@ -261,18 +283,20 @@ function MultiPlay() {
       mic: mic,
       isAudioActive: false,
     };
-
     setPlayers((prevPlayers) => [...prevPlayers, newPlayer]);
+    micStatRef.current[userId] = mic;
   };
 
   // player 삭제하기
   const removePlayer = (userId) => {
     setPlayers((prevPlayers) => prevPlayers.filter((player) => player.userId !== userId));
+    delete micStatRef.current[userId];
   };
 
   const updatePlayerMic = (userId, micBool) => {
     console.log('update mic of', userId);
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
+    micStatRef.current[userId] = micBool;
   };
 
   // 마이크 스트림 획득
@@ -429,9 +453,7 @@ function MultiPlay() {
           });
         }
       };
-      console.log('ddfsfwegewggweg');
       if (peerConnection) {
-        console.log('ddfsfwegewggweg');
         await peerConnection.setRemoteDescription(answer);
       }
     });
@@ -479,7 +501,9 @@ function MultiPlay() {
     });
 
     socketRef.current.on('stopMusic', (data) => {
-      setStarttime(null);
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.stopAudio(); // handleStopAudio 함수를 호출
+      }
     });
 
     // 웹 소켓으로 데이터 받는 부분 (마운트 작업) #############################################
@@ -566,7 +590,7 @@ function MultiPlay() {
         socketRef.current.emit('userMicOn', { roomId });
         updatePlayerMic(socketId.current, true);
 
-        setAudioLatency(200);
+        setAudioDelay(audioConstant); // 음원 디코딩부터 마이크 신호 인코딩까지 지연 추정값
       }
     } catch (error) {
       console.error('Error in micOn:', error);
@@ -581,13 +605,12 @@ function MultiPlay() {
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack) {
           audioTrack.enabled = false;
-          setIsMicOn(false);
-          socketRef.current.emit('userMicOff', { roomId });
-
-          updatePlayerMic(socketId.current, false);
         }
       }
-      setAudioLatency(0);
+      setIsMicOn(false);
+      updatePlayerMic(socketId.current, false);
+      socketRef.current.emit('userMicOff', { roomId });
+      setAudioDelay(0);
     } catch (error) {
       console.error('Error in micOff:', error);
     }
@@ -627,6 +650,44 @@ function MultiPlay() {
       const dataChannel = event.channel;
       setupDataChannel(dataChannel, userId);
       dataChannelsRef.current[userId] = dataChannel;
+    };
+
+
+    // 레이턴시 값 교환 데이터채널
+    const setupLatencyDataChannel = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "listenerLatency") {
+        singersDelay.current[data.singer] = data.setAs;
+
+        let sum = 0;
+        let i = 0;
+        Object.keys(singersDelay.current).forEach((userId) => {
+          if (micStatRef.current[userId] === true) {
+            sum += singersDelay.current[userId];
+            i++;
+          }
+        });
+        if (i > 0) {
+          setListenerNetworkDelay(sum/i);
+          console.log("setlistener lat");
+        }
+      }
+    };
+    // Caller 레이턴시 값 교환용 데이터채널 생성
+    if (!latencyDataChannelsRef.current[userId]) {
+      const dataChannel = peerConnection.createDataChannel(`latencyDataChannel-${userId}`, {
+        ordered: true,
+        maxRetransmits: 0,
+      });
+
+      dataChannel.onmessage = setupLatencyDataChannel;
+      latencyDataChannelsRef.current[userId] = dataChannel;
+    }
+    // Callee 레이턴시 값 교환용 데이터채널 수신
+    peerConnection.ondatachannel = (event) => {
+      const dataChannel = event.channel;
+      dataChannel.onmessage = setupLatencyDataChannel;
+      latencyDataChannelsRef.current[userId] = dataChannel;
     };
 
     peerConnection.ontrack = (event) => {
@@ -672,11 +733,12 @@ function MultiPlay() {
     };
   };
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => measureLatency(peerConnectionsRef, oldSamplesCount, oldPlayoutDelay, micStatRef), 1000);
+  // 이거 지우지 마세요
+  useEffect(() => {
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current), 1000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   // 화면 비율 조정 감지
   useEffect(() => {
@@ -760,14 +822,14 @@ function MultiPlay() {
   useEffect(() => {
     if (useCorrection) {
       if (isMicOn) {
-        setLatencyOffset(-audioLatency - networkLatency - optionLatency);
+        setLatencyOffset(-audioDelay - singerNetworkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterLatency);
+        setLatencyOffset(jitterDelay + listenerNetworkDelay);
       }
     } else {
       setLatencyOffset(0);
     }
-  }, [audioLatency, networkLatency, optionLatency, jitterLatency, isMicOn, useCorrection]);
+  }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
 
@@ -782,13 +844,14 @@ function MultiPlay() {
               {Array(4)
                 .fill(null)
                 .map((_, index) => (
-                  <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}>
+                  <div
+                    key={index}
+                    className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
+                    style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}
+                  >
                     {players[index] ? (
                       <div>
-                        <p>{players[index].name}</p>{' '}
-                        <span role='img' aria-label='mic status'>
-                          {players[index].mic ? '🎤' : '🔇'}
-                        </span>
+                        <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
                       </div>
                     ) : (
                       <p>빈 자리</p>
@@ -873,9 +936,11 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
-              <input type='range' className='range-slider' min={0} max={2} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              <h3>networkLatency: {networkLatency}</h3>
-              <input type='number' value={optionLatency} onChange={(e) => setOptionLatency(e.target.value)}></input>
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
+              <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
+              <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
+              <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
               {/* 오디오 엘리먼트들 */}
               <audio id='localAudio' autoPlay muted />
               <div className='remote-audios' style={{ display: 'none' }}>
@@ -889,7 +954,7 @@ function MultiPlay() {
             {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
 
             {/* AudioPlayer 컴포넌트 */}
-            <AudioPlayer isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} />
+            <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} />
           </div>
         </div>
       </div>

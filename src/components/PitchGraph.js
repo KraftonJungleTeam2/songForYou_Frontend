@@ -36,6 +36,9 @@ const PitchGraph = ({
       const dataUrl = `data:${mimeType};base64,${base64String}`;
       setImageSrc(dataUrl);
     }
+    else{
+      setImageSrc(null);
+    }
   }, [songimageProps]);
 
   // Worker와 OffscreenCanvas 초기화
@@ -66,8 +69,6 @@ const PitchGraph = ({
       return;
     }
 
-    // console.log('In send data', songimageProps);
-
     worker.postMessage({
       dimensions,
       realtimeData,
@@ -80,10 +81,17 @@ const PitchGraph = ({
     dimensions,
     realtimeData,
     multiRealDatas,
-    referenceData,
     dataPointCount,
     currentTimeIndex,
   ]);
+
+  // useEffect(() => {
+  //   const worker = workerRef.current;
+  //   worker.postMessage({
+  //     referenceData
+  //   });
+  // }, [referenceData]);
+
 
   return (
     <div
