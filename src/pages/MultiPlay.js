@@ -615,7 +615,15 @@ function MultiPlay() {
   // Peer Connection 생성 함수
   const createPeerConnection = async (userId) => {
     const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { 
+          urls: `turn:${process.env.REACT_APP_TURN_IP}:3478`,
+          username: 'songforyou',
+          credential: `${process.env.REACT_APP_TURN_PASSWORD}`
+        }
+      ],
+      iceCandidatePoolSize: 10
     });
     peerConnection.onconnectionstatechange = () => {
       console.log('Connection state:', peerConnection.connectionState);
