@@ -46,18 +46,18 @@
 /* Lyrics box */
 .prev-lyrics {
   margin: auto;
-  font-size: 30px;
+  font-size: 70%;
   text-align: 'center';
   opacity: 0.3;
 }
 .curr-lyrics {
   margin: auto;
-  font-size: 50px;
+  font-size: 100%;
   text-align: 'center';
 }
 .next-lyrics {
   margin: auto;
-  font-size: 30px;
+  font-size: 70%;
   text-align: 'center';
   opacity: 0.3;
 }
