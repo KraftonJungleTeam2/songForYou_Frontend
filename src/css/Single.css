@@ -16,13 +16,12 @@
 .content-area {
   display: flex;
   justify-content: center; /* 수평 가운데 정렬 */
-  height: 100%; /* 화면 전체 높이로 설정 */
+  height: 100vh; /* 화면 전체 높이로 설정 */
 }
 
-.preview-area {
-  width: var(--preview-width);
-  max-width: 25rem;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-left: 1px solid #e0e0e0;
+@media (max-width: 1024px) {
+  .content-area {
+    display: flex;
+    flex-direction: column;
+  }
 }

@@ -4,7 +4,7 @@ import { useMediaQuery } from 'react-responsive';
 const ScreenContext = createContext();
 
 export const ScreenProvider = ({ children }) => {
-  const isMobileScreen = useMediaQuery({ query: '(max-width: 1024px)' });
+  const isMobile = useMediaQuery({ query: '(max-width: 1024px)' });
   const [screenSize, setScreenSize] = useState({
     widthScreen: window.innerWidth,
     heightScreen: window.innerHeight,
@@ -23,7 +23,7 @@ export const ScreenProvider = ({ children }) => {
   }, []);
 
   return (
-    <ScreenContext.Provider value={{ isMobileScreen, ...screenSize }}>
+    <ScreenContext.Provider value={{ isMobile, ...screenSize }}>
       {children}
     </ScreenContext.Provider>
   );
