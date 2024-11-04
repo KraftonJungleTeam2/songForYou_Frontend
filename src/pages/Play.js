@@ -185,6 +185,7 @@ const Play = () => {
           try {
             const lyrics = JSON.parse(lyricsString);
             setLyricsData(lyrics);
+            console.log(lyrics);
             setLyricsLoaded(true);
           } catch (parseError) {
             console.error('Error parsing lyrics data:', parseError);
