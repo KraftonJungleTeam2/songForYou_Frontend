@@ -46,7 +46,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       lastIndex.current = idx;
       return idx;
     }
-  }
+  };
   // WebRTC를 통한 데이터 전송 함수
   const sendPitchData = (pitchData, index) => {
     pitchBufferRef.current.push({ pitch: pitchData, index });
@@ -57,7 +57,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       const dataToSend = {
         type: 'pitch-data',
         pitches: pitchBufferRef.current,
-        id: socketId
+        id: socketId,
       };
 
       // 모든 connection으로 데이터 전송
@@ -165,8 +165,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
         console.error('Error accessing the microphone', error);
       }
     }
-    if (targetStream)
-      setupAudio();
+    if (targetStream) setupAudio();
 
     return () => {
       if (sourceRef.current) {
@@ -186,7 +185,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     let intervalId;
 
     function updatePitch() {
-
       if (!analyserRef.current || !detectorRef.current) return;
 
       const input = new Float32Array(analyserRef.current.fftSize);
@@ -212,7 +210,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
             const playbackPos = playbackPositionRef.current; // seconds
             const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
 
-
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
 
@@ -226,7 +223,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
             // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
             const playbackPos = playbackPositionRef.current;
             const index = round(playbackPos * 40);
-
 
             setEntireGraphData((prevData) => {
               if (index < 0 || index >= prevData.length) return prevData;
@@ -259,7 +255,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
         setPitch(0);
         const playbackPos = playbackPositionRef.current;
         const index = round(playbackPos * 40);
-
 
         setEntireGraphData((prevData) => {
           if (index < 0 || index >= prevData.length) return prevData;
