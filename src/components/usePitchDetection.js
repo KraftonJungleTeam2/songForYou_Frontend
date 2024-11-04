@@ -25,6 +25,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   // 멀티플레이 용
   const pitchCountRef = useRef(0);
   const pitchBufferRef = useRef([]);
+  const pitchSumRef = useRef(0);
 
   const PITCH_CONFIG = {
     MIN_VALID_PITCH: 50,
@@ -50,24 +51,26 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   // WebRTC를 통한 데이터 전송 함수
   const sendPitchData = (pitchData, index) => {
     pitchBufferRef.current.push({ pitch: pitchData, index });
+    pitchSumRef.current += pitchData;
     pitchCountRef.current += 1;
 
     // 4개의 피치 데이터가 모였을 때 전송
     if (pitchCountRef.current >= 4 && socketId) {
-      const dataToSend = {
-        type: 'pitch-data',
-        pitches: pitchBufferRef.current,
-        id: socketId,
-        score: Math.floor(Math.random()*100),
-      };
+      if (pitchSumRef.current > 0) {
+        const dataToSend = {
+          type: 'pitch-data',
+          pitches: pitchBufferRef.current,
+          id: socketId,
+          score: Math.floor(Math.random()*100),
+        };
 
-      // 모든 connection으로 데이터 전송
-      Object.values(connections).forEach((channel) => {
-        if (channel.readyState === 'open') {
-          channel.send(JSON.stringify(dataToSend));
-        }
-      });
-
+        // 모든 connection으로 데이터 전송
+        Object.values(connections).forEach((channel) => {
+          if (channel.readyState === 'open') {
+            channel.send(JSON.stringify(dataToSend));
+          }
+        });
+      }
       // 버퍼 초기화
       pitchBufferRef.current = [];
       pitchCountRef.current = 0;
