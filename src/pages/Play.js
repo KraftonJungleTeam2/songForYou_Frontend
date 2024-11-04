@@ -228,7 +228,7 @@ const Play = () => {
   }, []);
 
   // Use the custom hook and pass necessary parameters
-  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, {}, null);
+  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, null);
 
   return (
     <div className='play-page'>

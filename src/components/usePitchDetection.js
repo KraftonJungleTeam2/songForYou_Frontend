@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, connections = [], socketId) => {
-  const [pitch, setPitch] = useState(0);
-  const [clarity, setClarity] = useState(0);
-  const [decibel, setDecibel] = useState(-Infinity);
+export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, connections = [], socketId) => {
 
   const pitchHistoryRef = useRef([]);
   const MAX_HISTORY_LENGTH = 5;
@@ -14,7 +11,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
   const detectorRef = useRef(null);
-  const pitchRef = useRef(pitch);
+  const pitchRef = useRef(0);
   const isPlayingRef = useRef(isPlaying);
 
   // 피치 변화 감지를 위한 상태 추가
@@ -30,8 +27,8 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   const PITCH_CONFIG = {
     MIN_VALID_PITCH: 50,
     MAX_VALID_PITCH: 1500,
-    MIN_CLARITY: 0.5,
-    MIN_DECIBEL: -35,
+    MIN_CLARITY: 0.0,
+    MIN_DECIBEL: -100,
     MAX_PITCH_JUMP: 0.3,
     CONFIRMATION_THRESHOLD: 3,
     JUMP_TOLERANCE_TIME: 10,
@@ -76,9 +73,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       pitchCountRef.current = 0;
     }
   };
-  useEffect(() => {
-    pitchRef.current = pitch;
-  }, [pitch]);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -185,9 +179,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     };
   }, [targetStream]);
 
-  useEffect(() => {
-    let intervalId;
-
     function updatePitch() {
       if (!analyserRef.current || !detectorRef.current) return;
 
@@ -195,7 +186,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       analyserRef.current.getFloatTimeDomainData(input);
       const rms = calculateRMS(input);
       const newDecibel = 20 * Math.log10(rms);
-      setDecibel(newDecibel);
 
       const currentTime = Date.now();
 
@@ -204,11 +194,10 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
 
         if (clarityResult > PITCH_CONFIG.MIN_CLARITY && pitchResult >= PITCH_CONFIG.MIN_VALID_PITCH && pitchResult <= PITCH_CONFIG.MAX_VALID_PITCH) {
           // 피치 변화 검증
-          if (validatePitchChange(pitchResult, pitchRef.current, currentTime)) {
+          if (true || validatePitchChange(pitchResult, pitchRef.current, currentTime)) {
             const smoothedPitch = calculateMovingAverage(pitchResult);
             lastPitchTimeRef.current = currentTime;
-            setPitch(smoothedPitch);
-            setClarity(clarityResult);
+            pitchRef.current = smoothedPitch;
 
             // Update entireGraphData based on playbackPosition
             const playbackPos = playbackPositionRef.current; // seconds
@@ -218,6 +207,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
               if (index < 0 || index >= prevData.length) return prevData;
 
               prevData[index] = smoothedPitch;
+              // prevData[index] = entireReferData[index];
               return prevData;
             });
             if (Object.keys(connections).length > 0) {
@@ -250,13 +240,11 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
             return prevData;
           });
 
-          setPitch(0);
           if (Object.keys(connections).length > 0) {
             sendPitchData(0, index);
           }
         }
       } else {
-        setPitch(0);
         const playbackPos = playbackPositionRef.current;
         const index = round(playbackPos * 40);
 
@@ -272,6 +260,9 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       }
     }
 
+  useEffect(() => {
+    let intervalId;
+    console.log("only one");
     if (isPlaying && isMicOn) {
       intervalId = setInterval(updatePitch, 25);
     }
@@ -279,7 +270,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isPlaying, isMicOn, playbackPositionRef, setEntireGraphData]);
+  }, [isPlaying, isMicOn]);
 
-  return { pitch, clarity, decibel };
+  return;
 };
