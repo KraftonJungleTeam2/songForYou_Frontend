@@ -149,7 +149,7 @@ function MultiPlay() {
   const [musicGain, setMusicGain] = useState(1);
 
   useEffect(() => {
-    if(reservedSongs.length === 0){
+    if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
       setLyricsData(null);
@@ -402,6 +402,16 @@ function MultiPlay() {
         console.log(user.id, '에 rtc 연결중');
         const peerConnection = await createPeerConnection(user.id);
 
+        // ICE handler 추가
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            socketRef.current.emit('ice-candidate', {
+              targetId: user.id,
+              candidate: event.candidate,
+            });
+          }
+        };
+
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         console.log(user.id, '에 offer 요청');
@@ -415,11 +425,6 @@ function MultiPlay() {
     // Offer 처리
     socketRef.current.on('offer', async ({ offer, callerId }) => {
       const peerConnection = await createPeerConnection(callerId);
-      await peerConnection.setRemoteDescription(offer);
-
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           socketRef.current.emit('ice-candidate', {
@@ -428,6 +433,11 @@ function MultiPlay() {
           });
         }
       };
+      await peerConnection.setRemoteDescription(offer);
+
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
       console.log(callerId, '에서 offer 수신');
       console.log(callerId, '에 answer 요청');
 
@@ -485,7 +495,7 @@ function MultiPlay() {
       const nextman = nextDataRef.current;
       setcurrentData(nextman);
       setnextData(null);
-      
+
       setIsWaiting(true);
 
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
@@ -617,7 +627,11 @@ function MultiPlay() {
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { 
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        {
           urls: `turn:${process.env.REACT_APP_TURN_IP}:3478`,
           username: 'songforyou',
           credential: `${process.env.REACT_APP_TURN_PASSWORD}`
@@ -713,7 +727,7 @@ function MultiPlay() {
         }
       });
       if (i > 0) {
-        setListenerNetworkDelay(sum/i);
+        setListenerNetworkDelay(sum / i);
       }
     }
   };
