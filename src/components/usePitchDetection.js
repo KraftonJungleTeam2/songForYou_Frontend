@@ -58,6 +58,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
         type: 'pitch-data',
         pitches: pitchBufferRef.current,
         id: socketId,
+        score: Math.floor(Math.random()*100),
       };
 
       // 모든 connection으로 데이터 전송
