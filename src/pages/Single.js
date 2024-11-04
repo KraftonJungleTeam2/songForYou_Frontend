@@ -1,4 +1,3 @@
-// src/pages/Single.js
 import React, { useState, useEffect } from 'react';
 import '../css/Single.css';
 import Sidebar from '../components/SideBar';
@@ -14,7 +13,8 @@ function Single() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { songLists, fetchSongLists } = useSongs();
   const { isMobile } = useScreen();
-
+  console.log(isMobile);
+  
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -30,20 +30,36 @@ function Single() {
   return (
     <div className='single-page'>
       {isMobile ? (
-          <SimpleSideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        ) : (
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        )}
+        <SimpleSideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      ) : (
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      )}
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
-          <SongListArea onSongSelect={handleSongSelect} publicSongs={songLists.public} privateSongs={songLists.private} />
-          <div className='preview-area'>
-            <Preview selectedSong={selectedSong} />
-          </div>
+          {isMobile ? (
+            <>
+              <Preview selectedSong={selectedSong} />
+
+              <SongListArea 
+                onSongSelect={handleSongSelect} 
+                publicSongs={songLists.public} 
+                privateSongs={songLists.private} 
+              />
+            </>
+          ) : (
+            <>
+           
+              <SongListArea 
+                onSongSelect={handleSongSelect} 
+                publicSongs={songLists.public} 
+                privateSongs={songLists.private} 
+              />
+              <Preview selectedSong={selectedSong} />
+            </>
+          )}
         </div>
       </div>
-      
     </div>
   );
 }

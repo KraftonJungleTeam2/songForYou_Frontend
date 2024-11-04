@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../css/Preview.css';
 import { useNavigate } from 'react-router-dom';
+import { useScreen } from '../Context/ScreenContext';
+
 
 function Preview({ selectedSong }) {
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
-
+  const { isMobile } = useScreen();
   // 컴포넌트 언마운트 시 URL 정리
   useEffect(() => {
     return () => {
@@ -110,22 +112,29 @@ function Preview({ selectedSong }) {
   };
 
   if (!selectedSong) {
-    return <div className='preview'>Select a song to see details</div>;
+    return <div className={isMobile ? 'return1' : 'return'}>Select a song to see details</div>;
   }
 
   return (
-    <div className='preview'>
-      <div className='song-icon'>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} width='100%' /> : <div>No Image Available</div>}</div>
-      <h3 className='title'>{selectedSong.metadata.title}</h3>
-      <p className='subtitle'>{selectedSong.metadata.description}</p>
-      <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
-      <div className='preview-buttons'>
-        <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{ flex: 1 }}>
-          {isPlaying ? '멈추기' : '미리듣기'}
-        </button>
-        <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{ flex: 1 }}>
-          부르기
-        </button>
+    <div className={isMobile ? 'another' : 'preview'}>
+      
+      <div className={isMobile ? 'icon1' : 'icon'}>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} /> : <div>No Image Available</div>}</div>
+     
+      <div className='info'>
+        <h3 className='title'>{selectedSong.metadata.title}</h3>
+        
+        <p className='subtitle'>{selectedSong.metadata.description}</p>
+        
+        <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
+        
+        <div className='preview-buttons'>
+          <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{ flex: 1 }}>
+            {isPlaying ? '멈추기' : '미리듣기'}
+          </button>
+          <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{ flex: 1 }}>
+            부르기
+          </button>
+        </div>
       </div>
     </div>
   );
