@@ -849,7 +849,7 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, socketId.current);
 
   return (
     <div className='multiPlay-page'>
