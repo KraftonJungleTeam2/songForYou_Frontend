@@ -69,8 +69,6 @@ const PitchGraph = ({
       return;
     }
 
-    // console.log('In send data', songimageProps);
-
     worker.postMessage({
       dimensions,
       realtimeData,
@@ -83,10 +81,17 @@ const PitchGraph = ({
     dimensions,
     realtimeData,
     multiRealDatas,
-    referenceData,
     dataPointCount,
     currentTimeIndex,
   ]);
+
+  // useEffect(() => {
+  //   const worker = workerRef.current;
+  //   worker.postMessage({
+  //     referenceData
+  //   });
+  // }, [referenceData]);
+
 
   return (
     <div

@@ -120,8 +120,8 @@ function MultiPlay() {
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
-  const dataChannelsRef = useRef({});  // DataChannel 저장소 추가
-  const pitchArraysRef = useRef({});  //  pitchArrays
+  const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
+  const pitchArraysRef = useRef({}); //  pitchArrays
 
   const [useCorrection, setUseCorrection] = useState(true);
 
@@ -242,13 +242,15 @@ function MultiPlay() {
 
           setEntireReferData(processedPitchArray);
 
-          setEntireGraphData(
-            new Array(processedPitchArray.length).fill(null)
-          );
+          setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
+<<<<<<< HEAD
           pitchArraysRef.current['myId'] = socketId.current;
 
           Object.keys(dataChannelsRef.current).forEach(key => {
+=======
+          Object.keys(dataChannelsRef.current).forEach((key) => {
+>>>>>>> 65a28a120c802afa965f3eeac799812d9d8c5bfd
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
@@ -288,7 +290,7 @@ function MultiPlay() {
   };
 
   const updatePlayerMic = (userId, micBool) => {
-    console.log('update mic of', userId)
+    console.log('update mic of', userId);
     setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
     micStatRef.current[userId] = micBool;
   };
@@ -479,16 +481,16 @@ function MultiPlay() {
     });
 
     socketRef.current.on('startTime', (data) => {
-      const nextman = nextDataRef.current
+      const nextman = nextDataRef.current;
       setcurrentData(nextman);
       setnextData(null);
-
+      
       setIsWaiting(true);
 
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
       const clientStartTime = serverStartTime + serverTimeDiff.current;
-    
+
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
       micOff();
@@ -505,11 +507,11 @@ function MultiPlay() {
       try {
         if (currentDataRef.current === null) {
           setcurrentData(data);
-          if(!audioLoadedRef.current){
+          if (!audioLoadedRef.current) {
             loadData(data);
           }
-          console.log('소켓 수신 데이터 current' ,currentDataRef.current);
-          console.log('소켓 수신 데이터 current' ,nextDataRef.current);
+          console.log('소켓 수신 데이터 current', currentDataRef.current);
+          console.log('소켓 수신 데이터 current', nextDataRef.current);
         } else {
           if (nextDataRef.current === null) {
             setnextData(data);
@@ -525,10 +527,9 @@ function MultiPlay() {
     });
 
     socketRef.current.on('songAdded', (data) => {
-      try{
+      try {
         setReservedSongs((prev) => [...prev, data.songdata]);
-      }
-      catch (error){
+      } catch (error) {
         console.error('Error processing download playsong data:', error);
       }
     });
@@ -541,27 +542,23 @@ function MultiPlay() {
 
       Object.values(dataChannelsRef.current).forEach((channel) => {
         channel.close();
-      })
+      });
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
           track.stop();
         });
       }
 
-      const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
-
-      events.forEach((event) => {
-        socketRef.current?.off(event);
-      });
-
-      socketRef.current.emit('leaveRoom', roomId);
-
-      if (socketRef.current?.connected) {
-        socketRef.current.disconnect();
-      }
-
       if (socketRef.current) {
-        socketRef.current.close();
+        socketRef.current.emit('leaveRoom', { roomId });
+
+        const events = ['connect', 'error', 'receiveMessage', 'joinedRoom', 'userJoined', 'userLeft', 'initPeerConnection', 'offer', 'answer', 'ice-candidate', 'micOn', 'micOff', 'pingResponse', 'startTime', 'playSong'];
+
+        events.forEach((event) => {
+          socketRef.current.off(event);
+        });
+
+        socketRef.current.disconnect();
       }
     };
   }, []);
@@ -577,7 +574,6 @@ function MultiPlay() {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = true;
-
         // peer connections 업데이트
         Object.values(peerConnectionsRef.current).forEach((pc) => {
           const sender = pc.getSenders().find((s) => s.track?.kind === 'audio');
@@ -639,7 +635,7 @@ function MultiPlay() {
     if (!dataChannelsRef.current[userId]) {
       const dataChannel = peerConnection.createDataChannel(`dataChannel-${userId}`, {
         ordered: true,
-        maxRetransmits: 3
+        maxRetransmits: 3,
       });
 
       setupDataChannel(dataChannel, userId);
@@ -680,11 +676,11 @@ function MultiPlay() {
 
   // DataChannel 설정 함수
   const setupDataChannel = (dataChannel, targetId) => {
-    dataChannel.addEventListener("open", (event) => {
+    dataChannel.addEventListener('open', (event) => {
       console.log(`connection with ${targetId} opened`);
     });
 
-    dataChannel.addEventListener("close", (event) => {
+    dataChannel.addEventListener('close', (event) => {
       console.log(`connection with ${targetId} closed`);
     });
 
@@ -693,7 +689,7 @@ function MultiPlay() {
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
-    }
+    };
   };
 
   // 이거 지우지 마세요
@@ -766,7 +762,7 @@ function MultiPlay() {
     socketRef.current.emit('requestStopMusic', {
       roomId: roomId,
     });
-  }
+  };
 
   const handleVolumeChange = (event) => {
     setMusicGain(parseFloat(event.target.value));
@@ -883,11 +879,11 @@ function MultiPlay() {
               <p className='next-lyrics'>{nextLyric}</p>
             </div>
 
-          <div className='button-area'>
-            {/* 시작 버튼 */}
-            <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
-              {audioLoaded ? isPlaying ? '노래 멈추기' : '노래 시작' : '로딩 중...'}
-            </button>
+            <div className='button-area'>
+              {/* 시작 버튼 */}
+              <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+                {audioLoaded ? (isPlaying ? '노래 멈추기' : '노래 시작') : '로딩 중...'}
+              </button>
 
               {/* 마이크 토글 버튼 */}
               <button
