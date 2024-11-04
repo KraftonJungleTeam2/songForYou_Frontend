@@ -1,3 +1,19 @@
+export function stringToColor(str) {
+  let hash = 0;
+  // 문자열의 각 문자를 해시값으로 변환
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // 해시값을 6자리 HEX 코드로 변환
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    color += ('00' + value.toString(16)).slice(-2);
+  }
+
+  return color;
+}
 // 주파수 범위 생성 함수
 export const getFrequencyRange = (minFrequency, maxFrequency) => {
   // C0부터 C8까지의 기준 주파수 (C4 = 261.63Hz)
