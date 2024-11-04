@@ -23,6 +23,7 @@
 
 .tabs {
   display: flex;
+  margin-right: 1rem;
 }
 
 .search-bar {
@@ -30,14 +31,13 @@
 }
 
 .search-bar input {
-  padding: 0.5rem;
+  margin-left: 1rem;
   font-size: 14px;
   border: 1px solid #ced4da;
   border-radius: 4px 0 0 4px;
 }
 
 .search-bar button {
-  padding: 0.5rem 1rem;
   font-size: 14px;
   border: none;
   border-radius: 0 4px 4px 0;
