@@ -274,6 +274,7 @@ function MultiPlay() {
       name: name,
       mic: mic,
       isAudioActive: false,
+      score: null,
     };
     setPlayers((prevPlayers) => [...prevPlayers, newPlayer]);
     micStatRef.current[userId] = mic;
@@ -636,36 +637,7 @@ function MultiPlay() {
       setupDataChannel(dataChannel, userId);
       dataChannelsRef.current[userId] = dataChannel;
     }
-
-    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
-    peerConnection.ondatachannel = (event) => {
-      const dataChannel = event.channel;
-      setupDataChannel(dataChannel, userId);
-      dataChannelsRef.current[userId] = dataChannel;
-    };
-
-
-    // 레이턴시 값 교환 데이터채널
-    const setupLatencyDataChannel = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "listenerLatency") {
-        singersDelay.current[data.singer] = data.setAs;
-
-        let sum = 0;
-        let i = 0;
-        Object.keys(singersDelay.current).forEach((userId) => {
-          if (micStatRef.current[userId] === true) {
-            sum += singersDelay.current[userId];
-            i++;
-          }
-        });
-        if (i > 0) {
-          setListenerNetworkDelay(sum/i);
-          console.log("setlistener lat");
-        }
-      }
-    };
-    // Caller 레이턴시 값 교환용 데이터채널 생성
+    // (Caller) 레이턴시 값 교환용 데이터채널 생성
     if (!latencyDataChannelsRef.current[userId]) {
       const dataChannel = peerConnection.createDataChannel(`latencyDataChannel-${userId}`, {
         ordered: true,
@@ -675,11 +647,18 @@ function MultiPlay() {
       dataChannel.onmessage = setupLatencyDataChannel;
       latencyDataChannelsRef.current[userId] = dataChannel;
     }
-    // Callee 레이턴시 값 교환용 데이터채널 수신
+
+    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
     peerConnection.ondatachannel = (event) => {
       const dataChannel = event.channel;
-      dataChannel.onmessage = setupLatencyDataChannel;
-      latencyDataChannelsRef.current[userId] = dataChannel;
+      if (dataChannel.label.split('-')[0] === "dataChannel") {
+        setupDataChannel(dataChannel, userId);
+        dataChannelsRef.current[userId] = dataChannel;
+      }
+      else if (dataChannel.label.split('-')[0] === "latencyDataChannel") {
+        dataChannel.onmessage = setupLatencyDataChannel;
+        latencyDataChannelsRef.current[userId] = dataChannel;
+      }
     };
 
     peerConnection.ontrack = (event) => {
@@ -707,6 +686,25 @@ function MultiPlay() {
     return peerConnection;
   };
 
+  // 레이턴시 값 교환 데이터채널
+  const setupLatencyDataChannel = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === "listenerLatency") {
+      singersDelay.current[data.singer] = data.setAs;
+
+      let sum = 0;
+      let i = 0;
+      Object.keys(singersDelay.current).forEach((userId) => {
+        if (micStatRef.current[userId] === true) {
+          sum += singersDelay.current[userId];
+          i++;
+        }
+      });
+      if (i > 0) {
+        setListenerNetworkDelay(sum/i);
+      }
+    }
+  };
   // DataChannel 설정 함수
   const setupDataChannel = (dataChannel, targetId) => {
     dataChannel.addEventListener('open', (event) => {
@@ -718,10 +716,12 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
+      console.log("message received!")
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
+      setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === data.id ? { ...player, score: data.score } : player)));
     };
   };
 
@@ -840,6 +840,7 @@ function MultiPlay() {
                     {players[index] ? (
                       <div>
                         <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
+                        <p>{players[index].score}점</p>
                       </div>
                     ) : (
                       <p>빈 자리</p>
