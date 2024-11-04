@@ -17,7 +17,6 @@ function Sidebar({ isOpen, toggleSidebar }) {
 
   document.documentElement.style.setProperty('--sidebar-width-px', `${sidebarWidthPx}`);
 
-  console.log(sidebarWidthPx);
 
   return (
     <>

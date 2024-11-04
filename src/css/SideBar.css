@@ -47,6 +47,7 @@
   transform: translateX(0%);
   transition: transform 0.3s ease;
   margin-left: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .toggle-button.open {
