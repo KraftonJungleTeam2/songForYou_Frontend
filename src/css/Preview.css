@@ -17,7 +17,7 @@
   border-left: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
-
+  justify-content: space-between;
   gap: 20px;
 }
 
@@ -46,6 +46,11 @@
 
 .info {
   width: 19vw;
+}
+
+.info1{
+  margin-right: 20px;
+  width: 20vw;
 }
 
 .return1 {

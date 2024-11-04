@@ -120,7 +120,7 @@ function Preview({ selectedSong }) {
       
       <div className={isMobile ? 'icon1' : 'icon'}>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} /> : <div>No Image Available</div>}</div>
      
-      <div className='info'>
+      <div className={isMobile ? 'info1' : 'info'}>
         <h3 className='title'>{selectedSong.metadata.title}</h3>
         
         <p className='subtitle'>{selectedSong.metadata.description}</p>
