@@ -248,13 +248,9 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
-<<<<<<< HEAD
           pitchArraysRef.current['myId'] = socketId.current;
 
           Object.keys(dataChannelsRef.current).forEach(key => {
-=======
-          Object.keys(dataChannelsRef.current).forEach((key) => {
->>>>>>> 65a28a120c802afa965f3eeac799812d9d8c5bfd
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
