@@ -1,4 +1,5 @@
-.simplesidebar-container{
+.sim-container{
     position: fixed;
-    bottom: 20;
+    display: flex;
+
 }
