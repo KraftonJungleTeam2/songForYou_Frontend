@@ -1,15 +1,22 @@
 /* Single.css */
 .single-page {
   display: flex;
-  height: 100vh;
+  height: 100%;
 }
 
 .main-content {
+  height: 100%;
   transition: margin-left 0.3s ease;
 }
 
 .main-content.shifted {
   margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
+}
+
+.content-area {
+  display: flex;
+  justify-content: center; /* 수평 가운데 정렬 */
+  height: 100%; /* 화면 전체 높이로 설정 */
 }
 
 .preview-area {
