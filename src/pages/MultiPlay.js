@@ -16,6 +16,8 @@ import { useNavigate } from 'react-router-dom';
 import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
 
+import { stringToColor } from '../utils/GraphUtils';
+
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
@@ -246,7 +248,9 @@ function MultiPlay() {
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
-          Object.keys(dataChannelsRef.current).forEach((key) => {
+          pitchArraysRef.current['myId'] = socketId.current;
+
+          Object.keys(dataChannelsRef.current).forEach(key => {
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
           });
           setPitchLoaded(true);
@@ -836,7 +840,11 @@ function MultiPlay() {
               {Array(4)
                 .fill(null)
                 .map((_, index) => (
-                  <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}>
+                  <div
+                    key={index}
+                    className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
+                    style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}
+                  >
                     {players[index] ? (
                       <div>
                         <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
