@@ -1,21 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 const ScreenContext = createContext();
 
 export const ScreenProvider = ({ children }) => {
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(window.innerWidth < 1024);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileOrTablet(window.innerWidth < 1024);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useMediaQuery({ query: '(max-width: 1024px)' });
 
   return (
-    <ScreenContext.Provider value={{ isMobileOrTablet }}>
+    <ScreenContext.Provider value={{ isMobile }}>
       {children}
     </ScreenContext.Provider>
   );
