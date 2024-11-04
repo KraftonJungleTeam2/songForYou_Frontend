@@ -5,10 +5,17 @@
 }
 
 .main-content {
-  flex-grow: 1;
   transition: margin-left 0.3s ease;
 }
 
 .main-content.shifted {
   margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
+}
+
+.preview-area {
+  width: var(--preview-width);
+  max-width: 25rem;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-left: 1px solid #e0e0e0;
 }
