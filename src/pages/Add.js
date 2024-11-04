@@ -81,7 +81,7 @@ function Add() {
     if (ischeckBox) {
       formData.append('file', file);
     } else {
-      formData.append('url', url);
+      formData.append('youtubeURL', url);
     }
     formData.append('image', image);
     formData.append('metadata', JSON.stringify({ title, description }));
