@@ -1,14 +1,13 @@
 /* eslint-env worker */
 /* eslint-disable no-restricted-globals */
 
-import { getCFrequencies, logScale } from '../utils/GraphUtils';
+import { getFrequencyRange, logScale, stringToColor } from '../utils/GraphUtils';
 
 let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, cFrequencies;
-let songURL = null;
+let referData = [];
 let dimensions = { width: 1, height: 1 }; // 초기 dimensions 값 설정
 
 // cFrequencies 초기화 - getCFrequencies()가 undefined를 반환할 경우 빈 배열로 설정
-cFrequencies = getCFrequencies() || [];
 
 self.onmessage = (event) => {
   const data = event.data;
@@ -16,7 +15,7 @@ self.onmessage = (event) => {
 
   // canvas와 dimensions 초기화 여부 확인
   if (data.canvas) {
-    
+
     dataCanvas = data.canvas;
     dataCtx = dataCanvas.getContext('2d');
 
@@ -26,30 +25,27 @@ self.onmessage = (event) => {
 
     // setDimensions 함수로 캔버스 크기 업데이트
     setDimensions(data.dimensions);
+  }
+  else if(!arraysEqual(referData, data.referenceData)){
+    referData = data.referenceData;
+    cFrequencies = getFrequencyRange(Math.min(...referData.filter(num => num > 0)), Math.max(...referData));
+    
     updateBackground();
   }
-
   // dimensions 값이 변경되었는지 확인
-  else if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) 
-    {
+  else if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) {
     
-    // console.log("Updating dimensions:", data.dimensions);
     setDimensions(data.dimensions);  // dataCanvas와 backgroundCanvas 모두 업데이트
     updateBackground();
   }
 
-  // 이미지 정보 읽기
-  if (data.songURL && data.songURL !== songURL) {
-    songURL = data.songURL;
-    console.log('이미지 데이터 수신:', songURL);
-    updateBackground(); // 이미지 데이터를 받은 후 배경 업데이트
-  }
-    
+
   // 프레임을 그리는 함수 호출
   if (data.realtimeData && data.referenceData && Array.isArray(data.realtimeData) && Array.isArray(data.referenceData)) {
     drawFrame(
       data.realtimeData,
-      data.referenceData,
+      data.multiRealDatas,
+      referData,
       data.dataPointCount,
       data.currentTimeIndex
     );
@@ -72,42 +68,25 @@ async function updateBackground() {
   if (!backgroundCtx) return; // backgroundCtx가 초기화되었는지 확인
 
   backgroundCtx.clearRect(0, 0, dimensions.width, dimensions.height);
-
-  if (songURL) {
-    try {
-      console.log('배경 이미지 그리기 시작');
-      const response = await fetch(songURL);
-      const blob = await response.blob();
-      const imageBitmap = await createImageBitmap(blob);
-      console.log(imageBitmap);
-
-      imageBitmap.width = dimensions.width;
-      imageBitmap.height = dimensions.height;
-      backgroundCtx.filter = 'blur(10px)';
-      backgroundCtx.drawImage(imageBitmap, 0, 0, dimensions.width, dimensions.height);
-      // backgroundCtx.filter = 'none';
-      backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      backgroundCtx.fillRect(0, 0, dimensions.width, dimensions.height);
-      drawGuidelinesAndLabels(backgroundCtx);
-    } catch (error) {
-      console.error('Error creating ImageBitmap:', error);
-      drawDefaultBackground(backgroundCtx);
-    }
-  } else {
-    console.log('fucking');
-    drawDefaultBackground(backgroundCtx);
-  }
+  backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  backgroundCtx.fillRect(0, 0, dimensions.width, dimensions.height);
+  drawGuidelinesAndLabels(backgroundCtx);
+  
 }
 
-function drawDefaultBackground(targetCtx) {
-  targetCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-  targetCtx.fillRect(0, 0, dimensions.width, dimensions.height);
-  drawGuidelinesAndLabels(targetCtx);
-}
+// 배열 검사
+const arraysEqual = (arr1, arr2) => {
+  if (!arr1 || !arr2) return false; // arr1 또는 arr2가 undefined인 경우 방어
+  if (arr1.length !== arr2.length) return false; // 길이 먼저 확인
+  return arr1.every((value, index) => value === arr2[index]);
+};
 
+
+// drawGuidelinesAndLabels 함수 수정
 function drawGuidelinesAndLabels(targetCtx) {
   const graphWidth = dimensions.width;
 
+  // 세로 구분선
   targetCtx.beginPath();
   targetCtx.strokeStyle = '#EEEEEE';
   targetCtx.lineWidth = 4;
@@ -116,31 +95,41 @@ function drawGuidelinesAndLabels(targetCtx) {
   targetCtx.moveTo(graphWidth / 3, 0);
   targetCtx.lineTo(graphWidth / 3, dimensions.height);
   targetCtx.stroke();
-
+  
   targetCtx.shadowBlur = 0;
   targetCtx.shadowColor = 'transparent';
 
-  // cFrequencies가 배열인지 확인
+  // 옥타브 라인과 레이블 그리기
   if (Array.isArray(cFrequencies)) {
     cFrequencies.forEach((freq, index) => {
       const y = logScale(freq, dimensions, cFrequencies);
-      targetCtx.lineWidth = 2;
+      if (y === null) return;
+
+      // 가이드라인
       targetCtx.beginPath();
       targetCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      targetCtx.lineWidth = 1;
       targetCtx.moveTo(0, y);
       targetCtx.lineTo(dimensions.width, y);
       targetCtx.stroke();
 
+      // 레이블
       targetCtx.fillStyle = 'white';
-      targetCtx.font = '10px Arial';
+      targetCtx.font = '12px Arial';
+      targetCtx.textAlign = 'left';
       targetCtx.textBaseline = 'middle';
-      targetCtx.fillText(`C${index + 2}`, 15, y);
+      
+      // 옥타브 번호 계산 (C4를 기준으로)
+      const octaveNumber = Math.round(Math.log2(freq/261.63)) + 4;
+      targetCtx.fillText(`C${octaveNumber}`, 5, y);
+      
     });
   }
 }
 
 function drawFrame(
   realtimeData,
+  multiRealDatas,
   referenceData,
   dataPointCount,
   currentTimeIndex
@@ -150,7 +139,17 @@ function drawFrame(
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
   drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
-  drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
+  if (multiRealDatas) {
+    Object.entries(multiRealDatas).forEach(([key, multiData]) => {
+      if (key !== 'myId') {
+        drawPitchData(multiData, stringToColor(key), 'coral', currentTimeIndex, true, dataPointCount);
+      } else {
+        drawPitchData(realtimeData, stringToColor(multiData), 'coral', currentTimeIndex, true, dataPointCount);
+      }
+    });
+  } else {
+    drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
+  }
 }
 
 function drawPitchData(
@@ -161,70 +160,64 @@ function drawPitchData(
   isRealtime = false,
   dataPointCount
 ) {
-  if (!dataCtx) return; // dataCtx가 초기화되었는지 확인
-  if (!Array.isArray(data)) return; // data가 배열인지 확인
+  if (!dataCtx || !Array.isArray(data)) return;
 
   const graphWidth = dimensions.width;
   dataCtx.strokeStyle = color;
-  dataCtx.lineWidth = 3.5;
+  dataCtx.lineWidth = 3;
 
-  if (glow === 'coral') {
-    dataCtx.shadowColor = 'rgba(255, 170, 150, 0.8)';
-    dataCtx.shadowBlur = 5;
-  } else if (glow === 'grey') {
-    dataCtx.shadowColor = 'rgba(200, 200, 200, 0.8)';
-    dataCtx.shadowBlur = 3;
-  } else {
-    dataCtx.shadowBlur = 0;
-    dataCtx.shadowColor = 'transparent';
+  // 그림자 효과 설정
+  if (glow) {
+    dataCtx.shadowColor = glow === 'coral' 
+      ? 'rgba(255, 170, 150, 0.8)' 
+      : 'rgba(200, 200, 200, 0.8)';
+    dataCtx.shadowBlur = glow === 'coral' ? 5 : 3;
   }
 
-  let start = 0;
-  let visibleData = [];
-
-  if (!isRealtime) {
-    start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
-    const end = Math.min(data.length, Math.floor(currentTimeIndex) + dataPointCount * 2);
-    visibleData = data.slice(start, end);
-  } else {
-    start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
-    visibleData = data.slice(start, currentTimeIndex + 1);
-  }
+  // 표시할 데이터 범위 계산
+  const start = Math.max(0, Math.floor(currentTimeIndex) - dataPointCount);
+  const visibleData = isRealtime 
+    ? data.slice(start, currentTimeIndex + 1)
+    : data.slice(start, Math.min(data.length, Math.floor(currentTimeIndex) + dataPointCount * 2));
 
   const windowSize = dataPointCount * 3;
   const pixelsPerIndex = graphWidth / windowSize;
   const x0 = graphWidth / 3;
 
+  // 데이터 포인트 그리기
   visibleData.forEach((point, index) => {
-    const dataIndex = start + index;
     if (!point) return;
-
+    
+    const dataIndex = start + index;
     let prevPoint = data[dataIndex - 1];
-    let indexDifference1 = dataIndex - 1 - currentTimeIndex;
+    let indexDiff1 = dataIndex - 1 - currentTimeIndex;
 
     if (!prevPoint) {
       prevPoint = data[dataIndex - 2];
-      if (!prevPoint) {
-        return;
-      } else {
-        indexDifference1 = dataIndex - 2 - currentTimeIndex;
-      }
+      if (!prevPoint) return;
+      indexDiff1 = dataIndex - 2 - currentTimeIndex;
     }
 
-    const indexDifference2 = dataIndex - currentTimeIndex;
-    const x1 = x0 + indexDifference1 * pixelsPerIndex;
-    const x2 = x0 + indexDifference2 * pixelsPerIndex;
+    const indexDiff2 = dataIndex - currentTimeIndex;
+    const x1 = x0 + indexDiff1 * pixelsPerIndex;
+    const x2 = x0 + indexDiff2 * pixelsPerIndex;
+    
     const y1 = logScale(prevPoint, dimensions, cFrequencies);
     const y2 = logScale(point, dimensions, cFrequencies);
 
+    if (y1 === null || y2 === null) return;
+
+    // 과거 데이터는 투명도 적용
     dataCtx.globalAlpha = (!isRealtime && (x1 + 1 <= x0)) ? 0.2 : 1.0;
 
+    // 선 그리기
     dataCtx.beginPath();
     dataCtx.moveTo(x1, y1);
     dataCtx.lineTo(x2, y2);
     dataCtx.stroke();
   });
 
+  // 그래픽 상태 초기화
   dataCtx.globalAlpha = 1.0;
   dataCtx.shadowBlur = 0;
   dataCtx.shadowColor = 'transparent';

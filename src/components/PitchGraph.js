@@ -13,6 +13,7 @@ const arrayBufferToBase64 = (buffer) => {
 const PitchGraph = ({
   dimensions,
   realtimeData,
+  multiRealDatas,
   referenceData,
   dataPointCount,
   currentTimeIndex,
@@ -34,6 +35,9 @@ const PitchGraph = ({
       // 데이터 URL 생성
       const dataUrl = `data:${mimeType};base64,${base64String}`;
       setImageSrc(dataUrl);
+    }
+    else{
+      setImageSrc(null);
     }
   }, [songimageProps]);
 
@@ -65,11 +69,10 @@ const PitchGraph = ({
       return;
     }
 
-    // console.log('In send data', songimageProps);
-
     worker.postMessage({
       dimensions,
       realtimeData,
+      multiRealDatas,
       referenceData,
       dataPointCount,
       currentTimeIndex
@@ -77,10 +80,18 @@ const PitchGraph = ({
   }, [
     dimensions,
     realtimeData,
-    referenceData,
+    multiRealDatas,
     dataPointCount,
     currentTimeIndex,
   ]);
+
+  // useEffect(() => {
+  //   const worker = workerRef.current;
+  //   worker.postMessage({
+  //     referenceData
+  //   });
+  // }, [referenceData]);
+
 
   return (
     <div
