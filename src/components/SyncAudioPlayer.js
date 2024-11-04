@@ -220,8 +220,10 @@ const AudioPlayer = forwardRef(({
   useEffect(() => {
     // 출력 지연 반영
     setInterval((audioContext = audioContextRef.current) => {
-      if (audioContext)
-        setPlayoutDelay(audioContext.outputLatency*1000);
+      if (audioContext) {
+        const playoutDelay = audioContext.outputLatency;
+        setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay*1000);
+      }
     }, 5000) ;
 
     return () => {
