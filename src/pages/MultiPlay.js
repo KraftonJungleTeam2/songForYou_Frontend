@@ -949,10 +949,7 @@ function MultiPlay() {
                     {players[index] ? (
                       <div>
                         <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-<<<<<<< HEAD
                         <p>{players[index].userId == socketId.current ? score : players[index].score}점</p>
-=======
-                        <p>{players[index].score}점</p>
                         {players[index].userId !== socketId.current ? (
                           < input
                             type='range'
@@ -965,7 +962,6 @@ function MultiPlay() {
                           />
                         ) : null
                         }
->>>>>>> 5c9db159926d12a369e102d64c4d690b670698ca
                       </div>
                     ) : (
                       <p>빈 자리</p>
