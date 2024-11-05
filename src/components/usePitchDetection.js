@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, connections = [], scores, socketId) => {
+export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, connections = [], setScore, setInstantScore, socketId) => {
 
   const pitchHistoryRef = useRef([]);
   const MAX_HISTORY_LENGTH = 5;
@@ -31,6 +31,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   // 채점용
   const flexibility = 2;
   const scoreIndex = useRef([]);
+  const scores = useRef([]);
 
   const round = (i) => {
     const idx = Math.floor(i);
@@ -108,7 +109,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
 
       baseScore = 1;
     }
-    score = 0.5 * pitchScore + 0.5 * baseScore;
+    score = 0.6 * pitchScore + 0.5 * baseScore; // 가중치 합이 1을 넘는 건 노린 겁니다.
 
     return score;
   };
@@ -121,7 +122,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     }
   };
 
-  const avgScore = (scores_index) => {
+  const getAvgScore = (scores_index) => {
     let sum = 0;
     let length = 0;
     for (let i = 0; i <= scores_index; i++) {
@@ -130,7 +131,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
         length++;
       }
     }
-    return Math.ceil(sum/length*100);
+    return Math.min(100, Math.ceil(sum/length*100));
   };
 
   function updatePitch() {
@@ -160,6 +161,9 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     }
     const score = getScore(smoothedPitch, index);
     updateScore(score, scoreIndex.current[index]);
+    setInstantScore(score);
+    const avgScore = getAvgScore(scoreIndex.current[index]);
+    setScore(avgScore ? avgScore : 0);
     
     pitchRef.current = smoothedPitch;
     setEntireGraphData((prevData) => {
@@ -169,7 +173,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       return prevData;
     });
     if (Object.keys(connections).length > 0) {
-      sendPitchData(smoothedPitch, index, avgScore(scoreIndex.current[index]));
+      sendPitchData(smoothedPitch, index, avgScore);
     }
   }
 

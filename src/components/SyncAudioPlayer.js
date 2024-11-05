@@ -151,7 +151,7 @@ const AudioPlayer = forwardRef(({
     clearTimeout(rateTimeoutRef.current);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
-
+      console.log(performance.now());
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
