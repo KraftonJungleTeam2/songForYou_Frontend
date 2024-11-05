@@ -74,6 +74,9 @@ const Play = () => {
   const [dataPointCount, setDataPointCount] = useState(100);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
+  // 점수 계산 용
+  const scores = useRef([]);
+
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
     setUserSeekPosition(newPosition);
@@ -228,7 +231,7 @@ const Play = () => {
   }, []);
 
   // Use the custom hook and pass necessary parameters
-  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, null);
+  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, scores, null);
 
   return (
     <div className='play-page'>
