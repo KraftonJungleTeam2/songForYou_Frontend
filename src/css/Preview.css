@@ -1,36 +1,33 @@
-
 .preview {
   width: var(--preview-width);
-  background-color: #f9f9f9;
-  border-left: 1px solid #e0e0e0;
+  background-color: var(--background-section);
+  border-left: 1px solid var(--border-gray);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-
-  /* justify-content: center; */
 }
 
+/* 모바일 일 때 */
 .another {
   height: var(--preview-height);
-  background-color: #f9f9f9;
-  border-left: 1px solid #e0e0e0;
+  background-color: var(--background-section);
+  border-left: 1px solid var(--border-gray);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
 }
 
 /* 웹일 때 아이콘 div */
-.icon{
+.icon {
   margin-top: 20px;
   width: 90%;
   height: 22.5vw;
-  background-color: aquamarine;
+  background-color: var(--background-selected);
 }
 
 /* 모바일일 때 아이콘 div */
-.icon1{
+.icon1 {
   height: 90%;
   width: 22.5vh;
   margin-left: 20px;
@@ -48,9 +45,10 @@
   width: 19vw;
 }
 
-.info1{
-  margin-right: 20px;
-  width: 20vw;
+.info1 {
+  width: 50vw;
+  display: flex;
+  justify-content: space-between;
 }
 
 .return1 {
@@ -58,13 +56,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9f9f9;
+  background-color: var(--background-section);
 }
 
-.return{
+.return {
   width: 25%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9f9f9;
+  background-color: var(--background-section);
 }
