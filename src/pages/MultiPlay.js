@@ -452,14 +452,14 @@ function MultiPlay() {
       const peerConnection = peerConnectionsRef.current[callerId];
       console.log(callerId, '에서 answer 수신');
 
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socketRef.current.emit('ice-candidate', {
-            targetId: callerId,
-            candidate: event.candidate,
-          });
-        }
-      };
+      // peerConnection.onicecandidate = (event) => {
+      //   if (event.candidate) {
+      //     socketRef.current.emit('ice-candidate', {
+      //       targetId: callerId,
+      //       candidate: event.candidate,
+      //     });
+      //   }
+      // };
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
       }
@@ -686,8 +686,6 @@ function MultiPlay() {
       ],
       iceCandidatePoolSize: 10
     });
-
-    peerConnection.retryCount
 
     peerConnection.oniceconnectionstatechange = () => {
       if (peerConnection.iceConnectionState === 'failed') {
