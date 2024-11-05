@@ -36,20 +36,39 @@ function Single() {
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
-          <div className='song-list-area-container component-container'>
-            <SongListArea
-              onSongSelect={handleSongSelect}
-              publicSongs={songLists.public}
-              privateSongs={songLists.private}
-            />
-          </div>
-          <div className='preview-container component-container'>
-            <Preview selectedSong={selectedSong} />
-          </div>
-        </div>
+        {isMobile ? (
+          <>
+            {/* 모바일 환경에서는 Preview가 위에 표시되도록 순서 변경 */}
+            <div className='preview-container component-container'>
+              <Preview selectedSong={selectedSong} />
+            </div>
+            <div className='song-list-area-container component-container'>
+              <SongListArea
+                onSongSelect={handleSongSelect}
+                publicSongs={songLists.public}
+                privateSongs={songLists.private}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* 데스크톱 환경에서는 SongListArea가 왼쪽, Preview가 오른쪽에 위치 */}
+            <div className='song-list-area-container component-container'>
+              <SongListArea
+                onSongSelect={handleSongSelect}
+                publicSongs={songLists.public}
+                privateSongs={songLists.private}
+              />
+            </div>
+            <div className='preview-container component-container'>
+              <Preview selectedSong={selectedSong} />
+            </div>
+          </>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Single;
