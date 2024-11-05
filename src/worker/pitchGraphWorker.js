@@ -247,21 +247,21 @@ function drawPitchData(
     dataCtx.lineTo(x2, y2);
     dataCtx.stroke();
     
-    // stars.forEach((star) => {
-      // });
-      if (onlyone && x2-x0 >= -1 && x2-x0 < 1 && Math.random() > 0.8) {
-        addStar(x0, y2);
-        onlyone = false;
-      }
+    if (isRealtime && onlyone && x2-x0 >= -1 && x2-x0 < 1 && Math.random() > 0.8) {
+      addStar(x0, y2);
+      onlyone = false;
+    }
     });
-    stars = stars.filter(star => {
-      dataCtx.globalAlpha = star.alpha;
-      dataCtx.drawImage(starImage, star.x - starImage.width/2, star.y -starImage.height/2);
-  
-      star.x += star.speedX;
-      star.y += star.speedY;
-      star.alpha -= star.speedAlpha;
-      return star.alpha > 0});
+
+  stars = stars.filter(star => {
+    dataCtx.globalAlpha = star.alpha;
+    dataCtx.drawImage(starImage, star.x - starImage.width/2, star.y -starImage.height/2);
+
+    star.x += star.speedX;
+    star.y += star.speedY;
+    star.alpha -= star.speedAlpha;
+    return star.alpha > 0
+  });
 
   onlyone = true;
   // 그래픽 상태 초기화
