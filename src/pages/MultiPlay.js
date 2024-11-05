@@ -525,9 +525,10 @@ function MultiPlay() {
       const clientStartTime = serverStartTime + serverTimeDiff.current;
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
-      setStarttime(clientStartTime);
       setScore(0);
       micOff();
+      console.log("starts at", clientStartTime);
+      setStarttime(clientStartTime);
     });
 
     socketRef.current.on('stopMusic', (data) => {
@@ -1049,7 +1050,7 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
               <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
