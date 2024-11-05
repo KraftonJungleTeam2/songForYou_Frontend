@@ -6,6 +6,8 @@ import { useScreen } from '../Context/ScreenContext';
 
 function Sidebar({ isOpen, toggleSidebar }) {
   const navigate = useNavigate();
+  
+  // desktop에서 상단 바 사이드 메뉴 버튼 조정할 때
   // 화면 너비 가져오기
   const { widthScreen } = useScreen();
 

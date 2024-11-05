@@ -6,7 +6,7 @@ import Preview from '../components/Preview';
 import TopBar from '../components/TopBar';
 import { useSongs } from '../Context/SongContext';
 import { useScreen } from '../Context/ScreenContext';
-import SimpleSideBar from '../components/SimpleSideBar';
+import MobileNav from '../components/MobileNav';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -30,7 +30,7 @@ function Single() {
   return (
     <div className='single-page'>
       {isMobile ? (
-        <SimpleSideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+         <MobileNav></MobileNav>
       ) : (
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       )}

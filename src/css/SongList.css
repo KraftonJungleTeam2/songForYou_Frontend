@@ -3,8 +3,14 @@
     overflow-y: auto;
     /* 스크롤바 숨기기 */
     scrollbar-width: none;
+    background-color: var(--background-color);
 }
 
+@media (max-width: 1024px) {
+    .song-list{
+    height: 70%;
+    }
+  }
 .song-item {
     display: flex;
     align-items: center;
@@ -15,7 +21,11 @@
 }
 
 .song-item:hover {
-    background-color: #f8f9fa;
+    background-color: #ffcc00;
+}
+
+.song-item:hover .song-info h3 {
+    color: #080808;
 }
 
 .song-info {
@@ -26,6 +36,7 @@
 .song-info h3 {
     margin: 0 0 5px 0;
     font-size: 20px;
+    color: #e0e0e0;
 }
 
 .song-info p {
