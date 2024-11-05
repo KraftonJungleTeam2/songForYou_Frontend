@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PitchDetector } from 'pitchy';
 import { setupAudioContext, calculateRMS } from '../utils/AudioUtils';
 
-export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, connections = [], socketId) => {
-  const [pitch, setPitch] = useState(0);
-  const [clarity, setClarity] = useState(0);
-  const [decibel, setDecibel] = useState(-Infinity);
+export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, connections = [], setScore, setInstantScore, socketId) => {
 
   const pitchHistoryRef = useRef([]);
   const MAX_HISTORY_LENGTH = 5;
@@ -14,13 +11,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
   const detectorRef = useRef(null);
-  const pitchRef = useRef(pitch);
-  const isPlayingRef = useRef(isPlaying);
-
-  // 피치 변화 감지를 위한 상태 추가
-  const potentialPitchRef = useRef(null);
-  const potentialPitchCountRef = useRef(0);
-  const lastPitchTimeRef = useRef(0);
+  const pitchRef = useRef(0);
 
   // 멀티플레이 용
   const pitchCountRef = useRef(0);
@@ -28,16 +19,20 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   const pitchSumRef = useRef(0);
 
   const PITCH_CONFIG = {
-    MIN_VALID_PITCH: 50,
+    MIN_VALID_PITCH: 65,
     MAX_VALID_PITCH: 1500,
-    MIN_CLARITY: 0.5,
-    MIN_DECIBEL: -35,
-    MAX_PITCH_JUMP: 0.3,
-    CONFIRMATION_THRESHOLD: 3,
-    JUMP_TOLERANCE_TIME: 10,
+    MIN_CLARITY: 0.4,
+    MIN_CLARITY_INTERLUDE: 0.8,
+    MIN_DECIBEL: -60,
   };
 
   const lastIndex = useRef(0);
+
+  // 채점용
+  const flexibility = 2;
+  const scoreIndex = useRef([]);
+  const scores = useRef([]);
+
   const round = (i) => {
     const idx = Math.floor(i);
     if (idx == lastIndex.current) {
@@ -49,7 +44,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     }
   };
   // WebRTC를 통한 데이터 전송 함수
-  const sendPitchData = (pitchData, index) => {
+  const sendPitchData = (pitchData, index, score) => {
     pitchBufferRef.current.push({ pitch: pitchData, index });
     pitchSumRef.current += pitchData;
     pitchCountRef.current += 1;
@@ -61,7 +56,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
           type: 'pitch-data',
           pitches: pitchBufferRef.current,
           id: socketId,
-          score: Math.floor(Math.random()*100),
+          score: score,
         };
 
         // 모든 connection으로 데이터 전송
@@ -76,13 +71,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       pitchCountRef.current = 0;
     }
   };
-  useEffect(() => {
-    pitchRef.current = pitch;
-  }, [pitch]);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
 
   const getMedianPitch = (pitches) => {
     const validPitches = pitches.filter((p) => p > 0);
@@ -93,69 +81,107 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   };
 
-  const calculateMovingAverage = (newPitch) => {
+  const getMedian = (newPitch) => {
     pitchHistoryRef.current.push(newPitch);
     if (pitchHistoryRef.current.length > MAX_HISTORY_LENGTH) {
-      pitchHistoryRef.current.shift();
+      pitchHistoryRef.current = pitchHistoryRef.current.slice(-MAX_HISTORY_LENGTH);
     }
 
     return getMedianPitch(pitchHistoryRef.current);
   };
 
-  const validatePitchChange = (newPitch, currentPitch, currentTime) => {
-    if (currentPitch === 0) return true;
+  // 같은 음이면 0, 반음 차이날 때마다 1씩 증가
+  const pitchDifference = (data, refData) => {
+    return Math.abs(Math.log2(data/refData)*12);
+  }
 
-    const octaveDiff = Math.abs(Math.log2(newPitch / currentPitch));
-    const timeSinceLastUpdate = currentTime - lastPitchTimeRef.current;
+  const getScore = (pitch, index) => {
+    let score = 0;
+    let pitchScore = 0;
+    let baseScore = 0;
 
-    // 급격한 변화가 아닌 경우 바로 허용
-    if (octaveDiff <= PITCH_CONFIG.MAX_PITCH_JUMP) {
-      potentialPitchRef.current = null;
-      potentialPitchCountRef.current = 0;
-      return true;
+    if (index < flexibility || index > entireReferData.length-flexibility-1 || !(pitch > 0)) return 0;
+    for (let i = index-flexibility; i < index+flexibility+1; i++) {
+      if (!(entireReferData[i] > 0)) continue;
+      const diff = pitchDifference(pitch, entireReferData[i]);
+      const newPitchScore = diff < 2 ? diff < 0.15 ? 1 : ((diff-2)**2)/3.4225 : 0;
+      pitchScore = Math.max(pitchScore, newPitchScore);
+
+      baseScore = 1;
     }
+    score = 0.8 * pitchScore + 0.3 * baseScore; // 가중치 합이 1을 넘는 건 노린 겁니다.
 
-    // 이전과 동일한 급격한 변화가 감지된 경우
-    if (potentialPitchRef.current !== null) {
-      const potentialPitchDiff = Math.abs(Math.log2(newPitch / potentialPitchRef.current));
-
-      // 새로운 피치가 이전에 감지된 potential pitch와 비슷한 경우
-      if (potentialPitchDiff <= 0.1) {
-        // 10% 이내의 변화는 같은 피치로 간주
-        potentialPitchCountRef.current++;
-
-        // 충분한 횟수동안 같은 피치가 감지되면 새로운 피치로 인정
-        if (potentialPitchCountRef.current >= PITCH_CONFIG.CONFIRMATION_THRESHOLD) {
-          potentialPitchRef.current = null;
-          potentialPitchCountRef.current = 0;
-          return true;
-        }
-      } else {
-        // 다른 피치가 감지되면 카운터 리셋
-        potentialPitchRef.current = newPitch;
-        potentialPitchCountRef.current = 1;
-      }
-    } else {
-      // 새로운 급격한 변화 감지 시작
-      potentialPitchRef.current = newPitch;
-      potentialPitchCountRef.current = 1;
-    }
-
-    // 일정 시간이 지나면 강제로 피치 업데이트 허용
-    if (timeSinceLastUpdate > PITCH_CONFIG.JUMP_TOLERANCE_TIME) {
-      potentialPitchRef.current = null;
-      potentialPitchCountRef.current = 0;
-      return true;
-    }
-
-    return false;
+    return score;
   };
+  
+  const updateScore = (score, scores_index) => {
+    if (scores_index < flexibility || scores_index > scores.current.lenght-flexibility-1) return;
+
+    for (let i = scores_index-flexibility; i < scores_index+flexibility+1; i++) {
+      scores.current[i] = Math.max(scores.current[i], score);
+    }
+  };
+
+  const getAvgScore = (scores_index) => {
+    let sum = 0;
+    let length = 0;
+    for (let i = 0; i <= scores_index; i++) {
+      if (scores.current[i] != null) {
+        sum += scores.current[i];
+        length++;
+      }
+    }
+    return Math.min(100, Math.ceil(sum/length*100));
+  };
+
+  function updatePitch() {
+    if (!analyserRef.current || !detectorRef.current) return;
+
+    const input = new Float32Array(analyserRef.current.fftSize);
+    analyserRef.current.getFloatTimeDomainData(input);
+    const rms = calculateRMS(input);
+    const decibel = 20 * Math.log10(rms);
+    let smoothedPitch = 0
+
+    // Update entireGraphData based on playbackPosition
+    const playbackPos = playbackPositionRef.current; // seconds
+    const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
+
+    const [pitch, clarity] = detectorRef.current.findPitch(input, audioContextRef.current.sampleRate);
+
+    if (decibel > PITCH_CONFIG.MIN_DECIBEL &&
+      (entireReferData[index] > 0 ? clarity > PITCH_CONFIG.MIN_CLARITY : clarity > PITCH_CONFIG.MIN_CLARITY_INTERLUDE) &&
+      pitch >= PITCH_CONFIG.MIN_VALID_PITCH && 
+      pitch <= PITCH_CONFIG.MAX_VALID_PITCH) {
+      smoothedPitch = getMedian(pitch);
+
+      // 점수 계산
+    } else {
+      pitchHistoryRef.current.push(0);
+    }
+    const score = getScore(smoothedPitch, index);
+    setInstantScore(score > 1 ? 1: score);
+    const avgScore = getAvgScore(scoreIndex.current[index]);
+    setScore(avgScore ? avgScore : 0);
+    updateScore(score, scoreIndex.current[index]);
+    
+    pitchRef.current = smoothedPitch;
+    setEntireGraphData((prevData) => {
+      if (index < 0 || index >= prevData.length) return prevData;
+
+      prevData[index] = smoothedPitch ? smoothedPitch : null;
+      return prevData;
+    });
+    if (Object.keys(connections).length > 0) {
+      sendPitchData(smoothedPitch, index, avgScore);
+    }
+  }
 
   useEffect(() => {
     let stopStreamFunction;
     async function setupAudio() {
       try {
-        const { audioContext, analyser, source, stopStream, stream } = await setupAudioContext(targetStream);
+        const { audioContext, analyser, source, stopStream } = await setupAudioContext(targetStream);
         stopStreamFunction = stopStream;
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
@@ -188,90 +214,6 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
   useEffect(() => {
     let intervalId;
 
-    function updatePitch() {
-      if (!analyserRef.current || !detectorRef.current) return;
-
-      const input = new Float32Array(analyserRef.current.fftSize);
-      analyserRef.current.getFloatTimeDomainData(input);
-      const rms = calculateRMS(input);
-      const newDecibel = 20 * Math.log10(rms);
-      setDecibel(newDecibel);
-
-      const currentTime = Date.now();
-
-      if (newDecibel > PITCH_CONFIG.MIN_DECIBEL) {
-        const [pitchResult, clarityResult] = detectorRef.current.findPitch(input, audioContextRef.current.sampleRate);
-
-        if (clarityResult > PITCH_CONFIG.MIN_CLARITY && pitchResult >= PITCH_CONFIG.MIN_VALID_PITCH && pitchResult <= PITCH_CONFIG.MAX_VALID_PITCH) {
-          // 피치 변화 검증
-          if (validatePitchChange(pitchResult, pitchRef.current, currentTime)) {
-            const smoothedPitch = calculateMovingAverage(pitchResult);
-            lastPitchTimeRef.current = currentTime;
-            setPitch(smoothedPitch);
-            setClarity(clarityResult);
-
-            // Update entireGraphData based on playbackPosition
-            const playbackPos = playbackPositionRef.current; // seconds
-            const index = round(playbackPos * 40); // Assuming 25ms per data point: 1 sec = 40 data points
-
-            setEntireGraphData((prevData) => {
-              if (index < 0 || index >= prevData.length) return prevData;
-
-              prevData[index] = smoothedPitch;
-              return prevData;
-            });
-            if (Object.keys(connections).length > 0) {
-              sendPitchData(smoothedPitch, index);
-            }
-          } else {
-            // 검증되지 않은 피치는 그래프에 표시하되 현재 피치는 유지
-            const playbackPos = playbackPositionRef.current;
-            const index = round(playbackPos * 40);
-
-            setEntireGraphData((prevData) => {
-              if (index < 0 || index >= prevData.length) return prevData;
-
-              prevData[index] = pitchRef.current > 0 ? pitchRef.current : null;
-              return prevData;
-            });
-            if (Object.keys(connections).length > 0) {
-              sendPitchData(pitchRef.current > 0 ? pitchRef.current : 0, index);
-            }
-          }
-        } else {
-          // 유효하지 않은 피치인 경우
-          const playbackPos = playbackPositionRef.current;
-          const index = round(playbackPos * 40);
-
-          setEntireGraphData((prevData) => {
-            if (index < 0 || index >= prevData.length) return prevData;
-
-            prevData[index] = null;
-            return prevData;
-          });
-
-          setPitch(0);
-          if (Object.keys(connections).length > 0) {
-            sendPitchData(0, index);
-          }
-        }
-      } else {
-        setPitch(0);
-        const playbackPos = playbackPositionRef.current;
-        const index = round(playbackPos * 40);
-
-        setEntireGraphData((prevData) => {
-          if (index < 0 || index >= prevData.length) return prevData;
-
-          prevData[index] = null;
-          return prevData;
-        });
-        if (Object.keys(connections).length > 0) {
-          sendPitchData(0, index);
-        }
-      }
-    }
-
     if (isPlaying && isMicOn) {
       intervalId = setInterval(updatePitch, 25);
     }
@@ -279,7 +221,21 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isPlaying, isMicOn, playbackPositionRef, setEntireGraphData]);
+  }, [isPlaying, isMicOn]);
 
-  return { pitch, clarity, decibel };
+  useEffect(() => {
+    const newScoreIndex = [];
+    let sum = 0;
+
+    for (let i = 0; i < entireReferData.length; i++) {
+      if (entireReferData[i] > 0)
+        sum += 1;
+      newScoreIndex[i] = sum;
+    }
+
+    scoreIndex.current = newScoreIndex;
+    scores.current = new Array(sum+1).fill(null);
+    setInstantScore(0);
+  }, [entireReferData]);
+
 };
