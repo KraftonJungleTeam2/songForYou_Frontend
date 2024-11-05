@@ -22,7 +22,6 @@ code {
 }
 
 :root {
-  color-scheme: dark;
   
   /* 기본 레이아웃 */
   --top-bar-height: 7%;
@@ -31,32 +30,9 @@ code {
   --sidebar-width: 12%;
   --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
 
-
- /* 색상 변수 */
-  --background-main: #000000;
-    --background-section: #2e2b2b;
-    --background-selected: #525151;
-    --text-highlight-bg: #ffcc00;
-    --border-hover: #ffbf0b;
-    --gradient-end: #fea42c;
-    --text-neutral-bg: #989fa0;
-    
-     /* 텍스트 색상 */
-    --text-white: #ffffff;
-    --text-black: #000000;
-    --text-gray: #989fa0;
-
-    /* 경계선 색 */
-    --border-gray: #838383;
-
-}
-
-/* 다크 모드 색상 설정 */
-@media (prefers-color-scheme: light) {
-  :root {
-      /* 색상 변수 */
-  --background-main: #ffffff; /* 밝은 배경색 */
-  --background-section: #f0f0f0; /* 섹션 영역 배경 */
+  /* 색상 변수 */
+  --background-main: #f0f0f0; /* 밝은 배경색 */
+  --background-section: #ffffff; /* 섹션 영역 배경 */
   --background-selected: #e0e0e0; /* 선택된 컴포넌트 배경색 */
   --text-highlight-bg: #ffcc00; /* 내부 검은 글씨를 감싸는 노란색 */
   --border-hover: #ffbf0b; /* 선택 시 테두리 노란색 */
@@ -70,6 +46,30 @@ code {
 
   /* 리스트 구분을 위한 테두리 색 */
   --border-gray: #d3d3d3;
+
+}
+
+/* 다크 모드 색상 설정 */
+@media (prefers-color-scheme: dark) {
+  :root {
+  color-scheme: dark;
+
+  /* 색상 변수 */
+  --background-main: #000000;
+  --background-section: #2e2b2b;
+  --background-selected: #525151;
+  --text-highlight-bg: #ffcc00;
+  --border-hover: #ffbf0b;
+  --gradient-end: #fea42c;
+  --text-neutral-bg: #989fa0;
+  
+    /* 텍스트 색상 */
+  --text-white: #ffffff;
+  --text-black: #000000;
+  --text-gray: #989fa0;
+
+  /* 경계선 색 */
+  --border-gray: #838383;
   }
 }
 
@@ -79,4 +79,8 @@ code {
   :root {
     --sidebar-width: 0%;
   }
+}
+
+input {
+  /* background-color: var(--background-selected); */
 }
