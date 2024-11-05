@@ -62,7 +62,6 @@ const AudioPlayer = forwardRef(({
 
   const handleStopAudio = () => {
     playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
-    console.log("handlestopaudio");
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
@@ -142,16 +141,15 @@ const AudioPlayer = forwardRef(({
     const targetTime = performance.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
     if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
-
-    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log('target: ' + targetTime + ' overrun:' + overrun);
 
-    setPlaybackRate(transitionSpeed);
+    
     
     clearTimeout(rateTimeoutRef.current);
+    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
+    setPlaybackRate(transitionSpeed);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
-
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
