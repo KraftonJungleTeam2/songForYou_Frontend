@@ -508,6 +508,7 @@ function MultiPlay() {
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setStarttime(clientStartTime);
+      setScore(0);
       micOff();
     });
 

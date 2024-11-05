@@ -62,7 +62,6 @@ const AudioPlayer = forwardRef(({
 
   const handleStopAudio = () => {
     playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
-    console.log("handlestopaudio");
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
@@ -94,7 +93,7 @@ const AudioPlayer = forwardRef(({
     sourceRef.current = source;
     
     // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-    const offset = (performance.now() - starttime) / 1000;
+    const offset = (performance.now() - (starttime + latencyOffset)) / 1000;
     // 볼륨 설정
     gainControlRef.current.gain.value = musicGain;
     //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
@@ -142,16 +141,15 @@ const AudioPlayer = forwardRef(({
     const targetTime = performance.now() - (starttime + latencyOffset);
     const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
     if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
-
-    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
     console.log('target: ' + targetTime + ' overrun:' + overrun);
 
-    setPlaybackRate(transitionSpeed);
+    
     
     clearTimeout(rateTimeoutRef.current);
+    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
+    setPlaybackRate(transitionSpeed);
     rateTimeoutRef.current = setTimeout(() => {
       console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
-      console.log(performance.now());
       setPlaybackRate(1);
     }, overrun / (1 - transitionSpeed));
   }, [latencyOffset]);
