@@ -1,14 +1,17 @@
+// Preview.js
 import React, { useState, useRef, useEffect } from 'react';
 import '../css/Preview.css';
 import { useNavigate } from 'react-router-dom';
+import { useScreen } from '../Context/ScreenContext';
 
 function Preview({ selectedSong }) {
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
+  const { isMobile } = useScreen();
 
-  // 컴포넌트 언마운트 시 URL 정리
+  // 컴포넌트 언마운트 시 오디오 URL 정리
   useEffect(() => {
     return () => {
       if (audioUrl) {
@@ -26,7 +29,7 @@ function Preview({ selectedSong }) {
     }
   }, [selectedSong]);
 
-  function arrayBufferToBase64(buffer) {
+  const arrayBufferToBase64 = (buffer) => {
     let binary = '';
     const bytes = new Uint8Array(buffer);
     const len = bytes.byteLength;
@@ -34,11 +37,10 @@ function Preview({ selectedSong }) {
       binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
-  }
+  };
 
   const handlePlay = (e, song) => {
     e.stopPropagation();
-
     navigate(`/play/${song.id}`, { state: { song } }); // 상태와 함께 네비게이션
   };
 
@@ -46,7 +48,6 @@ function Preview({ selectedSong }) {
     e.stopPropagation();
 
     try {
-      // 이미 재생 중이면 중지
       if (isPlaying) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -54,20 +55,16 @@ function Preview({ selectedSong }) {
         return;
       }
 
-      // 재생 전에 현재 오디오를 완전히 중지하고 초기화
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.load();
       }
 
-      // 오디오 URL이 없는 경우에만 새로 요청
       const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/songs/preview`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ songId: songId }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songId }),
       });
 
       if (!response.ok) {
@@ -75,23 +72,17 @@ function Preview({ selectedSong }) {
       }
 
       const audioBlob = await response.blob();
-      // 이전 URL 해제
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
       }
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
 
-      // URL이 설정된 후 audio 엘리먼트 다시 로드
       audioRef.current.load();
 
-      // 약간의 지연 후 재생 시작
       setTimeout(() => {
-        audioRef.current
-          .play()
-          .then(() => {
-            setIsPlaying(true);
-          })
+        audioRef.current.play()
+          .then(() => setIsPlaying(true))
           .catch((error) => {
             console.error('Failed to play audio:', error);
             setIsPlaying(false);
@@ -103,29 +94,52 @@ function Preview({ selectedSong }) {
     }
   };
 
-  // 오디오 재생 완료 시 처리
   const handleAudioEnded = () => {
     setIsPlaying(false);
     audioRef.current.currentTime = 0;
   };
 
   if (!selectedSong) {
-    return <div className='preview'>Select a song to see details</div>;
+    return (
+      <div className='preview-placeholder'>
+        곡 선택 후 세부사항이 보입니다.
+      </div>
+    );
   }
 
   return (
-    <div className='preview'>
-      <div className='song-icon'>{selectedSong.image && selectedSong.image.data ? <img src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`} alt={selectedSong.metadata.title} width='100%' /> : <div>No Image Available</div>}</div>
-      <h3 className='title'>{selectedSong.metadata.title}</h3>
-      <p className='subtitle'>{selectedSong.metadata.description}</p>
-      <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
-      <div className='preview-buttons'>
-        <button className={`button is-text enabled ${isPlaying ? 'playing' : ''}`} onClick={(e) => handlePreview(e, selectedSong.id)} style={{ flex: 1 }}>
-          {isPlaying ? '멈추기' : '미리듣기'}
-        </button>
-        <button className='button is-text enabled' onClick={(e) => handlePlay(e, selectedSong)} style={{ flex: 1 }}>
-          부르기
-        </button>
+    <div className={`${isMobile ? 'preview-container-mobile' : 'preview-container-desktop'}`}>
+      <div className='preview-image-container'>
+        {selectedSong.image && selectedSong.image.data ? (
+          <img
+            src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`}
+            alt={selectedSong.metadata.title}
+          />
+        ) : (
+          <div className='no-image'>이미지가 존재하지 않습니다.</div>
+        )}
+      </div>
+
+      <div className='preview-info-container'>
+        <h3 className='preview-title'>{selectedSong.metadata.title}</h3>
+        <p className='preview-subtitle'>{selectedSong.metadata.description}</p>
+        <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
+        <div className='preview-buttons'>
+          <button
+            className={`preview-play-button ${isPlaying ? 'playing' : ''}`}
+            onClick={(e) => handlePreview(e, selectedSong.id)}
+            aria-label={isPlaying ? 'Pause Preview' : 'Play Preview'}
+          >
+            {isPlaying ? 'Pause' : 'Play Preview'}
+          </button>
+          <button
+            className='preview-sing-button'
+            onClick={(e) => handlePlay(e, selectedSong)}
+            aria-label="Sing Song"
+          >
+            Sing
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -189,6 +189,7 @@ const Play = () => {
           try {
             const lyrics = JSON.parse(lyricsString);
             setLyricsData(lyrics);
+            console.log(lyrics);
             setLyricsLoaded(true);
           } catch (parseError) {
             console.error('Error parsing lyrics data:', parseError);
@@ -313,7 +314,7 @@ const Play = () => {
             </button>
             <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
             <div className='playback-info'>
-              {playbackPosition.toFixed(3)} / {Math.floor(duration)} 초
+              {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
             </div>
 
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
