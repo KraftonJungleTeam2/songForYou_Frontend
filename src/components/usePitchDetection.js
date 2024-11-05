@@ -98,8 +98,8 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     let score = 0;
     let pitchScore = 0;
     let baseScore = 0;
-    
-    if (index < flexibility || index > entireReferData.length-flexibility-1) return 0;
+
+    if (index < flexibility || index > entireReferData.length-flexibility-1 || !(pitch > 0)) return 0;
     for (let i = index-flexibility; i < index+flexibility+1; i++) {
       if (!(entireReferData[i] > 0)) continue;
       const diff = pitchDifference(pitch, entireReferData[i]);
@@ -123,10 +123,14 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
 
   const avgScore = (scores_index) => {
     let sum = 0;
+    let length = 0;
     for (let i = 0; i <= scores_index; i++) {
-      sum += scores.current[i];
+      if (scores.current[i] != null) {
+        sum += scores.current[i];
+        length++;
+      }
     }
-    return Math.ceil(sum/(scores_index+1)*100);
+    return Math.ceil(sum/length*100);
   };
 
   function updatePitch() {
@@ -151,11 +155,11 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       smoothedPitch = getMedian(pitch);
 
       // 점수 계산
-      const score = getScore(smoothedPitch, index);
-      updateScore(score, scoreIndex.current[index]);
     } else {
       pitchHistoryRef.current.push(0);
     }
+    const score = getScore(smoothedPitch, index);
+    updateScore(score, scoreIndex.current[index]);
     
     pitchRef.current = smoothedPitch;
     setEntireGraphData((prevData) => {
@@ -226,7 +230,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     }
 
     scoreIndex.current = newScoreIndex;
-    scores.current = new Array(sum).fill(0);
+    scores.current = new Array(sum).fill(null);
   }, [entireReferData]);
 
 };
