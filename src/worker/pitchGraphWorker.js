@@ -259,13 +259,18 @@ function drawPitchData(
     dataCtx.stroke();
     
   });
-  if (score > 0.5 && data[currentTimeIndex] && currentTimeIndex % 3 === 0) {
-    addStar(x0, logScale(data[currentTimeIndex], dimensions, cFrequencies), score);
+  if (score > 0.5
+    && currentTimeIndex % 3 === 0
+  ) {
+    if (data[currentTimeIndex])
+      addStar(x0, logScale(data[currentTimeIndex], dimensions, cFrequencies), score);
+    else
+      addStar(x0, logScale(data[currentTimeIndex-1], dimensions, cFrequencies), score);
   }
-
+  
   stars = stars.filter(star => {
-    const width = Math.floor(starImage.width * star.size**2 * 0.7);
-    const height = Math.floor(starImage.height * star.size**2 * 0.7);
+    const width = Math.floor(starImage.width * star.size * 0.7);
+    const height = Math.floor(starImage.height * star.size * 0.7);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(starImage, star.x - width/2, star.y - height/2, width, height);
 
