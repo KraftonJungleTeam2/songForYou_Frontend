@@ -22,7 +22,7 @@ code {
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   
   /* 기본 레이아웃 */
   --top-bar-height: 7%;
