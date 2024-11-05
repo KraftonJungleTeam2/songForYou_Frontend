@@ -2,9 +2,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/SideBar.css';
+import { useScreen } from '../Context/ScreenContext';
 
 function Sidebar({ isOpen, toggleSidebar }) {
   const navigate = useNavigate();
+  
+  // desktop에서 상단 바 사이드 메뉴 버튼 조정할 때
+  // 화면 너비 가져오기
+  const { widthScreen } = useScreen();
+
+   // `--sidebar-width` 값을 %에서 숫자로 변환하고 `widthScreen`에 곱해서 픽셀 값으로 계산
+  const sidebarWidthPercent = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')
+  );
+  const sidebarWidthPx = `${(widthScreen * sidebarWidthPercent) / 100}px`; // 최종 픽셀 값 계산
+
+  document.documentElement.style.setProperty('--sidebar-width-px', `${sidebarWidthPx}`);
+
 
   return (
     <>

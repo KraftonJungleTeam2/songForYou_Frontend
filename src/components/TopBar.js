@@ -69,7 +69,7 @@ function TopBar() {
   return (
     <div className='top-bar'>
       <div className='right-section'>
-        <button className='logout-button' onClick={Logout}>
+        <button className='button is-dark logout-button' onClick={Logout}>
           로그아웃
         </button>
         <div className='user-avatar'>A</div>

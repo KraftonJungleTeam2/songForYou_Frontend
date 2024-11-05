@@ -174,6 +174,7 @@ function MultiPlay() {
       if (currentDataRef.current) {
         loadData(currentDataRef.current);
       }
+
       setReservedSongs((prev) => prev.slice(1));
 
       console.log('노래끝', currentDataRef.current);
