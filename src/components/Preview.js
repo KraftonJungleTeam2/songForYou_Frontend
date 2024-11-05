@@ -1,3 +1,4 @@
+// Preview.js
 import React, { useState, useRef, useEffect } from 'react';
 import '../css/Preview.css';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,7 @@ function Preview({ selectedSong }) {
   const [audioUrl, setAudioUrl] = useState(null);
   const { isMobile } = useScreen();
 
-  // 컴포넌트 언마운트 시 URL 정리
+  // 컴포넌트 언마운트 시 오디오 URL 정리
   useEffect(() => {
     return () => {
       if (audioUrl) {
@@ -99,34 +100,44 @@ function Preview({ selectedSong }) {
   };
 
   if (!selectedSong) {
-    return <div className={isMobile ? 'placeholder-mobile' : 'placeholder-desktop'}>Select a song to see details</div>;
+    return (
+      <div className='preview-placeholder'>
+        곡 선택 후 세부사항이 보입니다.
+      </div>
+    );
   }
 
   return (
-    <div className={`preview-container ${isMobile ? 'mobile-preview' : 'desktop-preview'}`}>
-      <div className='image-container'>
+    <div className={`${isMobile ? 'preview-container-mobile' : 'preview-container-desktop'}`}>
+      <div className='preview-image-container'>
         {selectedSong.image && selectedSong.image.data ? (
           <img
             src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`}
             alt={selectedSong.metadata.title}
           />
         ) : (
-          <div className='no-image'>No Image Available</div>
+          <div className='no-image'>이미지가 존재하지 않습니다.</div>
         )}
       </div>
-      <div className='info-container'>
-        <h3 className='title'>{selectedSong.metadata.title}</h3>
-        <p className='subtitle'>{selectedSong.metadata.description}</p>
+
+      <div className='preview-info-container'>
+        <h3 className='preview-title'>{selectedSong.metadata.title}</h3>
+        <p className='preview-subtitle'>{selectedSong.metadata.description}</p>
         <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
-        <div className='buttons'>
+        <div className='preview-buttons'>
           <button
-            className={`play-button ${isPlaying ? 'playing' : ''}`}
+            className={`preview-play-button ${isPlaying ? 'playing' : ''}`}
             onClick={(e) => handlePreview(e, selectedSong.id)}
+            aria-label={isPlaying ? 'Pause Preview' : 'Play Preview'}
           >
-            {isPlaying ? '멈추기' : '미리듣기'}
+            {isPlaying ? 'Pause' : 'Play Preview'}
           </button>
-          <button className='sing-button' onClick={(e) => handlePlay(e, selectedSong)}>
-            부르기
+          <button
+            className='preview-sing-button'
+            onClick={(e) => handlePlay(e, selectedSong)}
+            aria-label="Sing Song"
+          >
+            Sing
           </button>
         </div>
       </div>
