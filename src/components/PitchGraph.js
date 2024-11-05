@@ -76,12 +76,7 @@ const PitchGraph = ({
       dataPointCount,
       currentTimeIndex
     });
-  }, [
-    realtimeData,
-    multiRealDatas,
-    dataPointCount,
-    currentTimeIndex,
-  ]);
+  }, [currentTimeIndex]);
 
   useEffect(() => {
     const worker = workerRef.current;
@@ -96,7 +91,7 @@ const PitchGraph = ({
   useEffect(() => {
     const worker = workerRef.current;
     if (!worker) return;
-    
+
     worker.postMessage({
       type: "refData",
       referenceData
