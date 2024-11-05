@@ -10,7 +10,7 @@ export const setupAudioContext = async (stream) => {
       audioContext.close();
     }
   };
-  return { audioContext, analyser, source, stopStream, stream };
+  return { audioContext, analyser, source, stopStream };
 };
 
 export const calculateRMS = (buffer) => {
