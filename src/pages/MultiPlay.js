@@ -148,6 +148,9 @@ function MultiPlay() {
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
 
+  // 점수 계산 용
+  const scores = useRef([]);
+
   useEffect(() => {
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
@@ -849,7 +852,7 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, socketId.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, scores, socketId.current);
 
   return (
     <div className='multiPlay-page'>
