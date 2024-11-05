@@ -148,8 +148,9 @@ function MultiPlay() {
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
 
-  // 점수 계산 용
-  const scores = useRef([]);
+  // 점수 확인 용
+  const [score, setScore] = useState(0);
+  const [instantScore, setInstantScore] = useState(0);
 
   useEffect(() => {
     if (reservedSongs.length === 0) {
@@ -745,7 +746,6 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log("message received!")
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
@@ -852,7 +852,7 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, scores, socketId.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
     <div className='multiPlay-page'>
@@ -873,7 +873,7 @@ function MultiPlay() {
                     {players[index] ? (
                       <div>
                         <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-                        <p>{players[index].score}점</p>
+                        <p>{players[index].userId == socketId.current ? score : players[index].score}점</p>
                       </div>
                     ) : (
                       <p>빈 자리</p>
@@ -921,7 +921,7 @@ function MultiPlay() {
                     </div> */}
 
             <div className='pitch-graph-multi'>
-              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} score={instantScore} />
             </div>
 
             {/* Seek Bar */}

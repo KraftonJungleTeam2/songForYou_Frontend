@@ -17,7 +17,8 @@ const PitchGraph = ({
   referenceData,
   dataPointCount,
   currentTimeIndex,
-  songimageProps
+  songimageProps,
+  score,
 }) => {
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
@@ -74,7 +75,8 @@ const PitchGraph = ({
       realtimeData,
       multiRealDatas,
       dataPointCount,
-      currentTimeIndex
+      currentTimeIndex,
+      score: score,
     });
   }, [currentTimeIndex]);
 

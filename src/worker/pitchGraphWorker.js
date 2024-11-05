@@ -61,7 +61,8 @@ self.onmessage = async (event) => {
         data.multiRealDatas,
         referData,
         data.dataPointCount,
-        data.currentTimeIndex
+        data.currentTimeIndex,
+        data.score
       );
     }
   }
@@ -73,12 +74,20 @@ self.onmessage = async (event) => {
   }
 };
 
-const addStar = (x, y) => {
+const addStar = (x, y, score) => {
   // 새로운 별 객체 생성
   const speedX = (Math.random()-0.5)*4;
   const speedY = (Math.random()-0.5)*4;
+  const speedAlpha = (Math.random()*0.02)+0.03;
   stars.push(
-    { x: x, y: y, alpha: 1.0, speedX: speedX, speedY: speedY, speedAlpha: (Math.random()*0.02)+0.03}, // 떨어지는 속도 설정
+    { x: x,
+      y: y, 
+      alpha: 1.0, 
+      speedX: speedX, 
+      speedY: speedY, 
+      speedAlpha: speedAlpha, // 떨어지는 속도 설정
+      size: score,
+    },
   );
 };
 // dataCanvas와 backgroundCanvas 크기를 동기화하는 함수
@@ -161,23 +170,24 @@ function drawFrame(
   multiRealDatas,
   referenceData,
   dataPointCount,
-  currentTimeIndex
+  currentTimeIndex,
+  score
 ) {
   if (!dataCtx) return; // dataCtx가 초기화되었는지 확인
   dataCtx.clearRect(0, 0, dimensions.width, dimensions.height);
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
-  drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount);
+  drawPitchData(referenceData, '#EEEEEE', 'grey', currentTimeIndex, false, dataPointCount, null);
   if (multiRealDatas) {
     Object.entries(multiRealDatas).forEach(([key, multiData]) => {
       if (key !== 'myId') {
-        drawPitchData(multiData, stringToColor(key), 'coral', currentTimeIndex, true, dataPointCount);
+        drawPitchData(multiData, stringToColor(key), 'coral', currentTimeIndex, true, dataPointCount, null);
       } else {
-        drawPitchData(realtimeData, stringToColor(multiData), 'coral', currentTimeIndex, true, dataPointCount);
+        drawPitchData(realtimeData, stringToColor(multiData), 'coral', currentTimeIndex, true, dataPointCount, score);
       }
     });
   } else {
-    drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount);
+    drawPitchData(realtimeData, '#FFA500', 'coral', currentTimeIndex, true, dataPointCount, score);
   }
 }
 
@@ -187,7 +197,8 @@ function drawPitchData(
   glow = '',
   currentTimeIndex = 0,
   isRealtime = false,
-  dataPointCount
+  dataPointCount,
+  score = 0,
 ) {
   if (!dataCtx || !Array.isArray(data)) return;
 
@@ -212,7 +223,7 @@ function drawPitchData(
   const windowSize = dataPointCount * 3;
   const pixelsPerIndex = graphWidth / windowSize;
   const x0 = graphWidth / 3;
-  let onlyone = true;
+
   // 데이터 포인트 그리기
   visibleData.forEach((point, index) => {
     if (!point) return;
@@ -247,15 +258,16 @@ function drawPitchData(
     dataCtx.lineTo(x2, y2);
     dataCtx.stroke();
     
-    if (isRealtime && onlyone && x2-x0 >= -1 && x2-x0 < 1 && Math.random() > 0.8) {
-      addStar(x0, y2);
-      onlyone = false;
-    }
-    });
+  });
+  if (score > 0.75 && referData[currentTimeIndex] && currentTimeIndex % 3 === 0) {
+    addStar(x0, logScale(referData[currentTimeIndex], dimensions, cFrequencies), score);
+  }
 
   stars = stars.filter(star => {
+    const width = Math.floor(starImage.width * star.size**3 * 0.7);
+    const height = Math.floor(starImage.height * star.size**3 * 0.7);
     dataCtx.globalAlpha = star.alpha;
-    dataCtx.drawImage(starImage, star.x - starImage.width/2, star.y -starImage.height/2);
+    dataCtx.drawImage(starImage, star.x - width/2, star.y - height/2, width, height);
 
     star.x += star.speedX;
     star.y += star.speedY;
@@ -263,7 +275,6 @@ function drawPitchData(
     return star.alpha > 0
   });
 
-  onlyone = true;
   // 그래픽 상태 초기화
   dataCtx.globalAlpha = 1.0;
   dataCtx.shadowBlur = 0;
