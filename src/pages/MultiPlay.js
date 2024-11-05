@@ -149,6 +149,10 @@ function MultiPlay() {
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
 
+  // 점수 확인 용
+  const [score, setScore] = useState(0);
+  const [instantScore, setInstantScore] = useState(0);
+
   useEffect(() => {
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
@@ -521,8 +525,10 @@ function MultiPlay() {
       const clientStartTime = serverStartTime + serverTimeDiff.current;
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
-      setStarttime(clientStartTime);
+      setScore(0);
       micOff();
+      console.log("starts at", clientStartTime);
+      setStarttime(clientStartTime);
     });
 
     socketRef.current.on('stopMusic', (data) => {
@@ -798,7 +804,6 @@ function MultiPlay() {
     });
 
     dataChannel.onmessage = (event) => {
-      console.log("message received!")
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
@@ -924,7 +929,7 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
     <div className='multiPlay-page'>
@@ -945,7 +950,7 @@ function MultiPlay() {
                     {players[index] ? (
                       <div>
                         <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-                        <p>{players[index].score}점</p>
+                        <p>{players[index].userId == socketId.current ? score : players[index].score}점</p>
                         {players[index].userId !== socketId.current ? (
                           < input
                             type='range'
@@ -1005,7 +1010,7 @@ function MultiPlay() {
                     </div> */}
 
             <div className='pitch-graph-multi'>
-              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} score={instantScore} />
             </div>
 
             {/* Seek Bar */}
@@ -1045,7 +1050,7 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
               <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
