@@ -27,7 +27,7 @@ self.onmessage = async (event) => {
   // console.log("Received data:", data.dimensions);
 
   // canvas와 dimensions 초기화 여부 확인
-  if (data.type == "init" && data.canvas) {
+  if (data.type === "init" && data.canvas) {
 
     dataCanvas = data.canvas;
     dataCtx = dataCanvas.getContext('2d');
@@ -45,7 +45,7 @@ self.onmessage = async (event) => {
   // 아래는 캔버스가 있어야만 수행하는 작업
   if (!dataCanvas) return;
 
-  if (data.type == "refData") {
+  if (data.type === "refData") {
     if(!arraysEqual(referData, data.referenceData)){
       referData = data.referenceData;
       cFrequencies = getFrequencyRange(Math.min(...referData.filter(num => num > 0)), Math.max(...referData));
@@ -53,7 +53,7 @@ self.onmessage = async (event) => {
       updateBackground();
     }
   }
-  else if(data.type == "timeData") {
+  else if(data.type === "timeData") {
     // 프레임을 그리는 함수 호출
     if (data.realtimeData && referData && Array.isArray(data.realtimeData) && Array.isArray(referData)) {
       drawFrame(
@@ -66,7 +66,7 @@ self.onmessage = async (event) => {
       );
     }
   }
-  else if(data.type == "dimensionsData") {
+  else if(data.type === "dimensionsData") {
     if (dimensions.width !== data.dimensions.width || dimensions.height !== data.dimensions.height) {
       setDimensions(data.dimensions);  // dataCanvas와 backgroundCanvas 모두 업데이트
       updateBackground();
@@ -259,13 +259,13 @@ function drawPitchData(
     dataCtx.stroke();
     
   });
-  if (score > 0.75 && referData[currentTimeIndex] && currentTimeIndex % 3 === 0) {
-    addStar(x0, logScale(referData[currentTimeIndex], dimensions, cFrequencies), score);
+  if (score > 0.5 && data[currentTimeIndex] && currentTimeIndex % 3 === 0) {
+    addStar(x0, logScale(data[currentTimeIndex], dimensions, cFrequencies), score);
   }
 
   stars = stars.filter(star => {
-    const width = Math.floor(starImage.width * star.size**3 * 0.7);
-    const height = Math.floor(starImage.height * star.size**3 * 0.7);
+    const width = Math.floor(starImage.width * star.size**2 * 0.7);
+    const height = Math.floor(starImage.height * star.size**2 * 0.7);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(starImage, star.x - width/2, star.y - height/2, width, height);
 
