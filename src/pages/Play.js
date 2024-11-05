@@ -74,6 +74,10 @@ const Play = () => {
   const [dataPointCount, setDataPointCount] = useState(100);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 속도 제어 상태 추가
 
+  // 점수 확인 용
+  const [score, setScore] = useState(0);
+  const [instantScore, setInstantScore] = useState(0);
+
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
     setUserSeekPosition(newPosition);
@@ -229,7 +233,7 @@ const Play = () => {
   }, []);
 
   // Use the custom hook and pass necessary parameters
-  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, {}, null);
+  usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, setScore, setInstantScore, null);
 
   return (
     <div className='play-page'>
@@ -243,7 +247,8 @@ const Play = () => {
       <div className='main-content-play'>
         <div className='score-setting-area'>
           <div className='score-area'>
-            실시간 점수
+            <p>실시간 점수</p>
+            <p>{score}</p>
           </div>
 
           <div className='setting-area'>
@@ -290,6 +295,7 @@ const Play = () => {
               dataPointCount={dataPointCount}
               currentTimeIndex={playbackPosition * 40}
               songimageProps={song}
+              score={instantScore} 
             />
           </div>
           
