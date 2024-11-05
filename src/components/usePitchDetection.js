@@ -234,7 +234,7 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     }
 
     scoreIndex.current = newScoreIndex;
-    scores.current = new Array(sum).fill(null);
+    scores.current = new Array(sum+1).fill(null);
     setInstantScore(0);
   }, [entireReferData]);
 
