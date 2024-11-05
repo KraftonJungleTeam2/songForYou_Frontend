@@ -179,88 +179,90 @@ function Add() {
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
-          <form onSubmit={handleSubmit}>
-            <label>
-              파일로 업로드하기:
-              <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
-            </label>
-            <br />
-            {ischeckBox ? (
-              <>
-                <label>
-                  노래 파일:
-                  <input type='file' onChange={handleFileChange} />
-                </label>
-              </>
-            ) : (
+          <div className='component-container' style={{padding: '0rem 1.5rem', overflow: 'auto'}}>
+            <form onSubmit={handleSubmit}>
               <label>
-                유튜브 URL:
-                <input type='text' value={url} onChange={handleUrlChange} />
+                파일로 업로드하기:
+                <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
               </label>
-            )}
-            <br />
-            <label>
-              노래 이미지:
-              <input type='file' onChange={handleImageChange} disabled={!ischeckBox} />
-            </label>
-            <br />
-            <label>
-              제목
-              <input type='text' value={title} onChange={handleNameChange} />
-            </label>
-            <br />
-            <label>
-              설명
-              <input type='text' value={description} onChange={handleDescriptionChange} />
-            </label>
-            <br />
-            <label>
-              공개 여부:
-              <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-            </label>
-            <br />
-            <label>
-              장르:
-              <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} />
-            </label>
-            <br />
-            <label>
-              언어:
-            </label>
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              <label style={{ textAlign: 'center' }}>
-                <input
-                  type="radio"
-                  value="ko"
-                  checked={language === 'ko'}
-                  onChange={handleLanguage}
-                />
-                한국어
+              <br />
+              {ischeckBox ? (
+                <>
+                  <label>
+                    노래 파일:
+                    <input type='file' onChange={handleFileChange} />
+                  </label>
+                </>
+              ) : (
+                <label>
+                  유튜브 URL:
+                  <input type='text' value={url} onChange={handleUrlChange} />
+                </label>
+              )}
+              <br />
+              <label>
+                노래 이미지:
+                <input type='file' onChange={handleImageChange} disabled={!ischeckBox} />
               </label>
+              <br />
+              <label>
+                제목
+                <input type='text' value={title} onChange={handleNameChange} />
+              </label>
+              <br />
+              <label>
+                설명
+                <input type='text' value={description} onChange={handleDescriptionChange} />
+              </label>
+              <br />
+              <label>
+                공개 여부:
+                <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+              </label>
+              <br />
+              <label>
+                장르:
+                <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} />
+              </label>
+              <br />
+              <label>
+                언어:
+              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="ko"
+                    checked={language === 'ko'}
+                    onChange={handleLanguage}
+                  />
+                  한국어
+                </label>
 
-              <label style={{ textAlign: 'center' }}>
-                <input
-                  type="radio"
-                  value="en"
-                  checked={language === 'en'}
-                  onChange={handleLanguage}
-                />
-                영어
-              </label>
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="en"
+                    checked={language === 'en'}
+                    onChange={handleLanguage}
+                  />
+                  영어
+                </label>
 
-              <label style={{ textAlign: 'center' }}>
-                <input
-                  type="radio"
-                  value="others"
-                  checked={language === 'others'}
-                  onChange={handleLanguage}
-                />
-                그 외
-              </label>
-            </div>
-            <br />
-            <button className={`button ${isWaiting ? 'is-loading' : ''}`} disabled={isWaiting} type='submit'>추가하기</button>
-          </form>
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="others"
+                    checked={language === 'others'}
+                    onChange={handleLanguage}
+                  />
+                  그 외
+                </label>
+              </div>
+              <br />
+              <button className={`button ${isWaiting ? 'is-loading' : ''}`} disabled={isWaiting} type='submit'>추가하기</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
