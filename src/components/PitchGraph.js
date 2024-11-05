@@ -54,7 +54,7 @@ const PitchGraph = ({
       workerRef.current = worker;
 
       // OffscreenCanvas를 사용하여 워커 초기화
-      worker.postMessage({ canvas: offscreen, dimensions }, [offscreen]);
+      worker.postMessage({ type: "init", canvas: offscreen, dimensions }, [offscreen]);
       console.log('message on');
       canvas._hasTransferred = true;
     }
@@ -70,27 +70,38 @@ const PitchGraph = ({
     }
 
     worker.postMessage({
-      dimensions,
+      type: "timeData",
       realtimeData,
       multiRealDatas,
-      referenceData,
       dataPointCount,
       currentTimeIndex
     });
   }, [
-    dimensions,
     realtimeData,
     multiRealDatas,
     dataPointCount,
     currentTimeIndex,
   ]);
 
-  // useEffect(() => {
-  //   const worker = workerRef.current;
-  //   worker.postMessage({
-  //     referenceData
-  //   });
-  // }, [referenceData]);
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker) return;
+    
+    worker.postMessage({
+      type: "dimensionsData",
+      dimensions,
+    });
+  }, [dimensions]);
+  
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker) return;
+    
+    worker.postMessage({
+      type: "refData",
+      referenceData
+    });
+  }, [referenceData]);
 
 
   return (
