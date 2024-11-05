@@ -9,7 +9,6 @@
 
 /* 모바일 일 때 */
 .another {
-  height: var(--preview-height);
   background-color: var(--background-section);
   border-left: 1px solid var(--border-gray);
   display: flex;
