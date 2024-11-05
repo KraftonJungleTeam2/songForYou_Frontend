@@ -44,8 +44,8 @@ function SongList({ onSongSelect, searchTerm, songs }) {
                 backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(song.image.data)})`,
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
-                width: '3rem', // 원하는 크기로 설정
-                height: '3rem',
+                width: '4rem', // 원하는 크기로 설정
+                height: '4rem',
               }}
               alt={song.metadata.title}
             />
@@ -53,9 +53,9 @@ function SongList({ onSongSelect, searchTerm, songs }) {
             <div className='song-info'>
               <h3>{song.metadata.title}</h3>
               <p>{song.metadata.description}</p>
-
-              <span className='timestamp'>{song.timestamp}</span>
+              {/* <p className='timestamp'>{song.timestamp}</p> */}
             </div>
+            
             <div className='play-button has-text-dark' onClick={(e) => handlePlay(e, song)}>
               <i className='fa-solid fa-play'></i>
             </div>

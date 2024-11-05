@@ -104,12 +104,12 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
     for (let i = index-flexibility; i < index+flexibility+1; i++) {
       if (!(entireReferData[i] > 0)) continue;
       const diff = pitchDifference(pitch, entireReferData[i]);
-      const newPitchScore = diff < 2 ? diff < 0.5 ? 1 : 1.33-0.67*diff : 0;
+      const newPitchScore = diff < 2 ? diff < 0.15 ? 1 : ((diff-2)**2)/3.4225 : 0;
       pitchScore = Math.max(pitchScore, newPitchScore);
 
       baseScore = 1;
     }
-    score = 0.6 * pitchScore + 0.5 * baseScore; // 가중치 합이 1을 넘는 건 노린 겁니다.
+    score = 0.8 * pitchScore + 0.3 * baseScore; // 가중치 합이 1을 넘는 건 노린 겁니다.
 
     return score;
   };
@@ -160,10 +160,10 @@ export const usePitchDetection = (targetStream, isPlaying = true, isMicOn, playb
       pitchHistoryRef.current.push(0);
     }
     const score = getScore(smoothedPitch, index);
-    updateScore(score, scoreIndex.current[index]);
-    setInstantScore(score);
+    setInstantScore(score > 1 ? 1: score);
     const avgScore = getAvgScore(scoreIndex.current[index]);
     setScore(avgScore ? avgScore : 0);
+    updateScore(score, scoreIndex.current[index]);
     
     pitchRef.current = smoothedPitch;
     setEntireGraphData((prevData) => {
