@@ -1,7 +1,6 @@
+/* Preview.css */
 .preview {
-  width: var(--preview-width);
   background-color: var(--background-section);
-  border-left: 1px solid var(--border-gray);
   display: flex;
   flex-direction: column;
   align-items: center;
