@@ -13,7 +13,6 @@ function Single() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { songLists, fetchSongLists } = useSongs();
   const { isMobile } = useScreen();
-  console.log(isMobile);
   
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

@@ -22,15 +22,31 @@ code {
 }
 
 :root {
-    color-scheme: light;
-    --top-bar-height: 7%;
-    --preview-width: 25%;
-    --preview-height: 25%;
-    --sidebar-width: 12%;
-    --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
-    --no-button-color: 2; /* */
-    --background-color: #181616;
-    --font-color: 2;
+  color-scheme: light;
+  
+  /* 기본 레이아웃 */
+  --top-bar-height: 7%;
+  --preview-width: 25%;
+  --preview-height: 25%;
+  --sidebar-width: 12%;
+  --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
+
+  /* 색상 변수 */
+  --background-main: #000000; /* 진짜 배경색 */
+  --background-section: #181616; /* 영역별 배경색 */
+  --background-selected: #1f1f1f; /* 선택된 컴포넌트 배경색 */
+  --text-highlight-bg: #ffcc00; /* 내부 검은 글씨를 감싸는 노란색 */
+  --border-hover: #ffbf0b; /* 선택 시 테두리 노란색 */
+  --gradient-end: #fea42c; /* 그라데이션 끝 색 */
+  --text-neutral-bg: #989fa0; /* 누르기 전 검정 글씨 배경색 */
+  
+  /* 텍스트 색상 */
+  --text-white: #ffffff; /* 흰색 글씨 */
+  --text-black: #000000; /* 검은색 글씨 */
+  --text-gray: #989fa0; /* 회색 글씨 */
+
+  /* 리스트 구분을 위한 테두리 색 */
+  --border-gray: #989fa0;
 }
 
 
