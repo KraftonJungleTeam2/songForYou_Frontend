@@ -1,0 +1,19 @@
+.mobilenav{
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 10%;
+    padding-right: 10%;
+    width: 100%;
+    height: 8vh;
+    border-top: solid 1px;
+    border-color: rgb(133, 130, 127);
+}
+
+.nav-button {
+    height: 80%;
+    width: 15vw;
+    
+}

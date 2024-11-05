@@ -8,9 +8,10 @@
 
 @media (max-width: 1024px) {
   .song-list-area {
-  height: 40%;
+  height: 30%;
   }
 }
+
 .top-section {
   display: flex;
   height: 8%;
@@ -19,12 +20,15 @@
   padding: 5px;
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
+  
 }
 
 .tabs {
-  display: flex;
   margin-right: 1rem;
+  padding-bottom: 5px;
+  /* margin-bottom: -20px; */
 }
+
 
 .search-bar {
   display: flex;
