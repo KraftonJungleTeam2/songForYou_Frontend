@@ -13,7 +13,7 @@ function Single() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { songLists, fetchSongLists } = useSongs();
   const { isMobile } = useScreen();
-  
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -21,7 +21,7 @@ function Single() {
   const handleSongSelect = (song) => {
     setSelectedSong(song);
   };
-  
+
   useEffect(() => {
     fetchSongLists();
   }, []);
@@ -29,34 +29,23 @@ function Single() {
   return (
     <div className='single-page'>
       {isMobile ? (
-         <MobileNav></MobileNav>
+        <MobileNav />
       ) : (
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       )}
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area'>
-          {isMobile ? (
-            <>
-              <Preview selectedSong={selectedSong} />
-
-              <SongListArea 
-                onSongSelect={handleSongSelect} 
-                publicSongs={songLists.public} 
-                privateSongs={songLists.private} 
-              />
-            </>
-          ) : (
-            <>
-           
-              <SongListArea 
-                onSongSelect={handleSongSelect} 
-                publicSongs={songLists.public} 
-                privateSongs={songLists.private} 
-              />
-              <Preview selectedSong={selectedSong} />
-            </>
-          )}
+          <div className='song-list-area-container component-container'>
+            <SongListArea
+              onSongSelect={handleSongSelect}
+              publicSongs={songLists.public}
+              privateSongs={songLists.private}
+            />
+          </div>
+          <div className='preview-container component-container'>
+            <Preview selectedSong={selectedSong} />
+          </div>
         </div>
       </div>
     </div>
