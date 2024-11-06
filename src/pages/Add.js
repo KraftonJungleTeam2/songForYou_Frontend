@@ -178,7 +178,7 @@ function Add() {
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
-        <div className='content-area'>
+        <div className='add-content-area'>
           <div className='component-container' style={{padding: '1.5rem', overflow: 'auto'}}>
             <form onSubmit={handleSubmit} style={{margin: 'auto'}}>
               <label>

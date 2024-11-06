@@ -29,7 +29,7 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  color: var(--text-white);
+  color: var(--text-scheme);
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -40,7 +40,7 @@
 
 .tab-button:not(.is-active):hover {
   background-color: var(--background-selected);
-  color: var(--text-white);
+  color: var(--text-scheme);
 }
 
 .search-bar {
@@ -55,7 +55,7 @@
   border: 1px solid var(--border-gray);
   border-radius: 4px 0 0 4px;
   /* background-color: var(--background-selected); */
-  color: var(--text-white);
+  color: var(--text-scheme);
 }
 
 .search-bar input::placeholder {
