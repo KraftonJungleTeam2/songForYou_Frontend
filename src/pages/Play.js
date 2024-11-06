@@ -119,6 +119,7 @@ const Play = () => {
       }
     };
   }, [playbackPosition]); // playbackPosition 변경 시마다 실행
+  
 
   
   const handlePlaybackPositionChange = (e) => {
