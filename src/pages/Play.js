@@ -100,7 +100,7 @@ const Play = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight*0.5,
+          height: containerRef.current.offsetHeight*0.7,
         });
       }
     }
