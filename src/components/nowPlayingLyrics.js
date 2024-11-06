@@ -1,7 +1,7 @@
 import React from 'react';
 
 const NowPlayingLyrics = ({ segment, playbackPosition }) => {
-  if (!segment?.words) return null;
+  if (!segment?.words) return ' ';
 
   const fullText = segment.words.map(word => word.word.trim()).join(' ');
 
