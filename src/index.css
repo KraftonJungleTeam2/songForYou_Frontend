@@ -22,7 +22,7 @@ code {
 }
 
 :root {
-  
+  color-scheme: light;
   /* 기본 레이아웃 */
   --top-bar-height: 7%;
   --preview-width: 25%;
@@ -40,8 +40,9 @@ code {
   --text-neutral-bg: #d3d3d3; /* 버튼 배경색 */
   
   /* 텍스트 색상 */
-  --text-white: #000000; /* 밝은 배경에서는 검은색 글씨 */
+  --text-white: #ffffff; /* 밝은 배경에서는 검은색 글씨 */
   --text-black: #000000;
+  --text-scheme: #000000; /*테마 마다의 기준 텍스트 색*/
   --text-gray: #707070; /* 조금 더 밝은 회색 글씨 */
 
   /* 리스트 구분을 위한 테두리 색 */
@@ -67,6 +68,7 @@ code {
   --text-white: #ffffff;
   --text-black: #000000;
   --text-gray: #989fa0;
+  --text-scheme: #ffffff;
 
   /* 경계선 색 */
   --border-gray: #838383;

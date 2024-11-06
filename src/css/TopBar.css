@@ -20,7 +20,7 @@
 .user-details h3 {
   margin: 0;
   font-size: 18px;
-  color: var(--text-white);
+  color: var(--text-scheme);
 }
 
 .user-details p {
@@ -47,7 +47,7 @@
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: var(--text-white);
+  color: var(--text-scheme);
 }
 
 .logout-button {
@@ -57,5 +57,5 @@
   font-size: 16px;
   border-radius: 4px;
   background-color: var(--background-selected);
-  color: var(--text-white);
+  color: var(--text-scheme);
 }
