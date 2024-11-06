@@ -88,7 +88,7 @@
   width: 7%;
   height: 100%;
   font-size: 2rem;
-  background-color: rgb(201, 31, 31);
+  background-color: var(--border-gray);
   border: none;
   cursor: pointer;
 }

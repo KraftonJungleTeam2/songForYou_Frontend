@@ -8,13 +8,28 @@
     padding-left: 10%;
     padding-right: 10%;
     width: 100%;
-    height: 8vh;
-    border-top: solid 1px;
+    height: 7.5vh;
+    border-top: solid 2px;
     border-color: rgb(133, 130, 127);
 }
 
-.nav-button {
+.nav-button-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 80%;
     width: 15vw;
-    
+}
+
+.nav-button-mobile i {
+    font-size: 1.5rem;
+}
+
+.nav-button-mobile.active {
+    color: #ffbf0b; /* 활성화된 버튼의 색상 변경 */
+    transform: scale(1.2); /* 활성화된 버튼의 크기 확대 */
+}
+
+.nav-button-mobile.active i {
+    color: #ffbf0b; /* 활성화된 아이콘의 색상 변경 */
 }

@@ -22,15 +22,16 @@ code {
 }
 
 :root {
-  
+  color-scheme: light;
   /* 기본 레이아웃 */
   --top-bar-height: 7%;
   --preview-width: 25%;
   --preview-height: 25%;
-  --sidebar-width: 12%;
+  --sidebar-width: 82.3px;
   --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
 
   /* 색상 변수 */
+  /* 노란색이 상호작용 색임 */
   --background-main: #f0f0f0; /* 밝은 배경색 */
   --background-section: #ffffff; /* 섹션 영역 배경 */
   --background-selected: #e0e0e0; /* 선택된 컴포넌트 배경색 */
@@ -40,8 +41,9 @@ code {
   --text-neutral-bg: #d3d3d3; /* 버튼 배경색 */
   
   /* 텍스트 색상 */
-  --text-white: #000000; /* 밝은 배경에서는 검은색 글씨 */
+  --text-white: #ffffff; /* 밝은 배경에서는 검은색 글씨 */
   --text-black: #000000;
+  --text-scheme: #000000; /*테마 마다의 기준 텍스트 색*/
   --text-gray: #707070; /* 조금 더 밝은 회색 글씨 */
 
   /* 리스트 구분을 위한 테두리 색 */
@@ -49,12 +51,11 @@ code {
 
 }
 
-/* 다크 모드 색상 설정 */
-@media (prefers-color-scheme: dark) {
-  :root {
+/* 다크 모드 스타일 */
+:root[data-theme='dark'] {
   color-scheme: dark;
 
-  /* 색상 변수 */
+  /* 색상 변수 (다크 모드) */
   --background-main: #000000;
   --background-section: #2e2b2b;
   --background-selected: #525151;
@@ -62,15 +63,11 @@ code {
   --border-hover: #ffbf0b;
   --gradient-end: #fea42c;
   --text-neutral-bg: #989fa0;
-  
-    /* 텍스트 색상 */
   --text-white: #ffffff;
   --text-black: #000000;
   --text-gray: #989fa0;
-
-  /* 경계선 색 */
+  --text-scheme: #ffffff;
   --border-gray: #838383;
-  }
 }
 
 
@@ -79,8 +76,4 @@ code {
   :root {
     --sidebar-width: 0%;
   }
-}
-
-input {
-  /* background-color: var(--background-selected); */
 }
