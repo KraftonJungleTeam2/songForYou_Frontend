@@ -35,16 +35,17 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
     else if (micStatRef.current[key] === false) {
       stats.forEach((report) => {
         // 상대방에게 가는 내 음성의 지연
-        if (micStatRef.current[key] === false && report.type === 'remote-inbound-rtp' && report.kind === "audio") {
+        if (report.type === 'remote-inbound-rtp' && report.kind === "audio") {
           let RTT = report.roundTripTime*1000;
-          // console.log(key, " inbound RTT: ", RTT);
-          
-          RTTRef.key.push(RTT);
-          if (RTTRef.key.length > 7) RTTRef.key.shift();
+          if (RTT >= 0) {
+            RTTRef.key.push(RTT);
+            if (RTTRef.key.length > 7) RTTRef.key.shift();
 
-          RTT = RTTRef.key.slice().sort((a, b) => a - b)[Math.floor(RTTRef.key.length/2)];
-          RTTs.push(RTT);
-          listeners.push({userId: key, value: RTT});
+            RTT = RTTRef.key.slice().sort((a, b) => a - b)[Math.floor(RTTRef.key.length/2)];
+            console.log(key, "의 RTTs: ", RTTRef.key.slice(), "선택된 RTT: ", RTT);
+            RTTs.push(RTT);
+            listeners.push({userId: key, value: RTT});
+          }
         }
       });
     }
