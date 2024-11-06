@@ -51,8 +51,12 @@
 
 /* 모바일 환경 */
 @media (max-width: 1024px) {
+  .main-content{
+    height: 92.5vh;
+  }
   .content-area {
     flex-direction: column;
+    height: 100%;
   }
 
   .component-container {

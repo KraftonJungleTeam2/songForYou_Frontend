@@ -57,7 +57,7 @@ function SongList({ onSongSelect, searchTerm, songs }) {
               {/* <p className='timestamp'>{song.timestamp}</p> */}
             </div>
             
-            <div className='play-button has-text-dark' onClick={(e) => handlePlay(e, song)}>
+            <div className='play-button' onClick={(e) => handlePlay(e, song)}>
               <i className='fa-solid fa-play'></i>
             </div>
           </div>
