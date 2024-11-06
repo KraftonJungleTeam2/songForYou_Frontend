@@ -30,7 +30,7 @@
   .song-info h3 {
     margin: 0 0 5px 0;
     font-size: 20px;
-    color: var(--text-white);
+    color: var(--text-scheme);
   }
   
   .song-info p {
@@ -70,7 +70,7 @@
   .add-song-text h4 {
     margin: 0;
     font-size: 18px;
-    color: var(--text-white);
+    color: var(--text-scheme);
   }
   
   .add-song-text p {

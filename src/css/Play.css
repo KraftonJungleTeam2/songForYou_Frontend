@@ -1,24 +1,57 @@
-.play-page{
+/* 스타일 적용 */
+.play-page {
   width: 100%;
   height: 100vh;
+  background-color: var(--background-main);
+}
+
+.component-container-play {
+  background-color: var(--background-section);
+  overflow: hidden;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
 }
 
 .main-content-play {
+  flex-grow: 1;
+  transition: margin-left 0.3s ease;
   display: flex;
   height: calc(100% - var(--top-bar-height));
-  width: 100%;
-  overflow: hidden; /*페이지 전체 스크롤 방지*/
+  overflow: hidden; /* 페이지 전체 스크롤 방지 */
+  justify-content: space-between;
+}
+
+.main-content-play.shifted {
+  margin-left: var(--sidebar-width);
+}
+
+/* Content area */
+.play-content-area {
+  width: 85%;
+  border-radius: 0 15px 15px 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Score area */
 .score-setting-area {
-  width: 20%; /* 좌측 영역 너비 설정 */
-  border-right: 3px solid #ddd;
+  width: 14%; /* 좌측 영역 너비 설정 */
+  border-radius: 15px 0 0 15px;
 }
 
 .score-area {
   height: 50%;
-  border-bottom: 3px solid #ddd;
+  border-bottom: 3px solid var(--border-gray);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.score-area p {
+  margin: 5px 0;
+  color: var(--text-scheme);
+  font-weight: bold;
 }
 
 /* Setting Area 스타일 */
@@ -26,55 +59,44 @@
   display: flex;
   flex-direction: column;
   height: 50%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
+  justify-content: center;
+  align-items: center;
 }
 
-/* Content area */
-.play-content-area {
-  width: 80%;
-}
-
-.pitch-graph-play{
+.pitch-graph-play {
   height: 70%;
+  width: 100%;
+  border-radius: 0 15px 15px 0;
+  border-top: 2px solid var(--border-gray); /* 실선 추가 */
+  border-bottom: 2px solid var(--border-gray); /* 실선 추가 */
+  border-right: 2px solid var(--border-gray); /* 실선 추가 */
+
 }
 
 /* Karaoke Lyrics */
 .karaoke-lyrics {
-  /* height: 150px; */
+  height: 28%;
   text-align: center;
 }
 
 /* Lyrics box */
-.prev-lyrics {
-  margin: auto;
-  font-size: 70%;
-  text-align: 'center';
-  opacity: 0.3;
-}
-.curr-lyrics {
-  margin: auto;
-  font-size: 100%;
-  text-align: 'center';
-}
+.prev-lyrics,
 .next-lyrics {
   margin: auto;
-  font-size: 70%;
-  text-align: 'center';
-  opacity: 0.3;
+  font-size: 0.9em;
+  text-align: center;
+  opacity: 0.6;
+  color: var(--text-gray);
 }
 
-/* Audio Player Control */
-.audio-controls {
-  width: 1000px;
+.curr-lyrics {
+  margin: auto;
+  font-size: 1.2em;
+  text-align: center;
+  font-weight: bold;
+  color: var(--text-scheme);
 }
 
-.audio-controls button {
-  cursor: pointer;
-}
-
-/* 세로 슬라이더 */
-.vertical-slider {
-  width: 100px; /* 슬라이더의 가로 길이 */
-}
 
 .range-slider {
   width: 100%;
@@ -82,7 +104,7 @@
 
 .playback-info {
   margin-top: 10px;
-  
+  color: var(--text-black);
 }
 
 /* Speed Control 스타일 */
@@ -90,28 +112,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 15px 0;
 }
 
 .speed-control label {
-  margin-right: 5px;
+  margin-bottom: 5px;
+  color: var(--text-scheme);
 }
 
 .speed-control-value {
   margin-top: 5px;
+  color: var(--text-gray);
 }
 
 /* Loading */
 .loading-text {
-  color: #555;
+  color: var(--text-gray);
+  margin-top: 10px;
 }
 
+/* Play Navigation Button */
 .play-nav-button {
   position: absolute;
   top: 20px;
   left: 20px;
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--text-highlight-bg);
+  color: var(--text-white);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -119,5 +146,61 @@
 }
 
 .play-nav-button:hover {
-  background-color: #0056b3;
+  background-color: var(--border-hover);
+}
+
+/* 기타 요소들에 대한 텍스트 정렬 수정 */
+.prev-lyrics,
+.curr-lyrics,
+.next-lyrics {
+  text-align: center;
+}
+
+
+
+
+
+
+
+.range-slider-play {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(to right, #fea42c, #ffbf0b) 0% 0% / 0% 100% no-repeat, /* 진행된 부분 */
+              #525151; /* 미진행 부분 */
+  border-radius: 5px;
+  outline: none;
+  transition: background-size 0.1s ease;
+}
+
+/* 슬라이더 핸들 (thumb) */
+.range-slider-play::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: #ffbf0b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8); /* 반짝이는 효과 */
+}
+
+.range-slider-play::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: #ffbf0b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8);
+}
+
+/* 슬라이더 트랙 스타일 */
+.range-slider-play::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.range-slider-play::-moz-range-track {
+  height: 10px;
+  border-radius: 5px;
 }
