@@ -179,8 +179,8 @@ function Add() {
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='add-content-area'>
-          <div className='component-container' style={{padding: '0rem 1.5rem', overflow: 'auto'}}>
-            <form onSubmit={handleSubmit}>
+          <div className='component-container' style={{padding: '1.5rem', overflow: 'auto'}}>
+            <form onSubmit={handleSubmit} style={{margin: 'auto'}}>
               <label>
                 파일로 업로드하기:
                 <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
