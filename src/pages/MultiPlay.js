@@ -792,7 +792,7 @@ function MultiPlay() {
         }
       });
       if (i > 0) {
-        setListenerNetworkDelay(sum / i);
+        setListenerNetworkDelay((old) => old*0.7 + (sum/i)*0.3);
       }
     }
   };
