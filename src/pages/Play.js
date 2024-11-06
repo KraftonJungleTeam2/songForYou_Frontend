@@ -92,10 +92,41 @@ const Play = () => {
   const [score, setScore] = useState(0);
   const [instantScore, setInstantScore] = useState(0);
 
+
+  useEffect(() => {
+    // 슬라이더 진행도 업데이트 함수
+    function updateSliderProgress(slider) {
+      const max = slider.max;
+      const value = slider.value;
+      const percentage = (value / max) * 100;
+      slider.style.backgroundSize = `${percentage}% 100%`;
+    }
+  
+    // 슬라이더 요소 선택
+    const slider = document.querySelector('.range-slider-play');
+    if (slider) {
+      updateSliderProgress(slider); // 초기 진행 상태 업데이트
+      slider.addEventListener('input', () => updateSliderProgress(slider)); // 슬라이더 변경 시 업데이트
+    }
+  
+    // Cleanup
+    return () => {
+      if (slider) {
+        slider.removeEventListener('input', () => updateSliderProgress(slider));
+      }
+    };
+  }, [playbackPosition]); // playbackPosition 변경 시마다 실행
+
+  
   const handlePlaybackPositionChange = (e) => {
     const newPosition = parseFloat(e.target.value);
     setUserSeekPosition(newPosition);
     setPlaybackPosition(newPosition);
+  
+    // 슬라이더 진행도 업데이트
+    const slider = e.target;
+    const percentage = (newPosition / slider.max) * 100;
+    slider.style.backgroundSize = `${percentage}% 100%`;
   };
 
   const handleSpeedChange = (e) => {
@@ -274,6 +305,9 @@ const Play = () => {
               score={instantScore} 
             />
           </div>
+
+          {/* 오디오 플레이어 컨트롤 */}
+          <input className='range-slider-play' type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} disabled={!dataLoaded} />
           
 
           {/* 현재 재생 중인 가사 출력 */}
@@ -286,14 +320,7 @@ const Play = () => {
               <p className='next-lyrics'>{nextLyric}</p>
           </div>
 
-                 {/* 오디오 플레이어 컨트롤 */}
-          <div className='audio-controls'>
-            <input type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} className='range-slider' disabled={!dataLoaded} />
-            <div className='playback-info'>
-              {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
-            </div>
-            {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
-          </div>
+
 
 
           {/* 오디오 플레이어 컴포넌트 */}
@@ -314,6 +341,11 @@ const Play = () => {
             <p>실시간 점수</p>
             <p>{score}</p>
 
+            <div className='playback-info'>
+              {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
+            </div>
+            {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
+            
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
