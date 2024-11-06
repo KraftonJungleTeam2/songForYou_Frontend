@@ -233,11 +233,17 @@ function drawPitchData(
     let prevPoint = data[dataIndex - 1];
     let indexDiff1 = dataIndex - 1 - currentTimeIndex;
 
-    if (!prevPoint) {
-      prevPoint = data[dataIndex - 2];
-      if (!prevPoint) return;
-      indexDiff1 = dataIndex - 2 - currentTimeIndex;
+    if (isRealtime) {
+      if (!prevPoint) {
+        prevPoint = data[dataIndex - 2];
+        indexDiff1 = dataIndex - 2 - currentTimeIndex;
+      }
+      if (!prevPoint) {
+        prevPoint = data[dataIndex - 3];
+        indexDiff1 = dataIndex - 3 - currentTimeIndex;
+      }
     }
+    if (!prevPoint || Math.abs(prevPoint/point-1) > 0.6) return;
 
     const indexDiff2 = dataIndex - currentTimeIndex;
     const x1 = x0 + indexDiff1 * pixelsPerIndex;
