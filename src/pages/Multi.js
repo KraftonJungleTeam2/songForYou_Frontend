@@ -91,7 +91,7 @@ function Multi() {
       ) : (
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       )}
-      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
+      <div className={`multi-main ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area-multi'>
           {isCreatingRoom ? (
