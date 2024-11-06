@@ -260,12 +260,10 @@ function drawPitchData(
     dataCtx.stroke();
     
   });
-  if (score > 0.5
-    && currentTimeIndex % 3 === 0
-  ) {
+  if (score > 0.5 && currentTimeIndex % 3 === 0) {
     if (data[currentTimeIndex])
       addStar(x0, logScale(data[currentTimeIndex], dimensions, frequencies), score);
-    else
+    else if (data[currentTimeIndex-1])
       addStar(x0, logScale(data[currentTimeIndex-1], dimensions, frequencies), score);
   }
   
