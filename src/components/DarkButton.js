@@ -29,7 +29,7 @@ const DarkModeToggle = () => {
   };
 
   return (
-    <button style={buttonStyle} onClick={toggleTheme}>
+    <button style={buttonStyle} className="dark-mode-toggle" onClick={toggleTheme}>
       {theme === 'dark' ? <i class="fa-solid fa-sun"></i> : <i class="fa-solid fa-moon"></i>}
     </button>
   );
