@@ -142,6 +142,7 @@ function MultiPlay() {
   const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
+  const RTTRef = useRef({});
 
   // latencyCalc.js에서 사용
   const latencyCalcRef = useRef({});
@@ -643,6 +644,7 @@ function MultiPlay() {
       updatePlayerMic(socketId.current, false);
       socketRef.current.emit('userMicOff', { roomId });
       setAudioDelay(0);
+      setInstantScore(0);
     } catch (error) {
       console.error('Error in micOff:', error);
     }
@@ -815,7 +817,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
 
     return () => clearInterval(interval);
   }, []);
