@@ -1,5 +1,5 @@
 // 지연 시간 측정 함수
-async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, dataChannels, socketId) {
+async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, dataChannels, socketId, RTTRef) {
   const jitters = [];
   const RTTs = [];
   const listeners = [];
@@ -11,6 +11,7 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
       jitter: {count: 0, delay: 0, last: null},
     };
     const peerData = ref.current[key];
+    if (!RTTRef.key) RTTRef.key = [];
 
     // 마이크 켜져있는 사람과의 rtp 통계
     if (micStatRef.current[key] === true) {
@@ -35,9 +36,13 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
       stats.forEach((report) => {
         // 상대방에게 가는 내 음성의 지연
         if (micStatRef.current[key] === false && report.type === 'remote-inbound-rtp' && report.kind === "audio") {
-          const RTT = report.roundTripTime*1000;
+          let RTT = report.roundTripTime*1000;
           // console.log(key, " inbound RTT: ", RTT);
           
+          RTTRef.key.push(RTT);
+          if (RTTRef.key.length > 7) RTTRef.key.shift();
+
+          RTT = RTTRef.key.slice().sort((a, b) => a - b)[Math.floor(RTTRef.key.length/2)];
           RTTs.push(RTT);
           listeners.push({userId: key, value: RTT});
         }
@@ -48,13 +53,14 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
 
   const singerDelay = average(RTTs);
   if (singerDelay > 0 ) {
-    setSingerNetworkDelay(singerDelay);
+    const newSingerDelay = singerNetworkDelay*0.5 + singerDelay*0.5;
+    setSingerNetworkDelay(newSingerDelay);
     if (micStatRef.current[socketId]) {
       listeners.forEach((listener) => {
         const dataToSend = {
           type: "listenerLatency",
           singer: socketId,
-          setAs: listener.value-singerDelay,
+          setAs: (listener.value-singerDelay)*newSingerDelay/singerDelay,
         };
         const channel = dataChannels[listener.userId];
 
