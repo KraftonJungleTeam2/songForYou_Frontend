@@ -31,6 +31,7 @@ code {
   --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
 
   /* 색상 변수 */
+  /* 노란색이 상호작용 색임 */
   --background-main: #f0f0f0; /* 밝은 배경색 */
   --background-section: #ffffff; /* 섹션 영역 배경 */
   --background-selected: #e0e0e0; /* 선택된 컴포넌트 배경색 */

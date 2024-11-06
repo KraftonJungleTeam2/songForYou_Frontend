@@ -119,6 +119,7 @@ const Play = () => {
       }
     };
   }, [playbackPosition]); // playbackPosition 변경 시마다 실행
+  
 
   
   const handlePlaybackPositionChange = (e) => {
@@ -324,8 +325,6 @@ const Play = () => {
           </div>
 
 
-
-
           {/* 오디오 플레이어 컴포넌트 */}
           <AudioPlayer
             isPlaying={isPlaying}
@@ -340,19 +339,24 @@ const Play = () => {
         </div>
 
         <div className='score-setting-area component-container-play'>
+          
           <div className='score-area'>
             <p>실시간 점수</p>
             <p>{score}</p>
-
+          </div>
+          
+          <div className='play-info-area'>
             <div className='playback-info'>
-              {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
+                {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
             </div>
+
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
             
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
           </div>
+
 
           <div className='setting-area'>
             

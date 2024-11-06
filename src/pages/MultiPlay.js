@@ -15,8 +15,7 @@ import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
 import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
-
-import { stringToColor } from '../utils/GraphUtils';
+import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -941,38 +940,9 @@ function MultiPlay() {
         <TopBar className='top-bar' />
         <div className={'multi-content-area'}>
           <div className='players-chat'>
-            <div className='players'>
-              {Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <div
-                    key={index}
-                    className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
-                    style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}
-                  >
-                    {players[index] ? (
-                      <div>
-                        <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-                        <p>{players[index].userId === socketId.current ? score : players[index].score}점</p>
-                        {players[index].userId !== socketId.current ? (
-                          < input
-                            type='range'
-                            min='0'
-                            max='100'
-                            step='1'
-                            value={players[index].volume}
-                            onChange={playerVolumeChange(players[index].userId)}
-                            className='range-slider'
-                          />
-                        ) : null
-                        }
-                      </div>
-                    ) : (
-                      <p>빈 자리</p>
-                    )}
-                  </div>
-                ))}
-            </div>
+
+            <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
+           
             <div className='chat-area'>
               {' '}
               <div className='chat-container'>
