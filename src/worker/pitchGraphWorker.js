@@ -274,8 +274,8 @@ function drawPitchData(
   }
   
   stars = stars.filter(star => {
-    const width = Math.floor(starImage.width * star.size * 0.7);
-    const height = Math.floor(starImage.height * star.size * 0.7);
+    const width = Math.floor(starImage.width * star.size * 0.8);
+    const height = Math.floor(starImage.height * star.size * 0.8);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(starImage, star.x - width/2, star.y - height/2, width, height);
 

@@ -808,6 +808,9 @@ function MultiPlay() {
     dataChannel.onmessage = (event) => {
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
+        if (!(data.id in pitchArraysRef.current) && entireReferData.length > 0) {
+            pitchArraysRef.current[data.id] = new Array(entireReferData.length).fill(null);
+        }
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
       setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === data.id ? { ...player, score: data.score } : player)));
