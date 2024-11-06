@@ -5,7 +5,7 @@
   width: var(--sidebar-width);
   height: 100%;
   background-color: var(--background-selected);
-  color: var(--text-white);
+  color: var(--text-scheme);
   transform: translateX(-100%);
   transition: transform 0.3s ease;
   z-index: 100;
@@ -25,7 +25,7 @@
   padding: 10px;
   width: 100%;
   background-color: var(--background-section);
-  color: var(--text-white);
+  color: var(--text-scheme);
   border: none;
   cursor: pointer;
 }
@@ -38,7 +38,7 @@
 .toggle-button {
   position: fixed;
   background-color: var(--background-selected);
-  color: var(--text-white);
+  color: var(--text-scheme);
   border: none;
   cursor: pointer;
   z-index: 200;

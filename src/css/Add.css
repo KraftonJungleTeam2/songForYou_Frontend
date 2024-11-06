@@ -1,9 +1,9 @@
-.content-area {
+.add-content-area {
   display: flex;
   justify-content: center; /* 수평 가운데 정렬 */
   height: calc(100vh - var(--top-bar-height)); /* 화면 전체 높이로 설정 */
 }
-.content-area form {
+.add-content-area form {
   width: 25rem;
   margin-top: 3rem;
   align-content: center;
