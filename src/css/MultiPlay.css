@@ -1,19 +1,17 @@
+.multiPlay-page{
+  width: 100%;
+  height: 100vh;
+  background-color: var(--background-main);
+}
+
 .multi-content {
     flex-grow: 1;
     transition: margin-left 0.3s ease;
-    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .multi-content.shifted {
   margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
-}
-
-.multiPlay-page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden; /* 페이지 전체 스크롤 방지 */
 }
 
 .multi-content-area {
