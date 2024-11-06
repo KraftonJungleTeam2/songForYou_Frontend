@@ -7,6 +7,14 @@
   height: var(--top-bar-height);
 }
 
+@media (max-width: 1024px) {
+  .dark-mode-toggle{
+    position: fixed;
+    top: 0.25rem;
+    left: 2.6vw;
+  }
+}
+
 .right-section {
   display: flex;
   align-items: center;
