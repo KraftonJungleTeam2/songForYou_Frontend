@@ -17,7 +17,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 4.5rem;
+  gap: 2rem;
 }
 
 /* 플레이스홀더 스타일 */
@@ -60,7 +60,7 @@
 /* 제목 스타일 */
 .preview-title {
   font-size: 1.2rem;
-  color: var(--text-white); /* 흰색 텍스트 */
+  color: var(--text-scheme); /* 흰색 텍스트 */
   margin: 0;
 }
 
