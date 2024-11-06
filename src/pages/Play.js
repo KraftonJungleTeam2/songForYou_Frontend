@@ -114,7 +114,7 @@ const Play = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight*0.75,
+          height: containerRef.current.offsetHeight*0.7,
         });
       }
     }
@@ -313,7 +313,7 @@ const Play = () => {
           <div className='score-area'>
             <p>실시간 점수</p>
             <p>{score}</p>
-            
+
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
               {isPlaying ? '일시정지' : '재생'}
             </button>
