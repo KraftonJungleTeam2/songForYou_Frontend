@@ -808,8 +808,8 @@ function MultiPlay() {
     dataChannel.onmessage = (event) => {
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
-        if (!(data.id in pitchArraysRef.current)) {
-            pitchArraysRef.current[data.id] = new Array(processedPitchArray.length).fill(null);
+        if (!(data.id in pitchArraysRef.current) && entireReferData.length > 0) {
+            pitchArraysRef.current[data.id] = new Array(entireReferData.length).fill(null);
         }
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
