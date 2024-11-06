@@ -30,7 +30,10 @@ function doubleDataFrequency(dataArray) {
 
   for (let i = 0; i < dataArray.length; i++) {
     doubledData.push(dataArray[i]); // 첫 번째 복사
-    doubledData.push(dataArray[i]); // 두 번째 복사
+    if (dataArray[i] > 0 && dataArray[i+1] > 0)
+      doubledData.push((dataArray[i+1]+dataArray[i]) /2); // 두 번째 복사
+    else
+      doubledData.push(null);
   }
 
   return doubledData;
