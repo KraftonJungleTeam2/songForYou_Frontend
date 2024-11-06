@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useScreen } from '../Context/ScreenContext';
 import SimpleSideBar from '../components/SimpleSideBar';
 import '../css/Multi.css';
+import MobileNav from '../components/MobileNav';
 
 function Multi() {
   const [rooms, setRooms] = useState([]);
@@ -86,7 +87,7 @@ function Multi() {
   return (
     <div className='single-page'>
       {isMobile ? (
-        <SimpleSideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <MobileNav/>
       ) : (
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       )}

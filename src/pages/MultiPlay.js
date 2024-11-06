@@ -15,8 +15,7 @@ import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
 import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
-
-import { stringToColor } from '../utils/GraphUtils';
+import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -142,6 +141,7 @@ function MultiPlay() {
   const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
+  const RTTRef = useRef({});
 
   // latencyCalc.js에서 사용
   const latencyCalcRef = useRef({});
@@ -643,6 +643,7 @@ function MultiPlay() {
       updatePlayerMic(socketId.current, false);
       socketRef.current.emit('userMicOff', { roomId });
       setAudioDelay(0);
+      setInstantScore(0);
     } catch (error) {
       console.error('Error in micOff:', error);
     }
@@ -790,7 +791,7 @@ function MultiPlay() {
         }
       });
       if (i > 0) {
-        setListenerNetworkDelay(sum / i);
+        setListenerNetworkDelay((old) => old*0.7 + (sum/i)*0.3);
       }
     }
   };
@@ -815,7 +816,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
 
     return () => clearInterval(interval);
   }, []);
@@ -826,7 +827,7 @@ function MultiPlay() {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight * 0.5,
+          height: containerRef.current.offsetHeight * 0.7,
         });
       }
     }
@@ -939,38 +940,9 @@ function MultiPlay() {
         <TopBar className='top-bar' />
         <div className={'multi-content-area'}>
           <div className='players-chat'>
-            <div className='players'>
-              {Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <div
-                    key={index}
-                    className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
-                    style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}
-                  >
-                    {players[index] ? (
-                      <div>
-                        <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-                        <p>{players[index].userId === socketId.current ? score : players[index].score}점</p>
-                        {players[index].userId !== socketId.current ? (
-                          < input
-                            type='range'
-                            min='0'
-                            max='100'
-                            step='1'
-                            value={players[index].volume}
-                            onChange={playerVolumeChange(players[index].userId)}
-                            className='range-slider'
-                          />
-                        ) : null
-                        }
-                      </div>
-                    ) : (
-                      <p>빈 자리</p>
-                    )}
-                  </div>
-                ))}
-            </div>
+
+            <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
+           
             <div className='chat-area'>
               {' '}
               <div className='chat-container'>

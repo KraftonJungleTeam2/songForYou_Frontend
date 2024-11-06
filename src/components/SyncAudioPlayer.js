@@ -65,7 +65,7 @@ const AudioPlayer = forwardRef(({
     setStarttime(null);
     setAudioLoaded(false);
     setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
-    onPlaybackPositionChange(0);
+    onPlaybackPositionChange(-5);
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -217,12 +217,12 @@ const AudioPlayer = forwardRef(({
   // 컴포넌트 언마운트 시 자원 정리
   useEffect(() => {
     // 출력 지연 반영
-    setInterval((audioContext = audioContextRef.current) => {
+    const interval = setInterval((audioContext = audioContextRef.current) => {
       if (audioContext) {
         const playoutDelay = audioContext.outputLatency;
         setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay*1000);
       }
-    }, 5000) ;
+    }, 1000) ;
 
     return () => {
       if (animationFrameRef.current) {
@@ -231,6 +231,7 @@ const AudioPlayer = forwardRef(({
       if (rateTimeoutRef.current) {
         clearTimeout(rateTimeoutRef.current);
       }
+      clearInterval(interval);
     };
   }, []);
 
