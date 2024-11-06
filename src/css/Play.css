@@ -68,7 +68,6 @@
   width: 100%;
   border-radius: 0 15px 15px 0;
   border-top: 2px solid var(--border-gray); /* 실선 추가 */
-  border-bottom: 2px solid var(--border-gray); /* 실선 추가 */
   border-right: 2px solid var(--border-gray); /* 실선 추가 */
 
 }
@@ -165,42 +164,17 @@
 .range-slider-play {
   -webkit-appearance: none;
   width: 100%;
-  height: 10px;
+  height: 2%;
   background: linear-gradient(to right, #fea42c, #ffbf0b) 0% 0% / 0% 100% no-repeat, /* 진행된 부분 */
               #525151; /* 미진행 부분 */
-  border-radius: 5px;
-  outline: none;
-  transition: background-size 0.1s ease;
 }
 
 /* 슬라이더 핸들 (thumb) */
 .range-slider-play::-webkit-slider-thumb {
+  opacity: 0;
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  background-color: #ffbf0b;
-  border-radius: 50%;
+  width: 2vw;
+  height: 2vw;
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8); /* 반짝이는 효과 */
-}
-
-.range-slider-play::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background-color: #ffbf0b;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8);
-}
-
-/* 슬라이더 트랙 스타일 */
-.range-slider-play::-webkit-slider-runnable-track {
-  height: 10px;
-  border-radius: 5px;
-}
-
-.range-slider-play::-moz-range-track {
-  height: 10px;
-  border-radius: 5px;
 }
