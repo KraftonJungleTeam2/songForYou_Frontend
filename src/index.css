@@ -27,7 +27,7 @@ code {
   --top-bar-height: 7%;
   --preview-width: 25%;
   --preview-height: 25%;
-  --sidebar-width: 12%;
+  --sidebar-width: 5%;
   --sidebar-width-px: 0; /* JavaScript로 동적 설정 */
 
   /* 색상 변수 */

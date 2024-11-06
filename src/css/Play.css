@@ -29,6 +29,8 @@
 .play-content-area {
   width: 85%;
   border-radius: 0 15px 15px 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Score area */
@@ -62,7 +64,7 @@
 }
 
 .pitch-graph-play {
-  height: 75%;
+  height: 70%;
   width: 100%;
   border-radius: 0 15px 15px 0;
   border-top: 2px solid var(--border-gray); /* 실선 추가 */
@@ -73,8 +75,8 @@
 
 /* Karaoke Lyrics */
 .karaoke-lyrics {
+  height: 28%;
   text-align: center;
-  margin: 20px 0;
 }
 
 /* Lyrics box */
@@ -95,36 +97,9 @@
   color: var(--text-scheme);
 }
 
-/* Audio Player Control */
-.audio-controls {
-  width: 100%;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.audio-controls button {
-  cursor: pointer;
-  background-color: var(--text-neutral-bg);
-  color: var(--text-black);
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-}
-
-.audio-controls button:disabled {
-  background-color: var(--background-selected);
-  cursor: not-allowed;
-}
-
-.audio-controls button:hover:not(:disabled) {
-  background-color: var(--background-selected);
-}
 
 .range-slider {
-  width: 80%;
+  width: 100%;
 }
 
 .playback-info {
@@ -179,4 +154,53 @@
 .curr-lyrics,
 .next-lyrics {
   text-align: center;
+}
+
+
+
+
+
+
+
+.range-slider-play {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(to right, #fea42c, #ffbf0b) 0% 0% / 0% 100% no-repeat, /* 진행된 부분 */
+              #525151; /* 미진행 부분 */
+  border-radius: 5px;
+  outline: none;
+  transition: background-size 0.1s ease;
+}
+
+/* 슬라이더 핸들 (thumb) */
+.range-slider-play::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: #ffbf0b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8); /* 반짝이는 효과 */
+}
+
+.range-slider-play::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: #ffbf0b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(254, 164, 44, 0.8);
+}
+
+/* 슬라이더 트랙 스타일 */
+.range-slider-play::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.range-slider-play::-moz-range-track {
+  height: 10px;
+  border-radius: 5px;
 }
