@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists, nextData }) => {
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists }) => {
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
   // const { roomid } = useParams(); // URL에서 songId 추출
@@ -16,11 +16,7 @@ const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedS
   const handleReserve = (e, song) => {
     e.stopPropagation();
 
-    if (nextData === null) {
-      socket.emit('reserveSong', { song: song, roomId: roomid, getNow: true });
-    } else {
-      socket.emit('reserveSong', { song: song, roomId: roomid });
-    }
+    socket.emit('reserveSong', { song: song, roomId: roomid });
   };
 
   const isReserved = (song) => reservedSongs.includes(song); // 예약 여부 확인

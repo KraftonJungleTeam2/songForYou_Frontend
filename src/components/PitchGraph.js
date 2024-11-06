@@ -10,22 +10,13 @@ const arrayBufferToBase64 = (buffer) => {
   return window.btoa(binary);
 };
 
-const PitchGraph = ({
-  dimensions,
-  realtimeData,
-  multiRealDatas,
-  referenceData,
-  dataPointCount,
-  currentTimeIndex,
-  songimageProps
-}) => {
+const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, dataPointCount, currentTimeIndex, songimageProps }) => {
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
 
   // 이미지 데이터를 처리하여 src 생성
   useEffect(() => {
-
     console.log('안녕', songimageProps);
     if (songimageProps?.image?.data) {
       // ArrayBuffer를 Base64 문자열로 변환
@@ -35,8 +26,7 @@ const PitchGraph = ({
       // 데이터 URL 생성
       const dataUrl = `data:${mimeType};base64,${base64String}`;
       setImageSrc(dataUrl);
-    }
-    else{
+    } else {
       setImageSrc(null);
     }
   }, [songimageProps]);
@@ -48,7 +38,7 @@ const PitchGraph = ({
       const offscreen = canvas.transferControlToOffscreen();
 
       const worker = new Worker(new URL('../worker/pitchGraphWorker.js', import.meta.url), {
-        type: 'module'
+        type: 'module',
       });
       console.log('worker create');
       workerRef.current = worker;
@@ -75,15 +65,9 @@ const PitchGraph = ({
       multiRealDatas,
       referenceData,
       dataPointCount,
-      currentTimeIndex
+      currentTimeIndex,
     });
-  }, [
-    dimensions,
-    realtimeData,
-    multiRealDatas,
-    dataPointCount,
-    currentTimeIndex,
-  ]);
+  }, [dimensions, realtimeData, multiRealDatas, dataPointCount, currentTimeIndex]);
 
   // useEffect(() => {
   //   const worker = workerRef.current;
@@ -92,7 +76,6 @@ const PitchGraph = ({
   //   });
   // }, [referenceData]);
 
-
   return (
     <div
       style={{
@@ -100,12 +83,11 @@ const PitchGraph = ({
         height: '100%',
         position: 'relative',
         overflow: 'hidden', // overflow를 숨겨 가장자리 아티팩트 제거
-      }}
-    >
+      }}>
       {imageSrc && (
         <img
           src={imageSrc}
-          alt="Background"
+          alt='Background'
           style={{
             width: '100%',
             height: '100%',
@@ -123,7 +105,6 @@ const PitchGraph = ({
         width={dimensions.width}
         height={dimensions.height}
         style={{
-          
           width: '100%',
           height: '100%',
           position: 'absolute',
