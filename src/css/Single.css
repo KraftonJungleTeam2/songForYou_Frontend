@@ -51,12 +51,10 @@
 
 /* 모바일 환경 */
 @media (max-width: 1024px) {
-  .main-content{
-    height: 92.5vh;
-  }
   .content-area {
     flex-direction: column;
-    height: 100%;
+    /* 모바일 하단 바 영역까지 고려 되는지 몰루 */
+    height: calc(100vh - var(--top-bar-height) - var(--nav-height)));
   }
 
   .component-container {

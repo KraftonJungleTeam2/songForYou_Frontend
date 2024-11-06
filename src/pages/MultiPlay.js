@@ -17,6 +17,8 @@ import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
 import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
+import { useScreen } from '../Context/ScreenContext';
+import MobileNav from '../components/MobileNav';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -30,7 +32,10 @@ function doubleDataFrequency(dataArray) {
 
   for (let i = 0; i < dataArray.length; i++) {
     doubledData.push(dataArray[i]); // 첫 번째 복사
-    doubledData.push(dataArray[i]); // 두 번째 복사
+    if (dataArray[i] > 0 && dataArray[i+1] > 0)
+      doubledData.push((dataArray[i+1]+dataArray[i]) /2); // 두 번째 복사
+    else
+      doubledData.push(null);
   }
 
   return doubledData;
@@ -38,6 +43,7 @@ function doubleDataFrequency(dataArray) {
 
 function MultiPlay() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isMobile } = useScreen();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -938,10 +944,15 @@ function MultiPlay() {
 
   return (
     <div className='multiPlay-page'>
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      <div className={`multi-content ${isSidebarOpen ? 'shifted' : ''}`} style={{ flexGrow: 1 }}>
+       {isMobile ? (
+        <MobileNav />
+      ) : (
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      )}
         <TopBar className='top-bar' />
-        <div className={'multi-content-area'}>
+
+      <div className={`multi-content ${isSidebarOpen ? 'shifted' : ''}`}>
+        <div className='multi-content-area'>
           <div className='players-chat'>
 
             <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
