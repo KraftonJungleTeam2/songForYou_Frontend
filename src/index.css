@@ -50,12 +50,11 @@ code {
 
 }
 
-/* 다크 모드 색상 설정 */
-@media (prefers-color-scheme: dark) {
-  :root {
+/* 다크 모드 스타일 */
+:root[data-theme='dark'] {
   color-scheme: dark;
 
-  /* 색상 변수 */
+  /* 색상 변수 (다크 모드) */
   --background-main: #000000;
   --background-section: #2e2b2b;
   --background-selected: #525151;
@@ -63,16 +62,11 @@ code {
   --border-hover: #ffbf0b;
   --gradient-end: #fea42c;
   --text-neutral-bg: #989fa0;
-  
-    /* 텍스트 색상 */
   --text-white: #ffffff;
   --text-black: #000000;
   --text-gray: #989fa0;
   --text-scheme: #ffffff;
-
-  /* 경계선 색 */
   --border-gray: #838383;
-  }
 }
 
 
