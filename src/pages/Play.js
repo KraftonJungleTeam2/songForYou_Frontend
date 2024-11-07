@@ -221,7 +221,7 @@ const Play = () => {
             const pitchArray = JSON.parse(pitchString);
             const processedPitchArray = doubleDataFrequency(pitchArray);
             setEntireReferData(processedPitchArray);
-
+            
             setEntireGraphData(new Array(processedPitchArray.length).fill(null));
 
             setPitchLoaded(true);
