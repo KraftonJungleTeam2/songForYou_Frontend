@@ -21,7 +21,6 @@ import { useScreen } from '../Context/ScreenContext';
 import MobileNav from '../components/MobileNav';
 import PageTemplate from '../template/PageTemplate';
 
-
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
   const doubledData = [];
@@ -44,7 +43,7 @@ function doubleDataFrequency(dataArray) {
 }
 
 function MultiPlay() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { isMobile } = useScreen();
 
   const toggleSidebar = () => {
@@ -1010,6 +1009,7 @@ function MultiPlay() {
   return (
     <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
       
+      
       <div className='sing-area component-container-play' ref={containerRef}>
         <div className='information-area'>
           <p>현재곡</p>
@@ -1045,9 +1045,10 @@ function MultiPlay() {
           </button>
 
           <button className='button reservation-button' onClick={OnPopup}>
-            시작하기 or 예약하기
+            예약하기
           </button>
-          <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
+
+          {/* <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
             {useCorrection ? '보정끄기' : '보정켜기'}
           </button>
           <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
@@ -1055,44 +1056,48 @@ function MultiPlay() {
           <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
           <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
           <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
-          {/* 오디오 엘리먼트들 */}
+          
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
             ))}
-          </div>
+          </div> */}
+
+          
         </div>
 
         {/* 조건부 렌더링 부분 popup */}
         {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} />}
 
         {/* AudioPlayer 컴포넌트 */}
-        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} />
+        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
       </div>
 
       <div className='players-chat component-container-play'>
 
-      <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
+        <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
 
-      <div className='chat-area'>
-        {' '}
-        <div className='chat-container'>
-          <div className='messages'>
-            {messages.map((msg, index) => (
-              <div key={index} className='message'>
-                <span className='text'>{msg.text}</span>
-                <div className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          <div className='input-area'>
-            <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요...' />
-            <button onClick={sendMessage}>전송</button>
+        <div className='chat-area'>
+          {' '}
+          <div className='chat-container'>
+            <div className='messages'>
+              {messages.map((msg, index) => (
+                <div key={index} className='message'>
+                  <span className='text'>{msg.text}</span>
+                  <div className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className='input-area'>
+              <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요...' />
+              <button onClick={sendMessage}>전송</button>
+            </div>
           </div>
         </div>
+
       </div>
-      </div>
+      
 
     </PageTemplate>
   );
