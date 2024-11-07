@@ -101,7 +101,7 @@ function MultiPlay() {
   // 서버에서 데이터 로딩 후 배열 생성
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
-
+  const entireReferDataRef = useRef([]);
   const [dataPointCount, setDataPointCount] = useState(75);
 
   //채팅 관련
@@ -183,6 +183,10 @@ function MultiPlay() {
   }, [audioLoaded]);
 
   useEffect(() => {
+    entireReferDataRef.current = entireReferData;
+  }, [entireReferData]);
+
+  useEffect(() => {
     console.log('currentData', currentData);
     if (currentData !== null && currentData.ready == true) {
       setMrDataBlob(currentData.songData.mr); // Blob 데이터 저장
@@ -191,7 +195,6 @@ function MultiPlay() {
       if (Array.isArray(pitchArray)) {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
-
           setEntireReferData(processedPitchArray);
 
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
@@ -289,34 +292,6 @@ function MultiPlay() {
       } else {
         console.error('Error: file URL not found in the response');
       }
-
-      // // 받아진 데이터가 array임 이미 해당 배열 pitch그래프에 기입
-      // const pitchArray = data.pitch;
-
-      // if (Array.isArray(pitchArray)) {
-      //   try {
-      //     const processedPitchArray = doubleDataFrequency(pitchArray);
-
-      //     setEntireReferData(processedPitchArray);
-
-      //     setEntireGraphData(new Array(processedPitchArray.length).fill(null));
-
-      //     pitchArraysRef.current['myId'] = socketId.current;
-
-      //     Object.keys(dataChannelsRef.current).forEach((key) => {
-      //       pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
-      //     });
-      //     setPitchLoaded(true);
-      //   } catch (error) {
-      //     console.error('Error processing pitch data:', error);
-      //   }
-      // } else {
-      //   console.error('Error: Expected pitch data to be an array');
-      // }
-
-      // // 가사 데이터 업로드
-      // setLyricsData(data.lyrics);
-      // setLyricsLoaded(true);
     } catch (error) {
       console.error('Error handling data load:', error);
     }
@@ -910,8 +885,8 @@ function MultiPlay() {
     dataChannel.onmessage = (event) => {
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
-        if (!(data.id in pitchArraysRef.current) && entireReferData.length > 0) {
-          pitchArraysRef.current[data.id] = new Array(entireReferData.length).fill(null);
+        if (!(data.id in pitchArraysRef.current) && entireReferDataRef.current.length > 0) {
+          pitchArraysRef.current[data.id] = new Array(entireReferDataRef.current.length).fill(null);
         }
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
