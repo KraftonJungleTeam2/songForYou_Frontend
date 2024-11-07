@@ -1033,7 +1033,7 @@ function MultiPlay() {
 
         <div className='button-area'>
           {/* 시작 버튼 */}
-          <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting || !pitchLoaded || !lyricsLoaded} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
+          <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting } className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
             {audioLoaded ? (isPlaying ? '노래 멈추기' : '노래 시작') : '로딩 중...'}
           </button>
 
@@ -1064,7 +1064,7 @@ function MultiPlay() {
         </div>
 
         {/* 조건부 렌더링 부분 popup */}
-        {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} setReservedSongs={setReservedSongs} songLists={songLists} nextData={nextDataRef.current} />}
+        {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} />}
 
         {/* AudioPlayer 컴포넌트 */}
         <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setAudioLoaded={setAudioLoaded} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} />
