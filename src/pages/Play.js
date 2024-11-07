@@ -333,8 +333,8 @@ const Play = () => {
       <div className='score-setting-container component-container-play'>
           
         <div className='score-area'>
-          <p>실시간 점수</p>
-          <p>{score}</p>
+          <p id='score-title'>실시간 점수</p>
+          <p id='score'>{score}</p>
         </div>
         
         <div className='play-info-area'>
