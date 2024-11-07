@@ -24,7 +24,7 @@ const PageTemplate = ({
       )}
       <div className={`main-content ${isSidebarOpen ? "shifted" : ""}`}>
         <TopBar />
-        <div className="content-area">{children}</div>
+        <div className={`content-area ${current}`}>{children}</div>
       </div>
     </div>
   );
