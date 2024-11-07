@@ -7,6 +7,7 @@
 .main-content {
   flex-grow: 1;
   transition: margin-left 0.3s ease;
+  height: calc(100% - var(--nav-height))
 }
 
 .main-content.shifted {
@@ -15,7 +16,7 @@
 
 .content-area {
   display: flex;
-  height: calc(100vh - var(--top-bar-height));
+  height: calc(100% - var(--top-bar-height));
   flex-direction: row;
 }
 
@@ -39,8 +40,6 @@
 @media (max-width: 1024px) {
   .content-area {
     flex-direction: column;
-    /* 모바일 하단 바 영역까지 고려 되는지 몰루 */
-    height: calc(100vh - var(--top-bar-height) - var(--nav-height));
   }
 
   .component-container {

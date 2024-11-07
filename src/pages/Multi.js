@@ -138,7 +138,7 @@ function Multi() {
         </div>
       )}
 
-      <div className={`bottom-buttons ${isSidebarOpen ? "shifted" : ""}`}>
+      <div className={`bottom-buttons`}>
         <button className="quick-join">빠른 입장</button>
         <button className="sort-by">정렬 조건</button>
         <button className="create-room" onClick={() => setIsCreatingRoom(true)}>
