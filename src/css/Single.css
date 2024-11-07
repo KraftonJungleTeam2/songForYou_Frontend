@@ -15,7 +15,6 @@
 
 /* 모바일 환경 */
 @media (max-width: 1024px) {
-
   .song-list-area-container {
     height: 75%; /* 높이의 75% */
   }
@@ -23,5 +22,4 @@
   .preview-container {
     height: 25%; /* 높이의 25% */
   }
-
 }

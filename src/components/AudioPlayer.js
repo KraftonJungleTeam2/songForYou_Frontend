@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
 const AudioPlayer = ({
   isPlaying,
@@ -112,7 +112,7 @@ const AudioPlayer = ({
       ref={audioRef}
       onLoadedMetadata={handleLoadedMetadata}
       onEnded={handleEnded}
-      style={{ display: 'none' }}
+      style={{ display: "none" }}
     />
   );
 };

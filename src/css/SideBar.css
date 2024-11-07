@@ -28,7 +28,7 @@
   margin: 0em 0;
   padding: 0;
   height: calc(var(--sidebar-width) * 0.9);
-  background-color: #FFFFFF00;
+  background-color: #ffffff00;
   color: var(--text-scheme);
   border: none;
   cursor: pointer;
