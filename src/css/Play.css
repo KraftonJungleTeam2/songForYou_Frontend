@@ -30,14 +30,14 @@
     padding: 10px 0;
   }
   
-  .score-area p:first-child {
-    font-size: 1.2em;
+  .score-area #score-title {
+    font-size: 1.5em;
     color: var(--text-scheme);
     margin-bottom: 10px;
   }
   
-  .score-area p:last-child {
-    font-size: 2em;
+  .score-area #score {
+    font-size: 4em;
     color: var(--text-highlight-bg);
     font-weight: bold;
     margin: 0;
