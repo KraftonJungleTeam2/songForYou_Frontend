@@ -65,14 +65,8 @@ const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, d
       multiRealDatas,
       dataPointCount,
       currentTimeIndex,
-<<<<<<< HEAD
     });
   }, [dimensions, realtimeData, multiRealDatas, dataPointCount, currentTimeIndex]);
-=======
-      score: score,
-    });
-  }, [currentTimeIndex]);
->>>>>>> 1225e7b33bfd7224dfd21edd0e7bc13adcdf1d36
 
   useEffect(() => {
     const worker = workerRef.current;
