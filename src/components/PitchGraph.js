@@ -10,7 +10,7 @@ const arrayBufferToBase64 = (buffer) => {
   return window.btoa(binary);
 };
 
-const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, dataPointCount, currentTimeIndex, songimageProps }) => {
+const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, dataPointCount, currentTimeIndex, songimageProps, score }) => {
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -65,6 +65,7 @@ const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, d
       multiRealDatas,
       dataPointCount,
       currentTimeIndex,
+      score
     });
   }, [dimensions, realtimeData, multiRealDatas, dataPointCount, currentTimeIndex]);
 

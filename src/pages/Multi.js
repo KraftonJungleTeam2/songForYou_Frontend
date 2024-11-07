@@ -85,7 +85,7 @@ function Multi() {
   }
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'multi'} >
       {isCreatingRoom ? (
         <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
       ) : (

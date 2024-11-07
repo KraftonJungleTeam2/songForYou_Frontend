@@ -39,6 +39,7 @@ self.onmessage = async (event) => {
 
     // setDimensions 함수로 캔버스 크기 업데이트
     setDimensions(data.dimensions);
+    updateBackground();
     
     starImage = await load();
   }
@@ -266,7 +267,7 @@ function drawPitchData(
     dataCtx.stroke();
     
   });
-  if (score > 0.5 && currentTimeIndex % 3 === 0) {
+  if (score > 0.5 && currentTimeIndex % 2 === 0) {
     if (data[currentTimeIndex])
       addStar(x0, logScale(data[currentTimeIndex], dimensions, frequencies), score);
     else if (data[currentTimeIndex-1])
@@ -274,8 +275,8 @@ function drawPitchData(
   }
   
   stars = stars.filter(star => {
-    const width = Math.floor(starImage.width * star.size * 0.8);
-    const height = Math.floor(starImage.height * star.size * 0.8);
+    const width = Math.floor(starImage.width * star.size);
+    const height = Math.floor(starImage.height * star.size);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(starImage, star.x - width/2, star.y - height/2, width, height);
 
