@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import '../css/Single.css';
-import Sidebar from '../components/SideBar';
-import SongListArea from '../components/SongListArea';
-import Preview from '../components/Preview';
-import TopBar from '../components/TopBar';
-import { useSongs } from '../Context/SongContext';
-import { useScreen } from '../Context/ScreenContext';
-import MobileNav from '../components/MobileNav';
-import PageTemplate from '../template/PageTemplate';
+import React, { useState, useEffect } from "react";
+import "../css/Single.css";
+import Sidebar from "../components/SideBar";
+import SongListArea from "../components/SongListArea";
+import Preview from "../components/Preview";
+import TopBar from "../components/TopBar";
+import { useSongs } from "../Context/SongContext";
+import { useScreen } from "../Context/ScreenContext";
+import MobileNav from "../components/MobileNav";
+import PageTemplate from "../template/PageTemplate";
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -28,38 +28,43 @@ function Single() {
   }, []);
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'single'}>
+    <PageTemplate
+      isMobile={isMobile}
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      current={"single"}
+    >
       {isMobile ? (
-          <>
-            {/* 모바일 환경에서는 Preview가 위에 표시되도록 순서 변경 */}
-            <div className='preview-container component-container'>
-              <Preview selectedSong={selectedSong} />
-            </div>
-            <div className='song-list-area-container component-container'>
-              <SongListArea
-                onSongSelect={handleSongSelect}
-                publicSongs={songLists.public}
-                privateSongs={songLists.private}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            {/* 데스크톱 환경에서는 SongListArea가 왼쪽, Preview가 오른쪽에 위치 */}
-            <div className='song-list-area-container component-container'>
-              <SongListArea
-                onSongSelect={handleSongSelect}
-                publicSongs={songLists.public}
-                privateSongs={songLists.private}
-              />
-            </div>
-            <div className='preview-container component-container'>
-              <Preview selectedSong={selectedSong} />
-            </div>
-          </>
-        )}
+        <>
+          {/* 모바일 환경에서는 Preview가 위에 표시되도록 순서 변경 */}
+          <div className="preview-container component-container">
+            <Preview selectedSong={selectedSong} />
+          </div>
+          <div className="song-list-area-container component-container">
+            <SongListArea
+              onSongSelect={handleSongSelect}
+              publicSongs={songLists.public}
+              privateSongs={songLists.private}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* 데스크톱 환경에서는 SongListArea가 왼쪽, Preview가 오른쪽에 위치 */}
+          <div className="song-list-area-container component-container">
+            <SongListArea
+              onSongSelect={handleSongSelect}
+              publicSongs={songLists.public}
+              privateSongs={songLists.private}
+            />
+          </div>
+          <div className="preview-container component-container">
+            <Preview selectedSong={selectedSong} />
+          </div>
+        </>
+      )}
     </PageTemplate>
-);
+  );
 }
 
 export default Single;
