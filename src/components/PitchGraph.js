@@ -145,6 +145,7 @@ const PitchGraph = ({
           top: 0,
           left: 0,
           zIndex: 1,
+          borderRadius: '0 0 0 0'
         }}
       />
     </div>
