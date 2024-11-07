@@ -7,6 +7,8 @@ import "../css/Add.css";
 import { useSongs } from "../Context/SongContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PageTemplate from "../template/PageTemplate";
+import { useScreen } from "../Context/ScreenContext";
 
 function Add() {
   const { fetchSongLists } = useSongs();
@@ -19,6 +21,7 @@ function Add() {
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState("jazz");
   const [isWaiting, setIsWaiting] = useState(false);
+  const { isMobile } = useScreen();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [language, setSelectedOption] = useState(null);
@@ -182,18 +185,16 @@ function Add() {
   };
 
   return (
-    <div className="single-page">
-      <Sidebar
-        isOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        current={"add"}
-      />
-      <div className={`main-content ${isSidebarOpen ? "shifted" : ""}`}>
-        <TopBar />
+    <PageTemplate
+      isMobile={isMobile}
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      current={"add"}
+    >
+      <div className={"main-content"}>
         <div className="add-content-area">
           <div
             className="component-container"
-            style={{ padding: "1.5rem", overflow: "auto" }}
           >
             <form onSubmit={handleSubmit} style={{ margin: "auto" }}>
               <label>
@@ -204,7 +205,6 @@ function Add() {
                   onChange={(e) => setUploadWithFile(e.target.checked)}
                 />
               </label>
-              <br />
               {uploadWithFile ? (
                 <>
                   <label>
@@ -223,7 +223,6 @@ function Add() {
                   />
                 </label>
               )}
-              <br />
               <label>
                 노래 이미지:
                 <input
@@ -233,7 +232,6 @@ function Add() {
                   required
                 />
               </label>
-              <br />
               <label>
                 제목
                 <input
@@ -243,7 +241,6 @@ function Add() {
                   required
                 />
               </label>
-              <br />
               <label>
                 설명
                 <input
@@ -253,7 +250,6 @@ function Add() {
                   required
                 />
               </label>
-              <br />
               <label>
                 공개 여부:
                 <input
@@ -263,7 +259,6 @@ function Add() {
                   required
                 />
               </label>
-              <br />
               <label>
                 장르:
                 <input
@@ -273,7 +268,6 @@ function Add() {
                   required
                 />
               </label>
-              <br />
               <label>언어:</label>
               <div style={{ display: "flex", justifyContent: "space-around" }}>
                 <label style={{ textAlign: "center" }}>
@@ -306,11 +300,11 @@ function Add() {
                   그 외
                 </label>
               </div>
-              <br />
               <button
                 className={`button ${isWaiting ? "is-loading" : ""}`}
                 disabled={isWaiting}
                 type="submit"
+                style={{marginTop: '2em'}}
               >
                 추가하기
               </button>
@@ -318,7 +312,7 @@ function Add() {
           </div>
         </div>
       </div>
-    </div>
+    </PageTemplate>
   );
 }
 
