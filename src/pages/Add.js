@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Add() {
   const { fetchSongLists } = useSongs();
-  const [ischeckBox, setischeckBox] = useState(false); // file과 URL 입력 전환 상태
+  const [uploadWithFile, setUploadWithFile] = useState(false); // file과 URL 입력 전환 상태
   const [file, setFile] = useState(null);
   const [url, setUrl] = useState(''); // URL 입력 필드 상태 추가
   const [image, setImage] = useState(null);
@@ -54,15 +54,15 @@ function Add() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (ischeckBox && !file) {
-      alert('음악을 선택해주세요');
+    if (uploadWithFile && !file) {
+      alert('음악 파일을 선택해주세요');
       return;
-    } else if (!ischeckBox && !url.trim()) {
+    } else if (!uploadWithFile && !url.trim()) {
       alert('음악 유튜브 URL을 입력하세요');
       return;
     }
 
-    if (ischeckBox && !image) {  // 파일 업로드 시에만 이미지 검사
+    if (uploadWithFile && !image) {  // 파일 업로드 시에만 이미지 검사
       alert('노래 이미지가 필요합니다.');
       return;
     }
@@ -91,7 +91,7 @@ function Add() {
 
     // FormData 생성
     const formData = new FormData();
-    if (ischeckBox) {
+    if (uploadWithFile) {
       formData.append('file', file);
       formData.append('image', image);  // 파일 업로드 시에만 이미지 추가
     } else {
@@ -118,22 +118,6 @@ function Add() {
           'Content-Type': 'multipart/form-data',
           'X-Request-ID': requestId,
         },
-      });
-
-      // 모든 input 값 초기화
-      setFile(null);
-      setUrl('');
-      setImage(null);
-      setTitle('');
-      setDescription('');
-      setGenre('Rock');
-      setIsPublic(true);
-      setischeckBox(true);
-
-      // file input 필드 초기화를 위해 DOM 직접 접근
-      const fileInputs = document.querySelectorAll('input[type="file"]');
-      fileInputs.forEach(input => {
-        input.value = '';
       });
 
       if (response.status === 200) {
@@ -170,6 +154,23 @@ function Add() {
     } catch (error) {
       console.error('Error adding song:', error);
     }
+    
+    // 모든 input 값 초기화
+    setFile(null);
+    setUrl('');
+    setImage(null);
+    setTitle('');
+    setDescription('');
+    setGenre('Rock');
+    setIsPublic(true);
+    // setUploadWithFile(true);
+
+    // file input 필드 초기화를 위해 DOM 직접 접근
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      input.value = '';
+    });
+
     setIsWaiting(false);
   };
 
@@ -183,46 +184,46 @@ function Add() {
             <form onSubmit={handleSubmit} style={{margin: 'auto'}}>
               <label>
                 파일로 업로드하기:
-                <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
+                <input type='checkbox' checked={uploadWithFile} onChange={(e) => setUploadWithFile(e.target.checked)} />
               </label>
               <br />
-              {ischeckBox ? (
+              {uploadWithFile ? (
                 <>
                   <label>
                     노래 파일:
-                    <input type='file' onChange={handleFileChange} />
+                    <input type='file' onChange={handleFileChange} required/>
                   </label>
                 </>
               ) : (
                 <label>
                   유튜브 URL:
-                  <input type='text' value={url} onChange={handleUrlChange} />
+                  <input type='text' value={url} onChange={handleUrlChange} required />
                 </label>
               )}
               <br />
               <label>
                 노래 이미지:
-                <input type='file' onChange={handleImageChange} disabled={!ischeckBox} />
+                <input type='file' onChange={handleImageChange} disabled={!uploadWithFile} required/>
               </label>
               <br />
               <label>
                 제목
-                <input type='text' value={title} onChange={handleNameChange} />
+                <input type='text' value={title} onChange={handleNameChange} required/>
               </label>
               <br />
               <label>
                 설명
-                <input type='text' value={description} onChange={handleDescriptionChange} />
+                <input type='text' value={description} onChange={handleDescriptionChange} required/>
               </label>
               <br />
               <label>
                 공개 여부:
-                <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+                <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} required/>
               </label>
               <br />
               <label>
                 장르:
-                <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} />
+                <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} required/>
               </label>
               <br />
               <label>
