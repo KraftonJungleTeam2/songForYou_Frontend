@@ -309,12 +309,13 @@ function drawPitchData(
     // 별 추가
 
     // 선 그리기
+    dataCtx.lineWidth = 5;
     dataCtx.beginPath();
     dataCtx.moveTo(x1, y1);
     dataCtx.lineTo(x2, y2);
     dataCtx.stroke();
   });
-  if (score > 0.5 && currentTimeIndex % 2 === 0) {
+  if (score > 0.3 && currentTimeIndex % 2 === 0) {
     if (data[currentTimeIndex])
       addStar(
         x0,
@@ -330,8 +331,8 @@ function drawPitchData(
   }
 
   stars = stars.filter((star) => {
-    const width = Math.floor(starImage.width * star.size);
-    const height = Math.floor(starImage.height * star.size);
+    const width = Math.floor(starImage.width * star.size * 1.5);
+    const height = Math.floor(starImage.height * star.size*1.5);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(
       starImage,
