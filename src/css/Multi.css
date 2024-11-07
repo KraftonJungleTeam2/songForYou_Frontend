@@ -11,10 +11,7 @@
 
 /* content-area: 내부 요소를 세로로 정렬 */
 .content-area-multi {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: calc((100% - var(--top-bar-height) )* 0.9);
+  height: calc((100% - var(--top-bar-height)) * 0.9);
   padding: 20px;
 }
 
@@ -25,95 +22,99 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  margin-bottom: 20px;
 }
 
-/* room-list: 2열 고정 */
+/* 방 리스트: 반응형 그리드 */
 .room-list {
-  /* grid-template-columns: repeat(2, 1fr); /* 2열 고정 */
-  /* grid-gap: 20px; 카드 간격 */
-  width: 100%;
-  height: 100%;
-  margin: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(200px, 1fr));
+  gap: 20px; /* 카드 간격 */
+  width: 80%;
+  margin: 1rem 0;
   margin-top: 1.5rem;
 }
 
-/* room-card: 방 정보 카드 크기 고정 */
+@media (max-width: 768px) {
+  .room-list {
+    grid-template-columns: 1fr; /* 1열로 변경 */
+  }
+}
+
+/* 방 카드 스타일 */
 .room-card {
-  background-color: #f9f9f9; /* 방이 있는 경우 기본 배경색 */
+  background-color: #f9f9f9;
   border-radius: 4px;
   box-shadow: var(--shadow);
   padding: 20px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   transition: background-color 0.3s ease;
-}
-
-/* 빈 방 카드 스타일 */
-.room-card.empty {
-  background-color: #e0e0e0; /* 빈 방 카드 배경색 */
-  justify-content: center;
-  color: #aaa; /* 텍스트 색상 조정 */
   text-align: center;
 }
 
-.room-card:not(.empty) .room-info h3 {
-  font-weight: bold;
-  color: #333; /* 방 제목 스타일 */
+.room-card.empty {
+  background-color: #e0e0e0;
+  color: #aaa;
 }
 
-.room-card:not(.empty) .room-info p {
-  color: #666; /* 방 정보 텍스트 스타일 */
+/* 방 카드의 이미지와 정보 */
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.room-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.room-info p {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 5px 0;
 }
 
 .room-info-empty {
   font-size: 1.2em;
+  color: #aaa;
 }
 
-.thumbnail {
-  width: 80px;
-  height: 80px;
-  margin-right: 15px;
-}
-
-.room-info h3 {
-  margin: 0;
-  font-size: 1.2em;
-}
-
-.room-info p {
-  margin: 5px 0;
-  color: #666;
-}
-
+/* 페이지 버튼 */
 .page-button {
-    width: 7%;
-    height: 100%;
-    font-size: 200%;
+  width: 7%;
+  height: 100%;
+  font-size: 2rem;
+  background-color: var(--border-gray);
+  border: none;
+  cursor: pointer;
 }
 
-/* 하단 버튼들 고정 영역 */
+/* 하단 고정 버튼들 */
 .bottom-buttons {
   position: fixed;
   bottom: 0;
-  left: 0; /* 기본값은 왼쪽부터 시작 */
+  left: 0;
   width: 100%;
-  height: calc((100% - var(--top-bar-height) ) * 0.1); /* 높이 고정 */
+  height: calc((100% - var(--top-bar-height)) * 0.1);
   display: flex;
   justify-content: space-around;
-  align-items: center; /* 버튼을 수직 중앙에 정렬 */
+  align-items: center;
   background-color: #fff;
   border-top: 1px solid #ddd;
-  z-index: 2; /* 다른 요소 위로 고정 */
+  z-index: 2;
   transition: left 0.3s ease, width 0.3s ease;
 }
 
 .bottom-buttons.shifted {
-  left: 200px; /* Sidebar의 너비와 일치 */
-  width: calc(100% - 200px); /* 전체 너비에서 Sidebar 너비를 제외 */
+  left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
 }
 
-/* 버튼 스타일 */
+/* 각 버튼 스타일 */
 .quick-join, .sort-by, .create-room, .refresh {
   background-color: #4CAF50;
   color: white;
