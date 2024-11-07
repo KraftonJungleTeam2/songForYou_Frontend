@@ -7,47 +7,19 @@
 }
 
 .players-chat {
-  border-radius: 15px 0 0 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 15%; /* 좌측 영역 너비 설정 */
-  margin-left: 0.5vw;
+  background-color: var(--background-main);
+  gap: 1rem;
 }
 
-.chat-area {
-  height: 40%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* 채팅 영역 스크롤 방지 */
-}
-
-.chat-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  /* 메시지 영역만 스크롤 허용 */
-  padding: 10px;
-  gap: 10px;
-}
-
-.messages .message:nth-last-child(2) {
-  margin-bottom: 0; /* 마지막 메시지의 마진 제거 */
-}
-.time {
-  text-align: right;
-}
 
 .information-area {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  border-bottom: 1px solid #ccc;
   padding: 10px 0;
   align-self: stretch; /* 상단에 고정되도록 설정 */
 }
@@ -60,38 +32,9 @@
 
 .pitch-graph-multi {
   height: 70%;
-}
-
-.range-slider {
-  width: 100%;
-  margin-top: 5px;
-}
-
-.range-slider input[type="range"] {
-  width: 100%;
-  background-color: var(--text-neutral-bg);
-  appearance: none;
-  height: 5px;
-  border-radius: 5px;
-  outline: none;
-}
-
-/* Customize the thumb of the range slider */
-.range-slider input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 15px;
-  height: 15px;
-  background: var(--text-highlight-bg);
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.range-slider input[type="range"]::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  background: var(--text-highlight-bg);
-  border-radius: 50%;
-  cursor: pointer;
+  border-top: 2px solid var(--border-gray);
+  border-bottom: 2px solid var(--border-gray);
+  border-right: 2px solid var(--border-gray);
 }
 
 /* Button area */
@@ -130,14 +73,14 @@
 }
 
 /* Chat area */
+
 .chat-area {
+  height: 40%;
   background-color: var(--background-section);
-  border: 1px solid var(--border-gray);
-  border-radius: 8px;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 2vh;
 }
 
 .chat-container {
@@ -146,27 +89,30 @@
   flex-direction: column;
 }
 
+
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 5px;
+}
+.messages::-webkit-scrollbar {
+  display: none;
 }
 
 .message {
-  padding: 8px 12px;
+  padding: 3px;
   background: var(--background-selected);
   border-radius: 8px;
-  margin-bottom: 8px;
 }
 
 .text {
-  color: var(--text-black);
+  color: var(--text-scheme);
 }
 
 .time {
   text-align: right;
   color: var(--text-gray);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .input-area {
