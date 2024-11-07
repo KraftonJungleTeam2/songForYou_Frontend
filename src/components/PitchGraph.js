@@ -10,7 +10,20 @@ const arrayBufferToBase64 = (buffer) => {
   return window.btoa(binary);
 };
 
+<<<<<<< HEAD
 const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, dataPointCount, currentTimeIndex, songimageProps }) => {
+=======
+const PitchGraph = ({
+  dimensions,
+  realtimeData,
+  multiRealDatas,
+  referenceData,
+  dataPointCount,
+  currentTimeIndex,
+  songimageProps,
+  score,
+}) => {
+>>>>>>> 1225e7b33bfd7224dfd21edd0e7bc13adcdf1d36
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -44,7 +57,7 @@ const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, d
       workerRef.current = worker;
 
       // OffscreenCanvas를 사용하여 워커 초기화
-      worker.postMessage({ canvas: offscreen, dimensions }, [offscreen]);
+      worker.postMessage({ type: "init", canvas: offscreen, dimensions }, [offscreen]);
       console.log('message on');
       canvas._hasTransferred = true;
     }
@@ -60,21 +73,39 @@ const PitchGraph = ({ dimensions, realtimeData, multiRealDatas, referenceData, d
     }
 
     worker.postMessage({
-      dimensions,
+      type: "timeData",
       realtimeData,
       multiRealDatas,
-      referenceData,
       dataPointCount,
       currentTimeIndex,
+<<<<<<< HEAD
     });
   }, [dimensions, realtimeData, multiRealDatas, dataPointCount, currentTimeIndex]);
+=======
+      score: score,
+    });
+  }, [currentTimeIndex]);
+>>>>>>> 1225e7b33bfd7224dfd21edd0e7bc13adcdf1d36
 
-  // useEffect(() => {
-  //   const worker = workerRef.current;
-  //   worker.postMessage({
-  //     referenceData
-  //   });
-  // }, [referenceData]);
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker) return;
+    
+    worker.postMessage({
+      type: "dimensionsData",
+      dimensions,
+    });
+  }, [dimensions]);
+  
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker) return;
+
+    worker.postMessage({
+      type: "refData",
+      referenceData
+    });
+  }, [referenceData]);
 
   return (
     <div

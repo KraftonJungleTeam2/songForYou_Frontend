@@ -4,7 +4,10 @@ import TopBar from '../components/TopBar';
 import Sidebar from '../components/SideBar';
 import RoomCreation from '../components/RoomCreation';
 import { useNavigate } from 'react-router-dom';
+import { useScreen } from '../Context/ScreenContext';
+import SimpleSideBar from '../components/SimpleSideBar';
 import '../css/Multi.css';
+import MobileNav from '../components/MobileNav';
 
 function Multi() {
   const [rooms, setRooms] = useState([]);
@@ -14,6 +17,8 @@ function Multi() {
 
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const { isMobile } = useScreen();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -81,27 +86,31 @@ function Multi() {
 
   return (
     <div className='single-page'>
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      {isMobile ? (
+        <MobileNav/>
+      ) : (
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      )}
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
         <div className='content-area-multi'>
           {isCreatingRoom ? (
             <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
           ) : (
-            <div className='main-area'>
-              <button className='button page-button is-white' onClick={handlePreviousPage}>
-                <i className='fa-solid fa-circle-chevron-left'></i>
+            <div className="main-area">
+              <button className="page-button" onClick={handlePreviousPage}>
+                <i className="fa-solid fa-circle-chevron-left"></i>
               </button>
 
-              <div className='grid is-col-min-20 room-list'>
+              <div className="room-list">
                 {roomCards.map((room, index) => (
-                  <div className={`cell has-background-light room-card ${room.empty ? 'empty' : ''}`} key={room.empty ? `empty-${index}` : room.id}>
+                  <div className={`room-card ${room.empty ? 'empty' : ''}`} key={room.empty ? `empty-${index}` : room.id}>
                     {room.empty ? (
-                      <div className='room-info-empty has-text-light-invert'>빈 방</div>
+                      <div className="room-info-empty">빈 방</div>
                     ) : (
-                      <div onClick={(e) => handlePlay(e, room.id, room.password)} className='room-content'>
-                        <img className='thumbnail' src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
-                        <div className='room-info'>
+                      <div onClick={(e) => handlePlay(e, room.id, room.password)} className="room-content">
+                        <img className="thumbnail" src={room.image} alt={`Thumbnail for ${room.roomTitle}`} />
+                        <div className="room-info">
                           <h3>{room.roomTitle}</h3>
                           <p>Players: {room.users.length}/{room.max_user}</p>
                         </div>
@@ -111,8 +120,8 @@ function Multi() {
                 ))}
               </div>
 
-              <button className='button page-button is-white' onClick={handleNextPage}>
-                <i className='fa-solid fa-circle-chevron-right'></i>
+              <button className="page-button" onClick={handleNextPage}>
+                <i className="fa-solid fa-circle-chevron-right"></i>
               </button>
             </div>
           )}

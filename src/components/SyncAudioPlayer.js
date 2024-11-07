@@ -154,22 +154,21 @@ const AudioPlayer = forwardRef(
     useEffect(() => {
       if (!isPlaying) return;
 
-      const targetTime = performance.now() - (starttime + latencyOffset);
-      const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
-      if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
+    const targetTime = performance.now() - (starttime + latencyOffset);
+    const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
+    if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
+    console.log('target: ' + targetTime + ' overrun:' + overrun);
 
-      const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
-      console.log('target: ' + targetTime + ' overrun:' + overrun);
-
-      setPlaybackRate(transitionSpeed);
-
-      clearTimeout(rateTimeoutRef.current);
-      rateTimeoutRef.current = setTimeout(() => {
-        console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
-
-        setPlaybackRate(1);
-      }, overrun / (1 - transitionSpeed));
-    }, [latencyOffset]);
+    
+    
+    clearTimeout(rateTimeoutRef.current);
+    const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
+    setPlaybackRate(transitionSpeed);
+    rateTimeoutRef.current = setTimeout(() => {
+      console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
+      setPlaybackRate(1);
+    }, overrun / (1 - transitionSpeed));
+  }, [latencyOffset]);
 
     // 재생 처리
     useEffect(() => {
@@ -231,27 +230,28 @@ const AudioPlayer = forwardRef(
     useEffect(() => {
       if (gainControlRef.current) {
         gainControlRef.current.gain.value = musicGain;
+    }
+  }, [musicGain]);
+  // 컴포넌트 언마운트 시 자원 정리
+  useEffect(() => {
+    // 출력 지연 반영
+    const interval = setInterval((audioContext = audioContextRef.current) => {
+      if (audioContext) {
+        const playoutDelay = audioContext.outputLatency;
+        setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay*1000);
       }
-    }, [musicGain]);
-    // 컴포넌트 언마운트 시 자원 정리
-    useEffect(() => {
-      // 출력 지연 반영
-      setInterval((audioContext = audioContextRef.current) => {
-        if (audioContext) {
-          const playoutDelay = audioContext.outputLatency;
-          setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay * 1000);
-        }
-      }, 5000);
+    }, 1000) ;
 
-      return () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-        if (rateTimeoutRef.current) {
-          clearTimeout(rateTimeoutRef.current);
-        }
-      };
-    }, []);
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (rateTimeoutRef.current) {
+        clearTimeout(rateTimeoutRef.current);
+      }
+      clearInterval(interval);
+    };
+  }, []);
 
     return null;
   }

@@ -3,9 +3,13 @@ import { useAuth } from '../Context/AuthContext';
 import { useNavigate, useLocation  } from 'react-router-dom';
 import '../css/TopBar.css';
 import axios from 'axios';
+import { useScreen } from '../Context/ScreenContext';
+import DarkModeToggle from '../components/DarkButton.js'
+
 
 function TopBar() {
   const [error, setError] = useState('');
+  const { isMobile } = useScreen();
 
   const [userData, setUserData] = useState({
     name: '',
@@ -68,8 +72,11 @@ function TopBar() {
 
   return (
     <div className='top-bar'>
+
+      {isMobile ? <DarkModeToggle /> : '' }
+      
       <div className='right-section'>
-        <button className='logout-button' onClick={Logout}>
+        <button className='button is-dark logout-button' onClick={Logout}>
           로그아웃
         </button>
         <div className='user-avatar'>A</div>
@@ -81,7 +88,7 @@ function TopBar() {
           ⚙️
         </button>
       </div>
-      {error && <p className='error-message'>{error}</p>}
+
     </div>
   );
 }

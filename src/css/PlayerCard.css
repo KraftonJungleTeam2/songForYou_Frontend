@@ -1,0 +1,106 @@
+.player-cards-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    height: 50%;
+    border: 1px solid #ccc;
+  }
+  
+  .player-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    height: calc(100% / 4);
+    border-bottom: 1px solid #eee;
+    border: 2px solid #ddd; /* 기본 테두리 */
+    transition: border-color 0.3s ease; /* 부드러운 전환 효과 */
+    text-align: center;
+  }
+  
+  .player-card.active {
+    border-color: #4caf50; /* 음성 감지시 초록색 테두리 */
+  }
+  
+  .player-card:last-child {
+    border-bottom: none;
+  }
+  
+  .player-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .profile-picture {
+    flex: 0 0 50px;
+    height: 50px;
+    margin-right: 15px;
+  }
+  
+  .profile-picture img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .color-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20%;
+  }
+  
+  .color-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+  }
+  
+  .details {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .details p {
+    margin: 2px 0;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .range-slider {
+    width: 100%;
+    margin-top: 5px;
+  }
+  
+  .range-slider input[type='range'] {
+    width: 100%;
+  }
+  
+  /* 반응형 디자인 (선택 사항) */
+  @media (max-width: 600px) {
+    .player-info {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .profile-picture {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+  
+    .color-display {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+  
+    .details p {
+      font-size: 12px;
+    }
+  }
+  

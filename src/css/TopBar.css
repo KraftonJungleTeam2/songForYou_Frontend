@@ -1,10 +1,18 @@
+/* TopBar.css */
 .top-bar {
   display: flex;
   justify-content: flex-end;
   padding: 10px 20px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--background-main);
   height: var(--top-bar-height);
+}
+
+@media (max-width: 1024px) {
+  .dark-mode-toggle{
+    position: fixed;
+    top: 0.25rem;
+    left: 2.6vw;
+  }
 }
 
 .right-section {
@@ -20,20 +28,21 @@
 .user-details h3 {
   margin: 0;
   font-size: 18px;
+  color: var(--text-scheme);
 }
 
 .user-details p {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--text-gray);
 }
 
 .user-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--text-highlight-bg); /* 노란색 배경 */
+  color: var(--text-black);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,15 +55,15 @@
   border: none;
   font-size: 20px;
   cursor: pointer;
+  color: var(--text-scheme);
 }
 
 .logout-button {
   margin-right: 15px;
   padding: 10px 20px;
-  background-color: #ff0000;
   border: none;
-  color: white;
   font-size: 16px;
-  cursor: pointer;
   border-radius: 4px;
+  background-color: var(--background-selected);
+  color: var(--text-scheme);
 }

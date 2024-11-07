@@ -1,7 +1,9 @@
 /* Single.css */
+
 .single-page {
   display: flex;
   height: 100vh;
+  background-color: var(--background-main);
 }
 
 .main-content {
@@ -10,17 +12,66 @@
 }
 
 .main-content.shifted {
-  margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
+  margin-left: var(--sidebar-width);
 }
 
-.toggle-button {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  padding: 10px;
-  background-color: #333;
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 200; /* Sidebar보다 높은 값 설정 */
+.content-area {
+  display: flex;
+  height: calc(100vh - var(--top-bar-height));
+}
+
+/* 공통된 스타일 */
+.component-container {
+  background-color: var(--background-section);
+  border-radius: 15px;
+  padding: 5px;
+  overflow: hidden;
+  margin-top: 1vw;
+  margin-bottom: 1vw;
+}
+
+/* 데스크톱 환경 */
+@media (min-width: 1025px) {
+  .content-area {
+    flex-direction: row;
+  }
+
+  .song-list-area-container {
+    width: 75%; /* 너비의 75% */
+    margin-left: 1vw;
+    margin-right: 0.5vw;
+  }
+
+  .preview-container {
+    width: 25%; /* 너비의 25% */
+    margin-right: 1vw;
+    margin-left: 0.5vw;
+  }
+}
+
+/* 모바일 환경 */
+@media (max-width: 1024px) {
+  .main-content{
+    height: 92.5vh;
+  }
+  .content-area {
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .component-container {
+    margin-left: 2vw;
+    margin-right: 2vw;
+  }
+
+  .song-list-area-container {
+    height: 64%; /* 높이의 75% */
+    width: 96%;
+
+  }
+
+  .preview-container {
+    height: 25%; /* 높이의 25% */
+    width: 96%;
+  }
 }

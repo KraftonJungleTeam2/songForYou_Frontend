@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Add() {
   const { fetchSongLists } = useSongs();
-  const [ischeckBox, setischeckBox] = useState(true); // file과 URL 입력 전환 상태
+  const [uploadWithFile, setUploadWithFile] = useState(false); // file과 URL 입력 전환 상태
   const [file, setFile] = useState(null);
   const [url, setUrl] = useState(''); // URL 입력 필드 상태 추가
   const [image, setImage] = useState(null);
@@ -18,8 +18,14 @@ function Add() {
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [genre, setGenre] = useState('jazz');
+  const [isWaiting, setIsWaiting] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [language, setSelectedOption] = useState(null);
+
+  const handleLanguage = (event) => {
+    setSelectedOption(event.target.value);
+  };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -48,45 +54,53 @@ function Add() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (ischeckBox && !file) {
-      alert('Please upload a song file.');
+    if (uploadWithFile && !file) {
+      alert('음악 파일을 선택해주세요');
       return;
-    } else if (!ischeckBox && !url.trim()) {
-      alert('Please enter a song URL.');
+    } else if (!uploadWithFile && !url.trim()) {
+      alert('음악 유튜브 URL을 입력하세요');
       return;
     }
 
-    if (!image) {
-      alert('Please upload a song image.');
+    if (uploadWithFile && !image) {  // 파일 업로드 시에만 이미지 검사
+      alert('노래 이미지가 필요합니다.');
       return;
     }
 
     if (!title.trim()) {
-      alert('Please enter a song name.');
+      alert('제목을 입력하세요');
       return;
     }
 
     if (!description.trim()) {
-      alert('Please enter a description.');
+      alert('');
       return;
     }
 
     if (!genre.trim()) {
-      alert('Please enter a genre.');
+      alert('장르를 입력하세요');
       return;
     }
 
+    if (!language) {
+      alert("언어를 선택하세요");
+      return;
+    }
+
+    setIsWaiting(true);
+
     // FormData 생성
     const formData = new FormData();
-    if (ischeckBox) {
+    if (uploadWithFile) {
       formData.append('file', file);
+      formData.append('image', image);  // 파일 업로드 시에만 이미지 추가
     } else {
       formData.append('youtubeURL', url);
     }
-    formData.append('image', image);
     formData.append('metadata', JSON.stringify({ title, description }));
     formData.append('isPublic', isPublic);
     formData.append('genre', genre);
+    formData.append('language', language);
 
     const token = sessionStorage.getItem('userToken');
 
@@ -105,23 +119,9 @@ function Add() {
           'X-Request-ID': requestId,
         },
       });
-      toast.success(`곡 추가 프로세스가 시작되었습니다.`, {
-        position: 'bottom-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
 
-      const eventSource = new EventSource(`${process.env.REACT_APP_API_ENDPOINT}/songs/completion?requestId=${requestId}`);
-      eventSource.onmessage = (event) => {
-        const message = event.data;
-        const nameMatch = message.match(/name:\s*(.+?)\s*$/);
-        const name = nameMatch ? nameMatch[1] : null;
-
-        toast.success(`곡 ${name} 추가가 완료되었습니다.`, {
+      if (response.status === 200) {
+        toast.success(`배경음악을 추출합니다. 약 10분 소요됩니다.`, {
           position: 'bottom-right',
           autoClose: 5000,
           hideProgressBar: false,
@@ -131,12 +131,47 @@ function Add() {
           progress: undefined,
         });
 
-        eventSource.close();
-        fetchSongLists();
-      };
+        const eventSource = new EventSource(`${process.env.REACT_APP_API_ENDPOINT}/songs/completion?requestId=${requestId}`);
+        eventSource.onmessage = (event) => {
+          const message = event.data;
+          const nameMatch = message.match(/name:\s*(.+?)\s*$/);
+          const name = nameMatch ? nameMatch[1] : null;
+
+          toast.success(`곡 ${name} 추가가 완료되었습니다.`, {
+            position: 'bottom-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+
+          eventSource.close();
+          fetchSongLists();
+        };
+      }
     } catch (error) {
       console.error('Error adding song:', error);
     }
+    
+    // 모든 input 값 초기화
+    setFile(null);
+    setUrl('');
+    setImage(null);
+    setTitle('');
+    setDescription('');
+    setGenre('Rock');
+    setIsPublic(true);
+    // setUploadWithFile(true);
+
+    // file input 필드 초기화를 위해 DOM 직접 접근
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      input.value = '';
+    });
+
+    setIsWaiting(false);
   };
 
   return (
@@ -144,53 +179,91 @@ function Add() {
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <TopBar />
-        <div className='content-area'>
-          <form onSubmit={handleSubmit}>
-            <label>
-              파일 vs 유투브 URL:
-              <input type='checkbox' checked={ischeckBox} onChange={(e) => setischeckBox(e.target.checked)} />
-              {ischeckBox ? ' File Upload' : ' URL Upload'}
-            </label>
-            <br />
-            {ischeckBox ? (
+        <div className='add-content-area'>
+          <div className='component-container' style={{padding: '1.5rem', overflow: 'auto'}}>
+            <form onSubmit={handleSubmit} style={{margin: 'auto'}}>
               <label>
-                Song File:
-                <input type='file' onChange={handleFileChange} />
+                파일로 업로드하기:
+                <input type='checkbox' checked={uploadWithFile} onChange={(e) => setUploadWithFile(e.target.checked)} />
               </label>
-            ) : (
+              <br />
+              {uploadWithFile ? (
+                <>
+                  <label>
+                    노래 파일:
+                    <input type='file' onChange={handleFileChange} required/>
+                  </label>
+                </>
+              ) : (
+                <label>
+                  유튜브 URL:
+                  <input type='text' value={url} onChange={handleUrlChange} required />
+                </label>
+              )}
+              <br />
               <label>
-                Song URL:
-                <input type='text' value={url} onChange={handleUrlChange} />
+                노래 이미지:
+                <input type='file' onChange={handleImageChange} disabled={!uploadWithFile} required/>
               </label>
-            )}
-            <br />
-            <label>
-              Song Image:
-              <input type='file' onChange={handleImageChange} />
-            </label>
-            <br />
-            <label>
-              Name
-              <input type='text' value={title} onChange={handleNameChange} />
-            </label>
-            <br />
-            <label>
-              Description
-              <input type='text' value={description} onChange={handleDescriptionChange} />
-            </label>
-            <br />
-            <label>
-              Public:
-              <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-            </label>
-            <br />
-            <label>
-              Genre:
-              <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} />
-            </label>
-            <br />
-            <button type='submit'>Add Song</button>
-          </form>
+              <br />
+              <label>
+                제목
+                <input type='text' value={title} onChange={handleNameChange} required/>
+              </label>
+              <br />
+              <label>
+                설명
+                <input type='text' value={description} onChange={handleDescriptionChange} required/>
+              </label>
+              <br />
+              <label>
+                공개 여부:
+                <input type='checkbox' checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} required/>
+              </label>
+              <br />
+              <label>
+                장르:
+                <input type='text' value={genre} onChange={(e) => setGenre(e.target.value)} required/>
+              </label>
+              <br />
+              <label>
+                언어:
+              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="ko"
+                    checked={language === 'ko'}
+                    onChange={handleLanguage}
+                  />
+                  한국어
+                </label>
+
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="en"
+                    checked={language === 'en'}
+                    onChange={handleLanguage}
+                  />
+                  영어
+                </label>
+
+                <label style={{ textAlign: 'center' }}>
+                  <input
+                    type="radio"
+                    value="others"
+                    checked={language === 'others'}
+                    onChange={handleLanguage}
+                  />
+                  그 외
+                </label>
+              </div>
+              <br />
+              <button className={`button ${isWaiting ? 'is-loading' : ''}`} disabled={isWaiting} type='submit'>추가하기</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

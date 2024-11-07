@@ -15,8 +15,8 @@ import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
 import measureLatency from '../components/LatencyCalc';
 import '../css/slider.css';
-
-import { stringToColor } from '../utils/GraphUtils';
+import PlayerCard from '../components/PlayerCard';
+import NowPlayingLyrics from '../components/nowPlayingLyrics';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -30,7 +30,8 @@ function doubleDataFrequency(dataArray) {
 
   for (let i = 0; i < dataArray.length; i++) {
     doubledData.push(dataArray[i]); // 첫 번째 복사
-    doubledData.push(dataArray[i]); // 두 번째 복사
+    if (dataArray[i] > 0 && dataArray[i + 1] > 0) doubledData.push((dataArray[i + 1] + dataArray[i]) / 2); // 두 번째 복사
+    else doubledData.push(null);
   }
 
   return doubledData;
@@ -58,7 +59,7 @@ function MultiPlay() {
 
   // 가사 렌더링 하는 state
   const [prevLyric, setPrevLyric] = useState(' ');
-  const [currentLyric, setCurrentLyric] = useState(' ');
+  const [currSegment, setCurrSegment] = useState(' ');
   const [nextLyric, setNextLyric] = useState(' ');
 
   const [duration, setDuration] = useState(0);
@@ -133,12 +134,17 @@ function MultiPlay() {
   const [playoutDelay, setPlayoutDelay] = useState(0);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
+  const RTTRef = useRef({});
 
   // latencyCalc.js에서 사용
   const latencyCalcRef = useRef({});
 
   // 볼륨 조절 용. 0.0-1.0의 값
   const [musicGain, setMusicGain] = useState(1);
+
+  // 점수 확인 용
+  const [score, setScore] = useState(0);
+  const [instantScore, setInstantScore] = useState(0);
 
   // 자동 스크롤
   const scrollToBottom = () => {
@@ -256,7 +262,7 @@ function MultiPlay() {
       }
     }
     setPrevLyric(segments[curr_idx - 1]?.text || ' ');
-    setCurrentLyric(segments[curr_idx]?.text || ' ');
+    setCurrSegment(segments[curr_idx] || ' ');
     setNextLyric(segments[curr_idx + 1]?.text || ' ');
   }, [playbackPosition, lyricsData]);
 
@@ -325,6 +331,8 @@ function MultiPlay() {
       name: name,
       mic: mic,
       isAudioActive: false,
+      score: null,
+      volume: 50,
     };
     setPlayers((prevPlayers) => [...prevPlayers, newPlayer]);
     micStatRef.current[userId] = mic;
@@ -417,10 +425,6 @@ function MultiPlay() {
       });
 
       localStreamRef.current = stream;
-      const audioElement = document.getElementById('localAudio');
-      if (audioElement) {
-        audioElement.srcObject = stream;
-      }
 
       return stream;
     } catch (error) {
@@ -500,6 +504,16 @@ function MultiPlay() {
         console.log(user.id, '에 rtc 연결중');
         const peerConnection = await createPeerConnection(user.id);
 
+        // ICE handler 추가
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            socketRef.current.emit('ice-candidate', {
+              targetId: user.id,
+              candidate: event.candidate,
+            });
+          }
+        };
+
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         console.log(user.id, '에 offer 요청');
@@ -513,11 +527,6 @@ function MultiPlay() {
     // Offer 처리
     socketRef.current.on('offer', async ({ offer, callerId }) => {
       const peerConnection = await createPeerConnection(callerId);
-      await peerConnection.setRemoteDescription(offer);
-
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           socketRef.current.emit('ice-candidate', {
@@ -526,6 +535,11 @@ function MultiPlay() {
           });
         }
       };
+      await peerConnection.setRemoteDescription(offer);
+
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
       console.log(callerId, '에서 offer 수신');
       console.log(callerId, '에 answer 요청');
 
@@ -540,14 +554,14 @@ function MultiPlay() {
       const peerConnection = peerConnectionsRef.current[callerId];
       console.log(callerId, '에서 answer 수신');
 
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socketRef.current.emit('ice-candidate', {
-            targetId: callerId,
-            candidate: event.candidate,
-          });
-        }
-      };
+      // peerConnection.onicecandidate = (event) => {
+      //   if (event.candidate) {
+      //     socketRef.current.emit('ice-candidate', {
+      //       targetId: callerId,
+      //       candidate: event.candidate,
+      //     });
+      //   }
+      // };
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
       }
@@ -558,6 +572,26 @@ function MultiPlay() {
       const peerConnection = peerConnectionsRef.current[callerId];
       if (peerConnection) {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch((error) => console.error('Error adding received ICE candidate:', error));
+      }
+    });
+
+    // 연결 실패 시 재실행 핸들러
+    socketRef.current.on('reconnect-request', async ({ calleeId }) => {
+      try {
+        const peerConnection = peerConnectionsRef.current[calleeId];
+        if (!peerConnection) return;
+
+        // 새로운 offer 생성 (ICE restart)
+        const offer = await peerConnection.createOffer({ iceRestart: true });
+        await peerConnection.setLocalDescription(offer);
+
+        // 새로운 offer를 원래 요청자에게 전송
+        socketRef.current.emit('offer', {
+          targetId: calleeId,
+          offer: offer,
+        });
+      } catch (error) {
+        console.error('Reconnection request handling failed:', error);
       }
     });
 
@@ -585,8 +619,10 @@ function MultiPlay() {
       const clientStartTime = serverStartTime + serverTimeDiff.current;
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
-      setStarttime(clientStartTime);
+      setScore(0);
       micOff();
+      console.log('starts at', clientStartTime);
+      setStarttime(clientStartTime);
     });
 
     socketRef.current.on('stopMusic', (data) => {
@@ -710,24 +746,74 @@ function MultiPlay() {
       updatePlayerMic(socketId.current, false);
       socketRef.current.emit('userMicOff', { roomId });
       setAudioDelay(0);
+      setInstantScore(0);
     } catch (error) {
       console.error('Error in micOff:', error);
     }
   };
+
+  // 2. ICE 재협상 함수
+  const restartICE = async (peerConnection, userId) => {
+    try {
+      // 기존 연결이 initiator(offer를 보낸 쪽)였는지 확인
+      const isInitiator = peerConnection.localDescription?.type === 'offer';
+
+      if (isInitiator) {
+        // offer를 다시 생성할 때 iceRestart: true 옵션 사용
+        const offer = await peerConnection.createOffer({ iceRestart: true });
+        await peerConnection.setLocalDescription(offer);
+
+        socketRef.current.emit('offer', {
+          targetId: userId,
+          offer: offer,
+        });
+      } else {
+        // 상대방에게 재연결 요청
+        socketRef.current.emit('reconnect-request', {
+          targetId: userId,
+        });
+      }
+    } catch (error) {
+      console.error('ICE restart failed:', error);
+    }
+  };
+
   // Peer Connection 생성 함수
   const createPeerConnection = async (userId) => {
     const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        {
+          urls: `turn:${process.env.REACT_APP_TURN_IP}:3478`,
+          username: 'songforyou',
+          credential: `${process.env.REACT_APP_TURN_PASSWORD}`,
+        },
+      ],
+      iceCandidatePoolSize: 10,
     });
+
+    peerConnection.oniceconnectionstatechange = () => {
+      if (peerConnection.iceConnectionState === 'failed') {
+        console.log('ice Connection failed, attempting reconnection...');
+        restartICE(peerConnection, userId);
+      }
+    };
+
     peerConnection.onconnectionstatechange = () => {
       console.log('Connection state:', peerConnection.connectionState);
 
       if (peerConnection.connectionState === 'disconnected') {
         // 재연결 대기
-      } else if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'closed') {
+      } else if (peerConnection.connectionState === 'failed') {
+        console.log('Connection failed, attempting reconnection...');
+        restartICE(peerConnection, userId);
+      } else if (peerConnection.connectionState === 'closed') {
         // 기존 코드
         delete peerConnectionsRef.current[userId];
-
         // 추가 정리
         peerConnection.close();
       }
@@ -743,35 +829,7 @@ function MultiPlay() {
       setupDataChannel(dataChannel, userId);
       dataChannelsRef.current[userId] = dataChannel;
     }
-
-    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
-    peerConnection.ondatachannel = (event) => {
-      const dataChannel = event.channel;
-      setupDataChannel(dataChannel, userId);
-      dataChannelsRef.current[userId] = dataChannel;
-    };
-
-    // 레이턴시 값 교환 데이터채널
-    const setupLatencyDataChannel = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'listenerLatency') {
-        singersDelay.current[data.singer] = data.setAs;
-
-        let sum = 0;
-        let i = 0;
-        Object.keys(singersDelay.current).forEach((userId) => {
-          if (micStatRef.current[userId] === true) {
-            sum += singersDelay.current[userId];
-            i++;
-          }
-        });
-        if (i > 0) {
-          setListenerNetworkDelay(sum / i);
-          console.log('setlistener lat');
-        }
-      }
-    };
-    // Caller 레이턴시 값 교환용 데이터채널 생성
+    // (Caller) 레이턴시 값 교환용 데이터채널 생성
     if (!latencyDataChannelsRef.current[userId]) {
       const dataChannel = peerConnection.createDataChannel(`latencyDataChannel-${userId}`, {
         ordered: true,
@@ -781,17 +839,24 @@ function MultiPlay() {
       dataChannel.onmessage = setupLatencyDataChannel;
       latencyDataChannelsRef.current[userId] = dataChannel;
     }
-    // Callee 레이턴시 값 교환용 데이터채널 수신
+
+    // Callee로서 DataChannel 수신 대기 (연결을 받는 쪽)
     peerConnection.ondatachannel = (event) => {
       const dataChannel = event.channel;
-      dataChannel.onmessage = setupLatencyDataChannel;
-      latencyDataChannelsRef.current[userId] = dataChannel;
+      if (dataChannel.label.split('-')[0] === 'dataChannel') {
+        setupDataChannel(dataChannel, userId);
+        dataChannelsRef.current[userId] = dataChannel;
+      } else if (dataChannel.label.split('-')[0] === 'latencyDataChannel') {
+        dataChannel.onmessage = setupLatencyDataChannel;
+        latencyDataChannelsRef.current[userId] = dataChannel;
+      }
     };
 
     peerConnection.ontrack = (event) => {
       const audioElement = document.getElementById(`remoteAudio_${userId}`);
       if (audioElement && event.streams[0]) {
         audioElement.srcObject = event.streams[0];
+        audioElement.volume = 0.5;
       }
       peerConnection.addEventListener('connectionstatechange', (event) => {
         console.log('Connection State:', peerConnection.connectionState);
@@ -813,6 +878,25 @@ function MultiPlay() {
     return peerConnection;
   };
 
+  // 레이턴시 값 교환 데이터채널
+  const setupLatencyDataChannel = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'listenerLatency') {
+      singersDelay.current[data.singer] = data.setAs;
+
+      let sum = 0;
+      let i = 0;
+      Object.keys(singersDelay.current).forEach((userId) => {
+        if (micStatRef.current[userId] === true) {
+          sum += singersDelay.current[userId];
+          i++;
+        }
+      });
+      if (i > 0) {
+        setListenerNetworkDelay((old) => old * 0.7 + (sum / i) * 0.3);
+      }
+    }
+  };
   // DataChannel 설정 함수
   const setupDataChannel = (dataChannel, targetId) => {
     dataChannel.addEventListener('open', (event) => {
@@ -826,14 +910,18 @@ function MultiPlay() {
     dataChannel.onmessage = (event) => {
       const data = JSON.parse(event.data);
       data.pitches.forEach((pitchData) => {
+        if (!(data.id in pitchArraysRef.current) && entireReferData.length > 0) {
+          pitchArraysRef.current[data.id] = new Array(entireReferData.length).fill(null);
+        }
         pitchArraysRef.current[data.id][pitchData.index] = pitchData.pitch;
       });
+      setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === data.id ? { ...player, score: data.score } : player)));
     };
   };
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current), 1000);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
 
     return () => clearInterval(interval);
   }, []);
@@ -844,7 +932,7 @@ function MultiPlay() {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight * 0.5,
+          height: containerRef.current.offsetHeight * 0.7,
         });
       }
     }
@@ -902,6 +990,19 @@ function MultiPlay() {
     setMusicGain(parseFloat(event.target.value));
   };
 
+  const playerVolumeChange = (userId) => (event) => {
+    const newVolume = parseFloat(event.target.value) / 100; // 0-100 값을 0-1로 변환
+
+    // players state 업데이트
+    setPlayers((prevPlayers) => prevPlayers.map((p) => (p.userId === userId ? { ...p, volume: parseInt(event.target.value) } : p)));
+
+    // 실제 audio 엘리먼트의 볼륨 조절
+    const audioElement = document.getElementById(`remoteAudio_${userId}`);
+    if (audioElement) {
+      audioElement.volume = newVolume;
+    }
+  };
+
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   const OnPopup = () => {
@@ -924,7 +1025,7 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, dataChannelsRef.current, socketId.current);
+  usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
     <div className='multiPlay-page'>
@@ -933,23 +1034,8 @@ function MultiPlay() {
         <TopBar className='top-bar' />
         <div className={'multi-content-area'}>
           <div className='players-chat'>
-            <div className='players'>
-              {Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <div key={index} className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`} style={players[index] ? { backgroundColor: stringToColor(players[index].userId) } : {}}>
-                    {players[index] ? (
-                      <div>
-                        <p>
-                          {players[index].name} {players[index].mic ? '🎤' : '  '}
-                        </p>
-                      </div>
-                    ) : (
-                      <p>빈 자리</p>
-                    )}
-                  </div>
-                ))}
-            </div>
+            <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
+
             <div className='chat-area'>
               {' '}
               <div className='chat-container'>
@@ -990,7 +1076,7 @@ function MultiPlay() {
                     </div> */}
 
             <div className='pitch-graph-multi'>
-              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} />
+              <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} score={instantScore} />
             </div>
 
             {/* Seek Bar */}
@@ -1004,7 +1090,7 @@ function MultiPlay() {
             {/* 현재 재생 중인 가사 출력 */}
             <div className='karaoke-lyrics'>
               <p className='prev-lyrics'>{prevLyric}</p>
-              <p className='curr-lyrics'>{currentLyric}</p>
+              <NowPlayingLyrics segment={currSegment} playbackPosition={playbackPositionRef.current} />
               <p className='next-lyrics'>{nextLyric}</p>
             </div>
 
@@ -1027,7 +1113,7 @@ function MultiPlay() {
               <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
                 {useCorrection ? '보정끄기' : '보정켜기'}
               </button>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={1} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               <h3>
                 DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}
               </h3>
@@ -1037,7 +1123,6 @@ function MultiPlay() {
               <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
               <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
               {/* 오디오 엘리먼트들 */}
-              <audio id='localAudio' autoPlay muted />
               <div className='remote-audios' style={{ display: 'none' }}>
                 {players.map((player) => (
                   <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
