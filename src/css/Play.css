@@ -1,214 +1,218 @@
-.play-content-container {
-  width: 85%;
-  border-radius: 0 15px 15px 0;
-  display: flex;
-  flex-direction: column;
-  margin-right: 0.5vw;
+/* 데스크톱 환경 */
+@media (min-width: 1025px) {
+  .play-content-container {
+    width: 85%;
+    border-radius: 0 15px 15px 0;
+    display: flex;
+    flex-direction: column;
+    margin-right: 0.5vw;
+  }
+  /* Score Setting Area 전체 스타일링 */
+  .score-setting-container {
+    width: 15%; /* 좌측 영역 너비 설정 */
+    background-color: var(--background-section);
+    border-radius: 15px 0 0 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 15px;
+    margin-left: 0.5vw;
+  }
+  
+  /* Score Area 스타일링 */
+  .score-area {
+    height: 37.5%;
+    border-bottom: 3px solid var(--border-gray);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .score-area p:first-child {
+    font-size: 1.2em;
+    color: var(--text-scheme);
+    margin-bottom: 10px;
+  }
+  
+  .score-area p:last-child {
+    font-size: 2em;
+    color: var(--text-highlight-bg);
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Play Info Area 스타일링 */
+  .play-info-area {
+    height: 37.5%;
+    border-bottom: 3px solid var(--border-gray);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .play-info-area .playback-info {
+    font-size: 1em;
+    color: var(--text-gray);
+    margin-bottom: 10px;
+  }
+  
+  .play-info-area .loading-text {
+    font-size: 0.9em;
+    color: var(--text-gray);
+    margin-top: 5px;
+  }
+  
+  .play-info-area button {
+    padding: 10px 20px;
+    background-color: var(--text-neutral-bg);
+    color: var(--text-scheme);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .play-info-area button:disabled {
+    background-color: var(--border-gray);
+    cursor: not-allowed;
+  }
+  
+  .play-info-area button:hover:not(:disabled) {
+    background-color: var(--text-highlight-bg);
+    color: var(--text-white);
+    transform: scale(1.05);
+  }
+  
+  /* Setting Area 기본 스타일 유지 */
+  .setting-area {
+    display: flex;
+    flex-direction: column;
+    height: 30%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
+    justify-content: center;
+    align-items: center;
+  }
+  
+  
+  
+  .pitch-graph-play {
+    height: 70%;
+    width: 100%;
+    border-radius: 0 15px 15px 0;
+    border-top: 2px solid var(--border-gray); /* 실선 추가 */
+    border-right: 2px solid var(--border-gray); /* 실선 추가 */
+  
+  }
+  
+  /* Karaoke Lyrics */
+  .karaoke-lyrics {
+    height: 28%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  /* Lyrics box */
+  .prev-lyrics,
+  .next-lyrics {
+    margin: auto;
+    font-size: 0.9em;
+    text-align: center;
+    opacity: 0.6;
+    color: var(--text-gray);
+  }
+  
+  .curr-lyrics {
+    margin: auto;
+    font-size: 1.2em;
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-scheme);
+  }
+  
+  
+  .range-slider {
+    width: 100%;
+  }
+  
+  .playback-info {
+    margin-top: 10px;
+    color: var(--text-black);
+  }
+  
+  /* Speed Control 스타일 */
+  .speed-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px 0;
+  }
+  
+  .speed-control label {
+    margin-bottom: 5px;
+    color: var(--text-scheme);
+  }
+  
+  .speed-control-value {
+    margin-top: 5px;
+    color: var(--text-gray);
+  }
+  
+  /* Loading */
+  .loading-text {
+    color: var(--text-gray);
+    margin-top: 10px;
+  }
+  
+  /* Play Navigation Button */
+  .play-nav-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background-color: var(--text-highlight-bg);
+    color: var(--text-white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  
+  .play-nav-button:hover {
+    background-color: var(--border-hover);
+  }
+  
+  /* 기타 요소들에 대한 텍스트 정렬 수정 */
+  .prev-lyrics,
+  .curr-lyrics,
+  .next-lyrics {
+    text-align: center;
+  }
+  
+  /* 슬라이더를 위한 css */
+  .range-slider-play {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(to right, #fea42c, #ffbf0b) 0% 0% / 0% 100% no-repeat, #525151;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* 슬라이더 핸들 (thumb) */
+  .range-slider-play::-webkit-slider-thumb {
+    opacity: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2vw;
+    height: 2vw;
+    cursor: pointer;
+  }
 }
-/* Score Setting Area 전체 스타일링 */
-.score-setting-container {
-  width: 15%; /* 좌측 영역 너비 설정 */
-  background-color: var(--background-section);
-  border-radius: 15px 0 0 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px 15px;
-  margin-left: 0.5vw;
-}
 
-/* Score Area 스타일링 */
-.score-area {
-  height: 37.5%;
-  border-bottom: 3px solid var(--border-gray);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.score-area p:first-child {
-  font-size: 1.2em;
-  color: var(--text-scheme);
-  margin-bottom: 10px;
-}
-
-.score-area p:last-child {
-  font-size: 2em;
-  color: var(--text-highlight-bg);
-  font-weight: bold;
-  margin: 0;
-}
-
-/* Play Info Area 스타일링 */
-.play-info-area {
-  height: 37.5%;
-  border-bottom: 3px solid var(--border-gray);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.play-info-area .playback-info {
-  font-size: 1em;
-  color: var(--text-gray);
-  margin-bottom: 10px;
-}
-
-.play-info-area .loading-text {
-  font-size: 0.9em;
-  color: var(--text-gray);
-  margin-top: 5px;
-}
-
-.play-info-area button {
-  padding: 10px 20px;
-  background-color: var(--text-neutral-bg);
-  color: var(--text-scheme);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.play-info-area button:disabled {
-  background-color: var(--border-gray);
-  cursor: not-allowed;
-}
-
-.play-info-area button:hover:not(:disabled) {
-  background-color: var(--text-highlight-bg);
-  color: var(--text-white);
-  transform: scale(1.05);
-}
-
-/* Setting Area 기본 스타일 유지 */
-.setting-area {
-  display: flex;
-  flex-direction: column;
-  height: 30%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
-  justify-content: center;
-  align-items: center;
-}
-
-
-
-.pitch-graph-play {
-  height: 70%;
-  width: 100%;
-  border-radius: 0 15px 15px 0;
-  border-top: 2px solid var(--border-gray); /* 실선 추가 */
-  border-right: 2px solid var(--border-gray); /* 실선 추가 */
-
-}
-
-/* Karaoke Lyrics */
-.karaoke-lyrics {
-  height: 28%;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* Lyrics box */
-.prev-lyrics,
-.next-lyrics {
-  margin: auto;
-  font-size: 0.9em;
-  text-align: center;
-  opacity: 0.6;
-  color: var(--text-gray);
-}
-
-.curr-lyrics {
-  margin: auto;
-  font-size: 1.2em;
-  text-align: center;
-  font-weight: bold;
-  color: var(--text-scheme);
-}
-
-
-.range-slider {
-  width: 100%;
-}
-
-.playback-info {
-  margin-top: 10px;
-  color: var(--text-black);
-}
-
-/* Speed Control 스타일 */
-.speed-control {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 15px 0;
-}
-
-.speed-control label {
-  margin-bottom: 5px;
-  color: var(--text-scheme);
-}
-
-.speed-control-value {
-  margin-top: 5px;
-  color: var(--text-gray);
-}
-
-/* Loading */
-.loading-text {
-  color: var(--text-gray);
-  margin-top: 10px;
-}
-
-/* Play Navigation Button */
-.play-nav-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  padding: 10px 20px;
-  background-color: var(--text-highlight-bg);
-  color: var(--text-white);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  z-index: 1000;
-}
-
-.play-nav-button:hover {
-  background-color: var(--border-hover);
-}
-
-/* 기타 요소들에 대한 텍스트 정렬 수정 */
-.prev-lyrics,
-.curr-lyrics,
-.next-lyrics {
-  text-align: center;
-}
-
-/* 슬라이더를 위한 css */
-.range-slider-play {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(to right, #fea42c, #ffbf0b) 0% 0% / 0% 100% no-repeat, #525151;
-  border-radius: 5px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* 슬라이더 핸들 (thumb) */
-.range-slider-play::-webkit-slider-thumb {
-  opacity: 0;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 2vw;
-  height: 2vw;
-  cursor: pointer;
-}
