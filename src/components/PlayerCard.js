@@ -1,9 +1,9 @@
 // src/components/PlayerCard.js
-import React from 'react';
-import '../css/PlayerCard.css';
-import { stringToColor } from '../utils/GraphUtils';
+import React from "react";
+import "../css/PlayerCard.css";
+import { stringToColor } from "../utils/GraphUtils";
 
-function PlayerCard({ players, socketId, score, playerVolumeChange}) {
+function PlayerCard({ players, socketId, score, playerVolumeChange }) {
   return (
     <div className="player-cards-container">
       {Array(4)
@@ -11,7 +11,9 @@ function PlayerCard({ players, socketId, score, playerVolumeChange}) {
         .map((_, index) => (
           <div
             key={index}
-            className={`player-card ${players[index]?.isAudioActive ? 'active' : ''}`}
+            className={`player-card ${
+              players[index]?.isAudioActive ? "active" : ""
+            }`}
           >
             {players[index] ? (
               <div className="player-info">
@@ -22,34 +24,43 @@ function PlayerCard({ players, socketId, score, playerVolumeChange}) {
 
                 {/* 플레이어 상세 정보 */}
                 <div className="details">
-                  <p>{players[index].name} {players[index].mic ? '🎤' : '  '}</p>
-                  <p>{players[index].userId === socketId.current ? score : players[index].score}점</p>
+                  <p>
+                    {players[index].name} {players[index].mic ? "🎤" : "  "}
+                  </p>
+                  <p>
+                    {players[index].userId === socketId.current
+                      ? score
+                      : players[index].score}
+                    점
+                  </p>
                   {players[index].userId !== socketId.current ? (
                     <input
-                      type='range'
-                      min='0'
-                      max='100'
-                      step='1'
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
                       value={players[index].volume}
                       onChange={playerVolumeChange(players[index].userId)}
-                      className='range-slider'
+                      className="range-slider"
                     />
                   ) : null}
                 </div>
 
                 {/* 색깔 표시 영역 */}
                 <div className="color-display">
-                  <div className="color-circle" style={{ backgroundColor: stringToColor(players[index].userId) }}></div>
+                  <div
+                    className="color-circle"
+                    style={{
+                      backgroundColor: stringToColor(players[index].userId),
+                    }}
+                  ></div>
                 </div>
-                
-                
               </div>
             ) : (
               <p>빈 자리</p>
             )}
           </div>
-        ))
-      }
+        ))}
     </div>
   );
 }
