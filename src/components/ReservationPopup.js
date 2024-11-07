@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, setReservedSongs, songLists }) => {
+const ReservationPopup = ({ roomid, socket, onClose, reservedSongs, songLists }) => {
   const [viewType, setViewType] = useState('public');
   const [searchTerm, setSearchTerm] = useState('');
   // const { roomid } = useParams(); // URL에서 songId 추출
