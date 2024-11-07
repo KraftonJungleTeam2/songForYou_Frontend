@@ -90,8 +90,8 @@
   
   /* Setting Area 기본 스타일 유지 */
   .setting-area {
-    display: flex;
-    flex-direction: column;
+    /* display: flex; */
+    /* flex-direction: column; */
     height: 30%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
     justify-content: center;
     align-items: center;
