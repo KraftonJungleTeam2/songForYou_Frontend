@@ -1,102 +1,206 @@
+/* players-chat area */
+.players-chat {
+  background-color: var(--background-section);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  width: 15%; /* Adjust the width as needed */
+  margin-left: 0.5vw;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* PlayerCard component */
 .player-cards-container {
-    display: flex;
-    flex-direction: column;
-    height: 50%;
-    border: 1px solid #eee;
-  }
-  
-  .player-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    height: calc(100% / 4);
-    border-bottom: 2px solid #eee;
-    text-align: center;
-  }
-  
-  .player-card.active {
-    border-color: #4caf50; /* 음성 감지시 초록색 테두리 */
-  }
-  
-  .player-card:last-child {
-    border-bottom: none;
-  }
-  
-  .player-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px;
-  }
-  
-  .profile-picture {
-    flex: 0 0 50px;
-    height: 50px;
-    margin-right: 15px;
-  }
-  
-  .profile-picture img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .color-display {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20%;
-  }
-  
-  .color-circle {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-  }
-  
-  .details {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .details p {
-    margin: 2px 0;
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .range-slider {
-    width: 100%;
-    margin-top: 5px;
-  }
-  
-  .range-slider input[type='range'] {
-    width: 100%;
-  }
-  
-  /* 반응형 디자인 (선택 사항) */
-  @media (max-width: 600px) {
-    .player-info {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .profile-picture {
-      margin-right: 0;
-      margin-bottom: 10px;
-    }
-  
-    .color-display {
-      margin-right: 0;
-      margin-bottom: 10px;
-    }
-  
-    .details p {
-      font-size: 12px;
-    }
-  }
-  
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-main);
+  height: 35%;
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+  color: var(--text-black);
+  height: calc(100% / 4);
+  border-bottom: 1px solid var(--border-gray);
+  padding: 10px;
+  background-color: var(--background-section);
+}
+
+.player-card:last-child {
+  border-bottom: none;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+}
+
+.details p {
+  margin: 2px 0;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.details p:first-child {
+  color: var(--text-black);
+  font-weight: bold;
+}
+
+.color-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-gray);
+}
+
+.range-slider {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.range-slider input[type='range'] {
+  width: 100%;
+  background-color: var(--text-neutral-bg);
+  appearance: none;
+  height: 5px;
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Customize the thumb of the range slider */
+.range-slider input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--text-highlight-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.range-slider input[type='range']::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: var(--text-highlight-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Button area */
+.button-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.button-area .button {
+  padding: 10px;
+  background-color: var(--text-neutral-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-black);
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+}
+
+.button-area .button:hover {
+  background-color: var(--background-selected);
+}
+
+.button-area .start-button {
+  background-color: var(--text-highlight-bg);
+}
+
+.button-area .mic-button {
+  background-color: var(--background-main);
+}
+
+.button-area .reservation-button {
+  background-color: var(--gradient-end);
+}
+
+/* Chat area */
+.chat-area {
+  background-color: var(--background-section);
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.message {
+  padding: 8px 12px;
+  background: var(--background-selected);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.text {
+  color: var(--text-black);
+}
+
+.time {
+  text-align: right;
+  color: var(--text-gray);
+  font-size: 12px;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid var(--border-gray);
+  padding: 10px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border-gray);
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.input-area button {
+  padding: 8px 12px;
+  background-color: var(--text-highlight-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-black);
+  cursor: pointer;
+  font-size: 14px;
+}

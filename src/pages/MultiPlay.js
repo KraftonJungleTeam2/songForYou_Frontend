@@ -1031,6 +1031,14 @@ function MultiPlay() {
           <p className='next-lyrics'>{nextLyric}</p>
         </div>
 
+        {/* AudioPlayer 컴포넌트 */}
+        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
+      </div>
+
+      <div className='players-chat component-container-play'>
+
+        <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
+        
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting } className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1063,19 +1071,10 @@ function MultiPlay() {
             ))}
           </div> */}
 
-          
+         {/* 조건부 렌더링 부분 popup */}
+         {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} />}
+         
         </div>
-
-        {/* 조건부 렌더링 부분 popup */}
-        {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} />}
-
-        {/* AudioPlayer 컴포넌트 */}
-        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
-      </div>
-
-      <div className='players-chat component-container-play'>
-
-        <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange}/>
 
         <div className='chat-area'>
           {' '}
