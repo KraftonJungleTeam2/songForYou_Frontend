@@ -30,6 +30,14 @@
   margin-bottom: 1vw;
 }
 
+.component-container-play {
+  background-color: var(--background-section);
+  overflow: hidden;
+  margin-top: 1vh;
+  margin-bottom: 2vh;
+}
+
+
 
   @media (max-width: 1024px) {
     .content-area {

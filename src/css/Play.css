@@ -1,48 +1,20 @@
-/* 스타일 적용 */
-.play-page {
-  width: 100%;
-  height: 100vh;
-  background-color: var(--background-main);
-}
-
-.component-container-play {
-  background-color: var(--background-section);
-  overflow: hidden;
-  margin-top: 1vh;
-  margin-bottom: 2vh;
-}
-
-.main-content-play {
-  flex-grow: 1;
-  transition: margin-left 0.3s ease;
-  display: flex;
-  height: calc(100% - var(--top-bar-height));
-  overflow: hidden; /* 페이지 전체 스크롤 방지 */
-  justify-content: space-between;
-}
-
-.main-content-play.shifted {
-  margin-left: var(--sidebar-width);
-}
-
-/* Content area */
-.play-content-area {
+.play-content-container {
   width: 85%;
   border-radius: 0 15px 15px 0;
   display: flex;
   flex-direction: column;
+  margin-right: 0.5vw;
 }
 /* Score Setting Area 전체 스타일링 */
-.score-setting-area {
-  width: 14%; /* 좌측 영역 너비 설정 */
-  min-width: 200px; /* 최소 너비 설정으로 레이아웃 안정성 확보 */
+.score-setting-container {
+  width: 15%; /* 좌측 영역 너비 설정 */
   background-color: var(--background-section);
   border-radius: 15px 0 0 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px 15px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 약간의 그림자 효과 추가 */
+  margin-left: 0.5vw;
 }
 
 /* Score Area 스타일링 */

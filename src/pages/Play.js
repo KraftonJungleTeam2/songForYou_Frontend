@@ -14,6 +14,7 @@ import NowPlayingLyrics from '../components/nowPlayingLyrics';
 import { useScreen } from '../Context/ScreenContext';
 import MobileNav from '../components/MobileNav';
 import Sidebar from '../components/SideBar';
+import PageTemplate from '../template/PageTemplate';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -285,17 +286,8 @@ const Play = () => {
   usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, setScore, setInstantScore, null);
 
   return (
-    <div className='play-page'>
-       {isMobile ? (
-        <MobileNav />
-      ) : (
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      )}
-
-        <TopBar className='top-bar'/>
-      <div className={`main-content-play ${isSidebarOpen ? 'shifted' : ''}`}>
-
-        <div className='play-content-area component-container-play' ref={containerRef}>
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
+      <div className='play-content-container component-container-play' ref={containerRef}>
           
           {/* Pitch Graph */}
           <div className='pitch-graph-play' style={{width: `${dimensions.width}`, height: `${dimensions.height}`}}>
@@ -309,11 +301,11 @@ const Play = () => {
               score={instantScore} 
             />
           </div>
-
+          
           {/* 오디오 플레이어 컨트롤 */}
           <input className='range-slider-play' type='range' min='0' max={duration} step='0.025' value={playbackPosition} onChange={handlePlaybackPositionChange} disabled={!dataLoaded} />
           
-
+          
           {/* 현재 재생 중인 가사 출력 */}
           <div className='karaoke-lyrics'>
               <p className='prev-lyrics'>{prevLyric}</p>
@@ -323,8 +315,8 @@ const Play = () => {
               />
               <p className='next-lyrics'>{nextLyric}</p>
           </div>
-
-
+          
+          
           {/* 오디오 플레이어 컴포넌트 */}
           <AudioPlayer
             isPlaying={isPlaying}
@@ -336,62 +328,62 @@ const Play = () => {
             onPlaybackPositionChange={setPlaybackPosition}
             playbackSpeed={playbackSpeed} // 재생 속도 prop 추가
           />
-        </div>
-
-        <div className='score-setting-area component-container-play'>
-          
-          <div className='score-area'>
-            <p>실시간 점수</p>
-            <p>{score}</p>
-          </div>
-          
-          <div className='play-info-area'>
-            <div className='playback-info'>
-                {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
-            </div>
-
-            {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
-            
-            <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
-              {isPlaying ? <i class="fa-solid fa-pause"></i> : <i class="fa-solid fa-play"></i>}
-            </button>
-          </div>
-
-
-          <div className='setting-area'>
-            
-            <div className='speed-control'>
-              <label>속도 조절:</label>
-              <input
-                type='range'
-                min='0.5'
-                max='2'
-                step='0.1'
-                value={playbackSpeed}
-                onChange={handlePlaybackSpeedChange}
-                className='range-slider'
-              />
-              <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
-            </div>
-
-            <div className='speed-control'>
-              <label>렌더링 사이즈:</label>
-              <input
-                type='range'
-                min='25'
-                max='300'
-                step='1'
-                value={dataPointCount}
-                onChange={handleSpeedChange}
-                className='range-slider'
-              />
-              <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
-            </div>
-
-          </div>
-        </div>
       </div>
-    </div>
+          
+      <div className='score-setting-container component-container-play'>
+          
+        <div className='score-area'>
+          <p>실시간 점수</p>
+          <p>{score}</p>
+        </div>
+        
+        <div className='play-info-area'>
+          <div className='playback-info'>
+              {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
+          </div>
+        
+          {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
+          
+          <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
+            {isPlaying ? <i class="fa-solid fa-pause"></i> : <i class="fa-solid fa-play"></i>}
+          </button>
+        </div>
+        
+        
+        <div className='setting-area'>
+          
+          <div className='speed-control'>
+            <label>속도 조절:</label>
+            <input
+              type='range'
+              min='0.5'
+              max='2'
+              step='0.1'
+              value={playbackSpeed}
+              onChange={handlePlaybackSpeedChange}
+              className='range-slider'
+            />
+            <div className='speed-control-value'>재생 속도: {playbackSpeed} 배</div>
+          </div>
+        
+          <div className='speed-control'>
+            <label>렌더링 사이즈:</label>
+            <input
+              type='range'
+              min='25'
+              max='300'
+              step='1'
+              value={dataPointCount}
+              onChange={handleSpeedChange}
+              className='range-slider'
+            />
+            <div className='speed-control-value'>렌더링 사이즈: {dataPointCount}</div>
+          </div>
+          
+        </div>
+
+      </div>
+    </PageTemplate>
   );
 };
 
