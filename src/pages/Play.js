@@ -286,7 +286,7 @@ const Play = () => {
   usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, setScore, setInstantScore, null);
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'single'}>
       <div className='play-content-container component-container-play' ref={containerRef}>
           
           {/* Pitch Graph */}
