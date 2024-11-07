@@ -1,43 +1,24 @@
-.multi-content {
-    flex-grow: 1;
-    transition: margin-left 0.3s ease;
-    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-.multi-content.shifted {
-  margin-left: var(--sidebar-width); /* Sidebar의 너비와 일치 */
-}
-
-.multiPlay-page {
+.sing-area {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden; /* 페이지 전체 스크롤 방지 */
-}
-
-.multi-content-area {
-  display: flex;
-  flex-grow: 1;
-  width: 100%;
-  height: calc(100% - var(--top-bar-height));
-  overflow: hidden; /* 컨텐츠 영역 스크롤 방지 */
+  border-radius: 0 15px 15px 0;
+  width: 85%;
+  margin-right: 0.5vw;
 }
 
 .players-chat {
+  border-radius: 15px 0 0 15px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 15%; /* 좌측 영역 너비 설정 */
-  height: 100%;
+  margin-left: 0.5vw;
 }
 
-
 .chat-area {
-  height: 50%;
-  max-height: calc((100vh - var(--top-bar-height)) * 0.5); /* height: 50% => 0.5로 맞춰줘야함 */
+  height: 40%;
   display: flex;
   flex-direction: column;
-  border: 1px solid #000000;
   overflow: hidden; /* 채팅 영역 스크롤 방지 */
 }
 
@@ -52,52 +33,14 @@
   overflow-y: auto;
   /* 메시지 영역만 스크롤 허용 */
   padding: 10px;
-  /* display: flex;
-  flex-direction: column; */
   gap: 10px;
 }
-.message {
-  padding: 8px 12px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 8px; /* 메시지 간 간격 */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-}
+
 .messages .message:nth-last-child(2) {
   margin-bottom: 0; /* 마지막 메시지의 마진 제거 */
 }
 .time {
   text-align: right;
-}
-.input-area {
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background: white;
-  display: flex;
-  gap: 8px;
-}
-
-.input-area input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.input-area button {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.sing-area {
-  display: flex;
-  flex-direction: column;
-  width: 85%;
-  height: 100%;
 }
 
 .information-area {
@@ -115,16 +58,138 @@
   margin: 0;
 }
 
-.multiplay-nav-button {
-  top: 20px;
-  left: 20px;
-  z-index: 1000;
-}
-
-.multiplay-nav-button:hover {
-  background-color: #0056b3;
-}
-
 .pitch-graph-multi {
   height: 70%;
+}
+
+.range-slider {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.range-slider input[type="range"] {
+  width: 100%;
+  background-color: var(--text-neutral-bg);
+  appearance: none;
+  height: 5px;
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Customize the thumb of the range slider */
+.range-slider input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--text-highlight-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.range-slider input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: var(--text-highlight-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Button area */
+.button-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.button-area .button {
+  padding: 10px;
+  background-color: var(--text-neutral-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-black);
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+}
+
+.button-area .button:hover {
+  background-color: var(--background-selected);
+}
+
+.button-area .start-button {
+  background-color: var(--text-highlight-bg);
+}
+
+.button-area .mic-button {
+  background-color: var(--background-main);
+}
+
+.button-area .reservation-button {
+  background-color: var(--gradient-end);
+}
+
+/* Chat area */
+.chat-area {
+  background-color: var(--background-section);
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.message {
+  padding: 8px 12px;
+  background: var(--background-selected);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.text {
+  color: var(--text-black);
+}
+
+.time {
+  text-align: right;
+  color: var(--text-gray);
+  font-size: 12px;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid var(--border-gray);
+  padding: 10px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border-gray);
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.input-area button {
+  padding: 8px 12px;
+  background-color: var(--text-highlight-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-black);
+  cursor: pointer;
+  font-size: 14px;
 }

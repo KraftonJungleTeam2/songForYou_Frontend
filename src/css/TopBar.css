@@ -8,7 +8,7 @@
 }
 
 @media (max-width: 1024px) {
-  .dark-mode-toggle{
+  .dark-mode-toggle {
     position: fixed;
     top: 0.25rem;
     left: 2.6vw;
