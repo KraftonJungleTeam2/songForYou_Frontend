@@ -1,31 +1,20 @@
-/* players-chat area */
-.players-chat {
-  background-color: var(--background-section);
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  width: 15%; /* Adjust the width as needed */
-  margin-left: 0.5vw;
-  padding: 10px;
-  box-sizing: border-box;
-}
 
 /* PlayerCard component */
 .player-cards-container {
   display: flex;
   flex-direction: column;
-  background-color: var(--background-main);
   height: 35%;
-  border: 1px solid var(--border-gray);
-  border-radius: 8px;
+
+  border-radius: 8px 0 0 8px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-top: 1vh;
+  margin-left: 0.5vw;
 }
 
 .player-card {
   display: flex;
   align-items: center;
-  color: var(--text-black);
+  color: var(--text-scheme);
   height: calc(100% / 4);
   border-bottom: 1px solid var(--border-gray);
   padding: 10px;
@@ -56,7 +45,7 @@
 }
 
 .details p:first-child {
-  color: var(--text-black);
+  color: var(--text-scheme);
   font-weight: bold;
 }
 
