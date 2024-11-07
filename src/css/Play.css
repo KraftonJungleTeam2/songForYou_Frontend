@@ -30,14 +30,14 @@
     padding: 10px 0;
   }
   
-  .score-area p:first-child {
-    font-size: 1.2em;
+  .score-area #score-title {
+    font-size: 1.5em;
     color: var(--text-scheme);
     margin-bottom: 10px;
   }
   
-  .score-area p:last-child {
-    font-size: 2em;
+  .score-area #score {
+    font-size: 4em;
     color: var(--text-highlight-bg);
     font-weight: bold;
     margin: 0;
@@ -90,8 +90,8 @@
   
   /* Setting Area 기본 스타일 유지 */
   .setting-area {
-    display: flex;
-    flex-direction: column;
+    /* display: flex; */
+    /* flex-direction: column; */
     height: 30%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
     justify-content: center;
     align-items: center;

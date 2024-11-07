@@ -82,3 +82,10 @@ code {
     
   }
 }
+
+.borderline-horizontal {
+  width: 80%;
+  background-color: var(--border-gray);
+  height: 1px;
+  margin: 0 auto;
+}

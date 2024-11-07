@@ -28,7 +28,7 @@ function Single() {
   }, []);
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'single'}>
       {isMobile ? (
           <>
             {/* 모바일 환경에서는 Preview가 위에 표시되도록 순서 변경 */}

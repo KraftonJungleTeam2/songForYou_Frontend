@@ -5,7 +5,7 @@ import '../css/SideBar.css';
 import { useScreen } from '../Context/ScreenContext';
 import DarkModeToggle from '../components/DarkButton.js';
 
-function Sidebar({ isOpen, toggleSidebar }) {
+function Sidebar({ isOpen, toggleSidebar, current }) {
   const navigate = useNavigate();
   
   // desktop에서 상단 바 사이드 메뉴 버튼 조정할 때
@@ -29,13 +29,18 @@ function Sidebar({ isOpen, toggleSidebar }) {
             <i className='fa-solid fa-x'></i>
           </button> */}
           <button className='nav-button' onClick={() => navigate('/single')}>
-            <i className="fa-solid fa-user"></i>
+            <i id="nav-single" className={`fa-solid fa-user nav-icon ${current === 'single' ? 'selected' : ''}`}></i>
+            <p className="nav-caption">혼자서</p>
           </button>
+          <div className='borderline-horizontal'></div>
           <button className='nav-button' onClick={() => navigate('/multi')}>
-            <i className="fa-solid fa-users"></i>
+            <i id="nav-multi" className={`fa-solid fa-users nav-icon ${current === 'multi' ? 'selected' : ''}`}></i>
+            <p className="nav-caption">다같이</p>
           </button>
+          <div className='borderline-horizontal'></div>
           <button className='nav-button' onClick={() => navigate('/add')}>
-            <i className="fa-solid fa-plus"></i>
+            <i id="nav-add" className={`fa-solid fa-plus nav-icon ${current === 'add' ? 'selected' : ''}`}></i>
+            <p className="nav-caption">노래 추가</p>
           </button>
           <DarkModeToggle />
           </nav>

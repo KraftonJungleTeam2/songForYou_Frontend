@@ -42,7 +42,7 @@ async function MeasureLatency(peerConnectionsRef, ref, micStatRef, singerNetwork
             if (RTTRef.key.length > 7) RTTRef.key.shift();
 
             RTT = RTTRef.key.slice().sort((a, b) => a - b)[Math.floor(RTTRef.key.length/2)];
-            console.log(key, "의 RTTs: ", RTTRef.key.slice(), "선택된 RTT: ", RTT);
+            // console.log(key, "의 RTTs: ", RTTRef.key.slice(), "선택된 RTT: ", RTT);
             RTTs.push(RTT);
             listeners.push({userId: key, value: RTT});
           }

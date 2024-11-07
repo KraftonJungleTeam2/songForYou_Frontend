@@ -286,7 +286,7 @@ const Play = () => {
   usePitchDetection(localStreamRef.current, isPlaying, true, playbackPositionRef, setEntireGraphData, entireReferData, {}, setScore, setInstantScore, null);
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'single'}>
       <div className='play-content-container component-container-play' ref={containerRef}>
           
           {/* Pitch Graph */}
@@ -333,8 +333,8 @@ const Play = () => {
       <div className='score-setting-container component-container-play'>
           
         <div className='score-area'>
-          <p>실시간 점수</p>
-          <p>{score}</p>
+          <p id='score-title'>실시간 점수</p>
+          <p id='score'>{score}</p>
         </div>
         
         <div className='play-info-area'>
