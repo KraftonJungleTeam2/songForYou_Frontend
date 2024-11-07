@@ -2,10 +2,11 @@ import React from 'react';
 import MobileNav from '../components/MobileNav';
 import Sidebar from '../components/SideBar';
 import TopBar from '../components/TopBar';
+import '../css/Base.css';
 
 const PageTemplate = ({ isMobile, isSidebarOpen, toggleSidebar, children }) => {
     return (
-        <div className='single-page'>
+        <div className='base-page'>
             {isMobile ? (
                 <MobileNav />
             ) : (

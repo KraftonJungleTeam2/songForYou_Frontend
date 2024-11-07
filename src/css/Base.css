@@ -1,0 +1,45 @@
+
+.base-page {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background-main);
+  }
+
+.main-content {
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+  }
+  
+.main-content.shifted {
+  margin-left: var(--sidebar-width);
+}
+  
+.content-area {
+    display: flex;
+    height: calc(100vh - var(--top-bar-height));
+    flex-direction: row;
+  }
+  
+  /* 공통된 스타일 */
+.component-container {
+  background-color: var(--background-section);
+  border-radius: 15px;
+  padding: 5px;
+  overflow: hidden;
+  margin-top: 1vw;
+  margin-bottom: 1vw;
+}
+
+
+  @media (max-width: 1024px) {
+    .content-area {
+      flex-direction: column;
+      /* 모바일 하단 바 영역까지 고려 되는지 몰루 */
+      height: calc(100vh - var(--top-bar-height)  - var(--nav-height));
+    }
+
+    .component-container {
+      margin-left: 2vw;
+      margin-right: 2vw;
+    }
+}
