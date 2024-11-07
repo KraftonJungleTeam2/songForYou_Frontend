@@ -7,6 +7,7 @@ import TopBar from '../components/TopBar';
 import { useSongs } from '../Context/SongContext';
 import { useScreen } from '../Context/ScreenContext';
 import MobileNav from '../components/MobileNav';
+import PageTemplate from '../template/PageTemplate';
 
 function Single() {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -27,16 +28,8 @@ function Single() {
   }, []);
 
   return (
-    <div className='single-page'>
+    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} >
       {isMobile ? (
-        <MobileNav />
-      ) : (
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      )}
-      <div className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
-        <TopBar />
-        <div className='content-area'>
-        {isMobile ? (
           <>
             {/* 모바일 환경에서는 Preview가 위에 표시되도록 순서 변경 */}
             <div className='preview-container component-container'>
@@ -65,9 +58,7 @@ function Single() {
             </div>
           </>
         )}
-      </div>
-    </div>
-  </div>
+    </PageTemplate>
 );
 }
 
