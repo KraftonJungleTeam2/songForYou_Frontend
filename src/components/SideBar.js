@@ -29,13 +29,13 @@ function Sidebar({ isOpen, toggleSidebar }) {
             <i className='fa-solid fa-x'></i>
           </button> */}
           <button className='nav-button' onClick={() => navigate('/single')}>
-            <i class="fa-solid fa-user"></i>
+            <i className="fa-solid fa-user"></i>
           </button>
           <button className='nav-button' onClick={() => navigate('/multi')}>
-            <i class="fa-solid fa-users"></i>
+            <i className="fa-solid fa-users"></i>
           </button>
           <button className='nav-button' onClick={() => navigate('/add')}>
-            <i class="fa-solid fa-plus"></i>
+            <i className="fa-solid fa-plus"></i>
           </button>
           <DarkModeToggle />
           </nav>

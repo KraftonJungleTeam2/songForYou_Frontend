@@ -353,7 +353,7 @@ const Play = () => {
             {!dataLoaded && <p className='loading-text'>데이터 로딩 중...</p>}
             
             <button onClick={onClickPlayPauseButton} disabled={!dataLoaded}>
-              {isPlaying ? <i class="fa-solid fa-pause"></i> : <i class="fa-solid fa-play"></i>}
+              {isPlaying ? <i className="fa-solid fa-pause"></i> : <i className="fa-solid fa-play"></i>}
             </button>
           </div>
 
