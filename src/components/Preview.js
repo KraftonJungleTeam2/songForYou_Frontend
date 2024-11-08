@@ -154,6 +154,11 @@ function Preview({ selectedSong }) {
           </button>
         </div>
       </div>
+        <div className="preview-lyrics">
+          {selectedSong.lyrics.segments.map((segment, index) => (
+            <p>{segment.text}</p>
+          ))}
+        </div>
     </div>
   );
 }
