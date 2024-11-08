@@ -14,28 +14,25 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px 15px;
+  padding: 0;
   margin-left: 0.5vw;
+  text-align: center;
 }
 
 /* Score Area 스타일링 */
 .score-area {
-  height: 37.5%;
-  border-bottom: 3px solid var(--border-gray);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
+  border-bottom: 1px solid var(--border-gray);
+  align-content: center;
+  padding: 1em;
 }
 
 .score-area #score-title {
   font-size: 1.5em;
   color: var(--text-scheme);
-  margin-bottom: 10px;
 }
 
 .score-area #score {
+  height: 70%;
   font-size: 4em;
   color: var(--text-highlight-bg);
   font-weight: bold;
@@ -45,12 +42,8 @@
 /* Play Info Area 스타일링 */
 .play-info-area {
   height: 37.5%;
-  border-bottom: 3px solid var(--border-gray);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
+  border-bottom: 1px solid var(--border-gray);
+  padding: 1em;
 }
 
 .play-info-area .playback-info {
@@ -91,7 +84,7 @@
 .setting-area {
   /* display: flex; */
   /* flex-direction: column; */
-  height: 30%; /* 부모 요소의 50% 높이를 차지하도록 설정 */
+  /* height: 30%;  */
   justify-content: center;
   align-items: center;
 }
@@ -162,26 +155,26 @@
 
 /* Speed Control 스타일 */
 .speed-control {
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 15px 0;
+  margin: 15px 0; */
 }
 
 .speed-control label {
-  margin-bottom: 5px;
-  color: var(--text-scheme);
+  /* margin-bottom: 5px;
+  color: var(--text-scheme); */
 }
 
 .speed-control-value {
-  margin-top: 5px;
-  color: var(--text-gray);
+  /* margin-top: 5px;
+  color: var(--text-gray); */
 }
 
 /* Loading */
 .loading-text {
-  color: var(--text-gray);
-  margin-top: 10px;
+  /* color: var(--text-gray);
+  margin-top: 10px; */
 }
 
 /* Play Navigation Button */
@@ -225,6 +218,9 @@
   cursor: pointer;
 }
 @media (min-width: 1024px) {
+  .d-invisible {
+    display: none;
+  }
 }
 @media (max-width: 1023px) {
   .content-area.single {
@@ -233,13 +229,59 @@
   }
 
   .play-content-container {
-    width: 100%;
-    height: 70%;
+    width: calc(100% - 1em);
+    height: 100%;
+    margin: 0.5em;
+    border-radius: 15px;
   }
 
   .score-setting-container {
-    width: 100%;
-    height: 30%;
+    width: calc(100% - 1em);
+    height: 13rem;
+    max-height: 30%;
+    margin: 0.5em;
     flex-direction: row;
+    justify-content: space-around;
+    border-radius: 15px;
+  }
+  
+  /* Score Area 스타일링 */
+  .score-area {
+    width: 50%;
+    border-bottom: 0;
+    border-right: 1px solid var(--border-gray);
+    align-items: center;
+  }
+
+  .score-area #score-title {
+  }
+
+  .score-area #score {
+  }
+
+  .play-info-area {
+    width: 50%;
+    height: 100%;
+    border-bottom: 0;
+    position: relative; 
+    align-content: center;
+  }
+
+  .setting-area {
+    width: 50%;
+    height: 100%;
+    position: relative; 
+    align-content: center;
+  }
+
+  .m-invisible {
+    display: none;
+  }
+
+  .play-setting {
+    position: absolute;
+    right: 1em;
+    top: 0;
+    padding: 0px;
   }
 }

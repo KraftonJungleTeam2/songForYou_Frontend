@@ -93,6 +93,9 @@ const Play = () => {
   const [score, setScore] = useState(0);
   const [instantScore, setInstantScore] = useState(0);
 
+  //
+  const [showSetting, setShowSetting] = useState(false);
+
   useEffect(() => {
     // 슬라이더 진행도 업데이트 함수
     function updateSliderProgress(slider) {
@@ -370,7 +373,8 @@ const Play = () => {
           <p id="score">{score}</p>
         </div>
 
-        <div className="play-info-area">
+        <div className={`play-info-area ${showSetting ? 'm-invisible' : ''}`}>
+          <div className="play-setting is-ghost d-invisible" onClick={() => setShowSetting((old) => !old)}><i className="fa-solid fa-sliders"></i></div>
           <div className="playback-info">
             {playbackPosition.toFixed(1)} / {Math.floor(duration)} 초
           </div>
@@ -386,9 +390,12 @@ const Play = () => {
           </button>
         </div>
 
-        <div className="setting-area">
+        <div className={`setting-area ${showSetting ? '' : 'm-invisible'}`}>
+          <div className="play-setting is-ghost d-invisible" onClick={() => setShowSetting((old) => !old)}><i className="fa-solid fa-sliders"></i></div>
           <div className="speed-control">
-            <label>속도 조절:</label>
+            <p className="speed-control-value">
+              재생 속도: {playbackSpeed} 배
+            </p>
             <input
               type="range"
               min="0.5"
@@ -398,13 +405,12 @@ const Play = () => {
               onChange={handlePlaybackSpeedChange}
               className="range-slider"
             />
-            <div className="speed-control-value">
-              재생 속도: {playbackSpeed} 배
-            </div>
           </div>
 
           <div className="speed-control">
-            <label>렌더링 사이즈:</label>
+            <div className="speed-control-value">
+              렌더링 사이즈: {dataPointCount}
+            </div>
             <input
               type="range"
               min="25"
@@ -414,9 +420,6 @@ const Play = () => {
               onChange={handleSpeedChange}
               className="range-slider"
             />
-            <div className="speed-control-value">
-              렌더링 사이즈: {dataPointCount}
-            </div>
           </div>
         </div>
       </div>
