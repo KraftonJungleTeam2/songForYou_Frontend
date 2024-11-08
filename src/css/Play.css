@@ -90,7 +90,8 @@
 }
 
 .pitch-graph-play {
-  height: 60%;
+  min-height: 65%;
+  height: 65%;
   width: 100%;
   border-radius: 0 15px 0 0;
   border-top: 2px solid var(--border-gray); /* 실선 추가 */
@@ -99,11 +100,11 @@
 
 /* Karaoke Lyrics */
 .karaoke-lyrics {
+  height: 40%;
   max-height: 40%;
   text-align: center;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
   align-content: center;
   overflow-y: auto;
   scrollbar-width: none;
@@ -113,8 +114,9 @@
 .prev-lyrics,
 .next-lyrics {
   margin: auto;
-  font-size: clamp(0rem, 4.5vmin, 100rem);
+  font-size: clamp(0rem, 4vmin, 100rem);
   text-align: center;
+  line-height: 1;
   opacity: 0.6;
   color: var(--text-gray);
   text-align: center;
@@ -124,8 +126,8 @@
   white-space: pre-wrap;
   word-break: break-word;
   position: relative;
-  font-size: clamp(0rem, 7vmin, 100rem);
-  line-height: 1.5;
+  font-size: clamp(0rem, 6vmin, 100rem);
+  line-height: 1.3;
   width: 100%;
   text-align: center;
 }
@@ -229,6 +231,19 @@
   .content-area.single {
     flex-direction: column;
     /* align-items: stretch; */
+  }
+  .pitch-graph-play {
+    min-height: 60%;
+    height: 60%;
+  }
+
+  .prev-lyrics,
+  .next-lyrics {
+    font-size: clamp(0rem, 5vmin, 100rem);
+  }
+
+  .curr-lyrics {
+    font-size: clamp(0rem, 8vmin, 100rem);
   }
 
   .play-content-container {
