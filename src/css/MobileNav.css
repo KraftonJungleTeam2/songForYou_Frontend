@@ -27,3 +27,7 @@
 .nav-button-mobile.active i {
   color: var(--text-highlight-bg); /* 활성화된 아이콘의 색상 변경 */
 }
+
+.nav-caption {
+  font-weight: 600;
+}
