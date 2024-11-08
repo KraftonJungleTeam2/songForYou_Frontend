@@ -194,7 +194,7 @@ function Add() {
       <div className={"main-content"}>
         <div className="add-content-area">
           <div
-            className="component-container"
+            className="component-container" style={{overflowY: 'hidden'}}
           >
             <form onSubmit={handleSubmit} style={{ margin: "auto" }}>
               <label>
