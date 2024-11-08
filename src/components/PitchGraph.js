@@ -67,7 +67,7 @@ const PitchGraph = ({
   // 워커에 데이터 업데이트
   useEffect(() => {
     const worker = workerRef.current;
-
+    // console.log(realtimeData.slice(0, currentTimeIndex+1));
     if (!worker) {
       console.log("no workers");
       return;
@@ -75,7 +75,7 @@ const PitchGraph = ({
 
     worker.postMessage({
       type: "timeData",
-      realtimeData,
+      realtimeData: realtimeData[currentTimeIndex-1],
       multiRealDatas,
       dataPointCount,
       currentTimeIndex,
@@ -83,7 +83,6 @@ const PitchGraph = ({
     });
   }, [
     dimensions,
-    realtimeData,
     multiRealDatas,
     dataPointCount,
     currentTimeIndex,
