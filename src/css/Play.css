@@ -107,6 +107,7 @@
   flex-direction: column;
   align-content: center;
   overflow-y: auto;
+  scrollbar-width: none;
 }
 
 /* Lyrics box */
