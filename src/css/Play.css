@@ -90,7 +90,7 @@
 }
 
 .pitch-graph-play {
-  height: 70%;
+  height: 60%;
   width: 100%;
   border-radius: 0 15px 0 0;
   border-top: 2px solid var(--border-gray); /* 실선 추가 */
@@ -99,11 +99,13 @@
 
 /* Karaoke Lyrics */
 .karaoke-lyrics {
-  /* height: 28%; */
+  max-height: 40%;
   text-align: center;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  align-content: center;
+  overflow-y: auto;
 }
 
 /* Lyrics box */
