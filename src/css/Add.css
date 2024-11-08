@@ -11,7 +11,7 @@
   align-content: center;
   margin: auto;
   padding: 1.5rem;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 .form-container {
