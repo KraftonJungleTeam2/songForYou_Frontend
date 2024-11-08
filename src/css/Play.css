@@ -106,6 +106,7 @@
   flex-grow: 1;
   align-content: center;
   overflow-y: auto;
+  scrollbar-width: none;
 }
 
 /* Lyrics box */
