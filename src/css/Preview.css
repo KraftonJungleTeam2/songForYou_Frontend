@@ -115,7 +115,7 @@
 }
 
 /* 반응형 스타일 */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .preview-image-container {
     width: 21vh;
     height: 21vh;

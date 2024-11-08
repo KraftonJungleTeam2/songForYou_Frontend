@@ -1,13 +1,15 @@
 .base-page {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
+  width: 100dvw;
   background-color: var(--background-main);
 }
 
 .main-content {
   flex-grow: 1;
   transition: margin-left 0.3s ease;
-  height: calc(100% - var(--nav-height))
+  height: calc(100% - var(--nav-height));
+  width: 100%;
 }
 
 .main-content.shifted {
@@ -37,7 +39,7 @@
   margin-bottom: 2vh;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .content-area {
     flex-direction: column;
   }

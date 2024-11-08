@@ -357,7 +357,6 @@ function MultiPlay() {
     }));
 
     if (songs[0] && songs[0].readyBool) {
-      console.log("fuck");
       let songId = songs[0].songId;
       try {
         const response = await fetch(
@@ -491,7 +490,8 @@ function MultiPlay() {
         users.forEach((user) => {
           addPlayer(user.nickname, user.id, user.mic);
         });
-        setReserved(songs);
+        if (songs)
+          setReserved(songs);
       }
     );
 
