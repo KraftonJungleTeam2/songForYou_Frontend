@@ -53,7 +53,7 @@ function Multi() {
 
   useEffect(() => {
     fetchRooms();
-  }, [fetchRooms]);
+  }, []);
 
   const handlePlay = (e, roomId, roomPassword) => {
     e.stopPropagation();

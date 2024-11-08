@@ -196,6 +196,7 @@ function Add() {
           <div
             className="component-container"
           >
+            <p className="has-text-info">유튜브 URL 또는 파일을 업로드하여 노래를 추가할 수 있습니다.</p>
             <form onSubmit={handleSubmit} style={{ margin: "auto" }}>
               <label>
                 파일로 업로드하기:
