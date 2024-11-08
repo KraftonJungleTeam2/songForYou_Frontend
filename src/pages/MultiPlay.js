@@ -1270,6 +1270,7 @@ function MultiPlay() {
               onClose={closePopup}
               reservedSongs={reservedSongs}
               songLists={songLists}
+              isPlaying={isPlaying}
             />
           )}
         </div>

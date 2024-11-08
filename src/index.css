@@ -41,6 +41,15 @@ code {
   --gradient-end: #fea42c; /* 그라데이션 끝 색 */
   --text-neutral-bg: #d3d3d3; /* 버튼 배경색 */
 
+
+  /* 추가/선택에 대한 초록색 계열 */
+  --action-green: #2ecc71; /* 기본 초록 */
+  --action-green-hover: #27ae60; /* 호버 시 진한 초록 */
+
+  /* 삭제에 대한 빨간색 계열 */
+  --action-red: #e74c3c; /* 기본 빨강 */
+  --action-red-hover: #c0392b; /* 호버 시 진한 빨강 */
+
   /* 텍스트 색상 */
   --text-white: #ffffff; /* 밝은 배경에서는 검은색 글씨 */
   --text-black: #000000;
