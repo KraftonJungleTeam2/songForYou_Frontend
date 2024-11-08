@@ -326,7 +326,7 @@ const Play = () => {
             realtimeData={entireGraphData}
             referenceData={entireReferData}
             dataPointCount={dataPointCount}
-            currentTimeIndex={playbackPosition * 40}
+            currentTimeIndex={Math.floor(playbackPosition * 40)}
             songimageProps={song}
             score={instantScore}
           />
