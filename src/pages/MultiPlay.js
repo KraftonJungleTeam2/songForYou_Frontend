@@ -107,7 +107,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
   const entireReferDataRef = useRef([]);
-  const [dataPointCount, setDataPointCount] = useState(75);
+  const [dataPointCount, setDataPointCount] = useState(50);
 
   //채팅 관련
   const [messages, setMessages] = useState([]);
