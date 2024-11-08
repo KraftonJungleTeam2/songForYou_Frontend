@@ -8,7 +8,8 @@
 .song-item {
   display: flex;
   align-items: center;
-  padding: 0.8rem;
+  justify-content: space-between;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--border-gray);
   transition: background-color 0.3s;
   height: 5rem;
@@ -22,9 +23,17 @@
   color: var(--text-black);
 }
 
+.song-icon {
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 4rem;
+  height: 4rem;
+  background-position: center;
+}
+
 .song-info {
-  flex-grow: 1;
-  margin: 1rem;
+  width: calc(100% - 7rem);
+  margin: 0 auto 0.5rem;
 }
 
 .song-info h3 {
@@ -37,6 +46,10 @@
   margin: 0;
   font-size: 14px;
   color: var(--text-gray);
+}
+.play-button {
+  width: 2rem;
+  font-size: 2rem;
 }
 
 /* 추가 배너 스타일 */
@@ -77,4 +90,10 @@
   margin-top: 5px;
   font-size: 14px;
   color: var(--text-gray);
+}
+
+@media (max-width: 1023px) {
+  .song-info h3 {
+    font-size: 1rem;
+  }
 }
