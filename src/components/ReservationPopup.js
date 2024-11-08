@@ -135,7 +135,7 @@ const ReservationPopup = ({
             )}
           </div>
 
-          <button className="button" onClick={onClose}>
+          <button className="close-button-pop"onClick={onClose}>
             닫기
           </button>
         </div>

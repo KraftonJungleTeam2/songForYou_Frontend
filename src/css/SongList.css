@@ -14,6 +14,12 @@
   height: 5rem;
 }
 
+.song-icon {
+  flex-shrink: 0; /* 아이콘 크기 고정 */
+  width: 4rem;
+  height: 4rem;
+  margin-right: 1rem; /* 아이콘과 텍스트 사이 간격 */
+}
 .song-item:hover {
   background-color: var(--text-highlight-bg);
 }
@@ -23,8 +29,11 @@
 }
 
 .song-info {
-  flex-grow: 1;
-  margin: 1rem;
+  flex-grow: 1; /* 남은 공간을 차지하도록 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  white-space: nowrap; /* 텍스트 한 줄로 표시 */
+  text-overflow: ellipsis; /* 넘치는 텍스트를 생략(...) 처리 */
+  margin: 0;
 }
 
 .song-info h3 {
