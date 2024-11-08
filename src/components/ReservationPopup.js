@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import '../css/ReservationPopup.css'
 
 const ReservationPopup = ({
   roomid,
@@ -21,7 +22,7 @@ const ReservationPopup = ({
 
   const handleReserve = (e, song) => {
     e.stopPropagation();
-
+    console.log(song);
     socket.emit("reserveSong", { song: song, roomId: roomid });
   };
 
@@ -44,9 +45,9 @@ const ReservationPopup = ({
   );
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.popup}>
-        <div className="song-list-area">
+    <div className="overlay">
+      <div className="popup">
+        <div className="song-list-area" style={{borderRight: "3px solid var(--border-gray)", borderRadius: 0}}>
           <div className="top-section">
             <div
               className="tabs"
@@ -79,7 +80,7 @@ const ReservationPopup = ({
             </div>
           </div>
 
-          <div className="song-list">
+          <div className="song-list" style={{marginBottom: "2vh"}}>
             {filteredSongs.length === 0 ? (
               <p>노래가 없습니다.</p>
             ) : (
@@ -128,38 +129,20 @@ const ReservationPopup = ({
               ))
             )}
           </div>
-        </div>
 
-        <button className="button" onClick={onClose}>
+        <button className="button" onClick={onClose} style={{width: '95%', marginLeft: '2.5%'}}>
           닫기
         </button>
+        </div>
+        <div className="reserve-list">
+          hi
+        </div>
       </div>
+
+
     </div>
   );
 };
 
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  popup: {
-    backgroundColor: "#fff",
-    padding: "20px",
-    borderRadius: "8px",
-    width: "40rem",
-    height: "80%",
-    textAlign: "center",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-  },
-};
 
 export default ReservationPopup;

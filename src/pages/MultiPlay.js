@@ -659,6 +659,8 @@ function MultiPlay() {
           songId: data.song.id,
           image: data.song.image,
           songData: null,
+          // 예약 리스트를 위한 song state저장
+          song: data.song,
         };
         setReservedSongs((prev) => [...prev, reserved]);
       } catch (error) {
