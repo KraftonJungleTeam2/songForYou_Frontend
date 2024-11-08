@@ -1,6 +1,6 @@
 .base-page {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   background-color: var(--background-main);
 }
 
@@ -37,7 +37,7 @@
   margin-bottom: 2vh;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .content-area {
     flex-direction: column;
   }
