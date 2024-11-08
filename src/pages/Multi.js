@@ -83,9 +83,9 @@ function Multi() {
   };
 
   const roomCards = [...rooms];
-  while (roomCards.length < roomsPerPage) {
-    roomCards.push({ roomId: `empty-${roomCards.length}`, empty: true });
-  }
+  // while (roomCards.length < roomsPerPage) {
+  //   roomCards.push({ roomId: `empty-${roomCards.length}`, empty: true });
+  // }
 
   return (
     <PageTemplate
@@ -98,10 +98,6 @@ function Multi() {
         <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
       ) : (
         <div className="main-area">
-          <button className="page-button" onClick={handlePreviousPage}>
-            <i className="fa-solid fa-circle-chevron-left"></i>
-          </button>
-
           <div className="room-list">
             {roomCards.map((room, index) => (
               <div
@@ -131,10 +127,6 @@ function Multi() {
               </div>
             ))}
           </div>
-
-          <button className="page-button" onClick={handleNextPage}>
-            <i className="fa-solid fa-circle-chevron-right"></i>
-          </button>
         </div>
       )}
 
