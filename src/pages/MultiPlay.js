@@ -195,7 +195,6 @@ function MultiPlay() {
   }, [entireReferData]);
 
   useEffect(() => {
-    console.log("currentData", currentData);
     if (currentData !== null && currentData.ready == true) {
       setMrDataBlob(currentData.songData.mr); // Blob 데이터 저장
       setLyricsData(currentData.songData.lyrics);
@@ -225,7 +224,6 @@ function MultiPlay() {
   }, [currentData]);
 
   useEffect(() => {
-    console.log("reservedSongs", reservedSongs);
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
@@ -338,7 +336,6 @@ function MultiPlay() {
   };
 
   const updatePlayerMic = (userId, micBool) => {
-    console.log("update mic of", userId);
     setPlayers((prevPlayers) =>
       prevPlayers.map((player) =>
         player?.userId === userId ? { ...player, mic: micBool } : player
@@ -388,7 +385,6 @@ function MultiPlay() {
       // 서버 시간과 클라이언트 시간 차이를 고려하여 시작 시간 설정
       const clientStartTime =
         currentPlayingSong.startTime + serverTimeDiff.current;
-      console.log("clientStartTime", clientStartTime);
       startTimeRef.current = clientStartTime;
     }
     setReservedSongs(formattedSongs);
@@ -1148,9 +1144,8 @@ function MultiPlay() {
     >
       <div className="sing-area component-container-play" ref={containerRef}>
         <div className="information-area">
-          <p>현재곡</p>
-          <p>가수</p>
-          <p>곡번호</p>
+          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
+          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p>
         </div>
 
         <div className="pitch-graph-multi">
@@ -1247,15 +1242,6 @@ function MultiPlay() {
             예약하기
           </button>
 
-          {/* <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
-            {useCorrection ? '보정끄기' : '보정켜기'}
-          </button>
-          <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-          <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
-          <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
-          <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
-          <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
-           */}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
@@ -1296,7 +1282,7 @@ function MultiPlay() {
                 onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="메시지를 입력하세요"
               />
-              <button onClick={sendMessage}>전송</button>
+              <button onClick={sendMessage}><i className="fa-regular fa-paper-plane"></i></button>
             </div>
           
         </div>
