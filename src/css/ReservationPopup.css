@@ -57,30 +57,11 @@
   border-bottom-color: #ffcc00; /* 탭의 밑줄 색상도 동일하게 */
 }
 
-.song-list-area {
+.popup .song-list-area {
   border-right: 2px solid var(--border-gray);
   border-radius: 0;
   padding-right: 1vw;
 }
-/* 예약 버튼 */
-.button.is-dark {
-  /* background-color: var(--text-scheme);
-  color: var(--text-white);
-  border: none;
-  opacity: 0.7; */
-}
-
-/* .button.is-dark:hover:not([disabled]) {
-  background-color: var(--action-green-hover);
-  cursor: pointer;
-}
-
-.button.is-dark[disabled] {
-  background-color: var(--text-neutral-bg);
-  color: var(--text-gray);
-  cursor: not-allowed;
-  pointer-events: none;
-} */
 
 /* 닫기 버튼 */
 .close-button-pop {
