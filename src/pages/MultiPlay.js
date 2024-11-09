@@ -107,7 +107,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
   const entireReferDataRef = useRef([]);
-  const [dataPointCount, setDataPointCount] = useState(75);
+  const [dataPointCount, setDataPointCount] = useState(50);
 
   //채팅 관련
   const [messages, setMessages] = useState([]);
@@ -357,7 +357,6 @@ function MultiPlay() {
     }));
 
     if (songs[0] && songs[0].readyBool) {
-      console.log("fuck");
       let songId = songs[0].songId;
       try {
         const response = await fetch(
@@ -491,7 +490,8 @@ function MultiPlay() {
         users.forEach((user) => {
           addPlayer(user.nickname, user.id, user.mic);
         });
-        setReserved(songs);
+        if (songs)
+          setReserved(songs);
       }
     );
 
@@ -659,6 +659,8 @@ function MultiPlay() {
           songId: data.song.id,
           image: data.song.image,
           songData: null,
+          // 예약 리스트를 위한 song state저장
+          song: data.song,
         };
         setReservedSongs((prev) => [...prev, reserved]);
       } catch (error) {
@@ -1002,6 +1004,31 @@ function MultiPlay() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 슬라이더 업데이트 함수
+  useEffect(() => {
+    // 슬라이더 진행도 업데이트 함수
+    function updateSliderProgress(slider) {
+      const max = slider.max;
+      const value = slider.value;
+      const percentage = (value / max) * 100;
+      slider.style.backgroundSize = `${percentage}% 100%`;
+    }
+
+    // 슬라이더 요소 선택
+    const slider = document.querySelector(".range-slider-play");
+    if (slider) {
+      updateSliderProgress(slider); // 초기 진행 상태 업데이트
+      slider.addEventListener("input", () => updateSliderProgress(slider)); // 슬라이더 변경 시 업데이트
+    }
+
+    // Cleanup
+    return () => {
+      if (slider) {
+        slider.removeEventListener("input", () => updateSliderProgress(slider));
+      }
+    };
+  }, [playbackPosition]); // playbackPosition 변경 시마다 실행
+
   // 지연 시간 측정을 위해 서버에 ping 메시지 전송 함수
   const sendPing = () => {
     const sendTime = performance.now();
@@ -1139,6 +1166,17 @@ function MultiPlay() {
           />
         </div>
 
+        {/* 오디오 플레이어 컨트롤 */}
+        <input
+          className="range-slider-play"
+          type="range"
+          min="0"
+          max={duration}
+          step="0.025"
+          value={playbackPositionRef.current}
+          disabled={true}
+        />
+
         {/* 현재 재생 중인 가사 출력 */}
         <div className="karaoke-lyrics">
           <p className="prev-lyrics">{prevLyric}</p>
@@ -1173,7 +1211,7 @@ function MultiPlay() {
         />
       </div>
 
-      <div className="players-chat component-container-play">
+      <div className="players-chat">
         <PlayerCard
           players={players}
           socketId={socketId}
@@ -1217,12 +1255,12 @@ function MultiPlay() {
           <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
           <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
           <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
-          
+           */}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
             ))}
-          </div> */}
+          </div>
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && (
@@ -1232,13 +1270,13 @@ function MultiPlay() {
               onClose={closePopup}
               reservedSongs={reservedSongs}
               songLists={songLists}
+              isPlaying={isPlaying}
             />
           )}
         </div>
 
         <div className="chat-area">
-          {" "}
-          <div className="chat-container">
+          
             <div className="messages">
               {messages.map((msg, index) => (
                 <div key={index} className="message">
@@ -1256,11 +1294,11 @@ function MultiPlay() {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="메시지를 입력하세요..."
+                placeholder="메시지를 입력하세요"
               />
               <button onClick={sendMessage}>전송</button>
             </div>
-          </div>
+          
         </div>
       </div>
     </PageTemplate>

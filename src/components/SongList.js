@@ -51,11 +51,6 @@ function SongList({ onSongSelect, searchTerm, songs }) {
                 backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(
                   song.image.data
                 )})`,
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
-                width: "4rem", // 원하는 크기로 설정
-                height: "4rem",
-                backgroundPosition: "center",
               }}
               alt={song.metadata.title}
             />

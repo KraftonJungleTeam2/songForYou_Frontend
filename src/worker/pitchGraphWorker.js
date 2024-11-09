@@ -9,6 +9,7 @@ import {
 
 let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, frequencies, scales;
 let referData = [];
+let realData = [];
 let dimensions = { width: 1, height: 1 }; // 초기 dimensions 값 설정
 let stars = [];
 let starImage;
@@ -54,6 +55,8 @@ self.onmessage = async (event) => {
   if (data.type === "refData") {
     if (!arraysEqual(referData, data.referenceData)) {
       referData = data.referenceData;
+      realData = Array(referData.length).fill(null);
+
       const temp = getFrequencyRange(
         Math.min(...referData.filter((num) => num > 0)),
         Math.max(...referData)
@@ -64,15 +67,19 @@ self.onmessage = async (event) => {
       updateBackground();
     }
   } else if (data.type === "timeData") {
+    // console.log(data.realtimeData);
+    // console.log(data.currentTimeIndex);
     // 프레임을 그리는 함수 호출
     if (
-      data.realtimeData &&
-      referData &&
-      Array.isArray(data.realtimeData) &&
+      referData && realData&&
       Array.isArray(referData)
     ) {
+      if(data.currentTimeIndex > 0){
+      realData[data.currentTimeIndex-1] = data.realtimeData;
+      // console.log(realData.slice(0, data.currentTimeIndex+1));
+      }
       drawFrame(
-        data.realtimeData,
+        realData,
         data.multiRealDatas,
         referData,
         data.dataPointCount,
@@ -191,6 +198,8 @@ function drawFrame(
   dataCtx.clearRect(0, 0, dimensions.width, dimensions.height);
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
+  // console.log(realtimeData.slice(0, currentTimeIndex));
+
   drawPitchData(
     referenceData,
     "#EEEEEE",
@@ -201,6 +210,7 @@ function drawFrame(
     null
   );
   if (multiRealDatas) {
+    
     Object.entries(multiRealDatas).forEach(([key, multiData]) => {
       if (key !== "myId") {
         drawPitchData(
@@ -248,6 +258,8 @@ function drawPitchData(
 ) {
   if (!dataCtx || !Array.isArray(data)) return;
 
+  console.log(data.slice(0, currentTimeIndex));
+  
   const graphWidth = dimensions.width;
   dataCtx.strokeStyle = color;
   dataCtx.lineWidth = 3;
@@ -306,15 +318,32 @@ function drawPitchData(
     // 과거 데이터는 투명도 적용
     dataCtx.globalAlpha = !isRealtime && x1 + 1 <= x0 ? 0.2 : 1.0;
 
-    // 별 추가
-
     // 선 그리기
+    dataCtx.lineWidth = 5;
     dataCtx.beginPath();
     dataCtx.moveTo(x1, y1);
     dataCtx.lineTo(x2, y2);
     dataCtx.stroke();
+
+    // isRealtime이 false인 경우, 위 아래 2 반음 영역 표시 (테스트)
+    // if (!isRealtime) {
+    //   const halfStep = Math.pow(2, 1/12); // 반음 간격
+    //   const upperFreq = point * halfStep * halfStep;
+    //   const lowerFreq = point / halfStep / halfStep;
+
+    //   const upperY = logScale(upperFreq, dimensions, frequencies);
+    //   const lowerY = logScale(lowerFreq, dimensions, frequencies);
+
+    //   if (upperY !== null && lowerY !== null) {
+    //     dataCtx.beginPath();
+    //     dataCtx.fillStyle = "rgba(255, 255, 255, 0.2)";
+    //     dataCtx.rect(x2 - 2, upperY, 4, lowerY - upperY);
+    //     dataCtx.fill();
+    //   }
+    // }
   });
-  if (score > 0.5 && currentTimeIndex % 2 === 0) {
+
+  if (score > 0.3 && currentTimeIndex % 2 === 0) {
     if (data[currentTimeIndex])
       addStar(
         x0,
@@ -330,8 +359,8 @@ function drawPitchData(
   }
 
   stars = stars.filter((star) => {
-    const width = Math.floor(starImage.width * star.size);
-    const height = Math.floor(starImage.height * star.size);
+    const width = Math.floor(starImage.width * star.size * 1.5);
+    const height = Math.floor(starImage.height * star.size*1.5);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(
       starImage,
