@@ -106,17 +106,18 @@ function Multi() {
       <div className="main-area">
         <div id="room-list-container" className="component-container">
           <div className="top-section room">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="검색"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-            <button className="search-button">
-              <i className="fa-solid fa-magnifying-glass"></i>
-            </button>
-          </div>
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="검색"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+              <button className="search-button">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </div>
+            <div className="buttons-room">
             <button className="button is-normal button-refresh" onClick={fetchRooms}>
               <i className="fa-solid fa-rotate-right"></i>
             </button>
@@ -126,6 +127,8 @@ function Multi() {
             >
               <i className={`fa-solid fa-plus`}></i> 방 만들기
             </button>
+            
+            </div>
           </div>
           <div className="room-list">
             {roomCards.map((room, index) => (
