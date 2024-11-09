@@ -28,6 +28,7 @@
   display: flex;
   align-items: center;
   width: 100%;
+  height: 100%;
 }
 
 .details {
@@ -36,28 +37,42 @@
   flex-direction: column;
   margin-left: 10px;
   text-align: center;
+  height: 100%;
+  justify-content: space-around;
 }
 
-.details p {
+.details .player-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.details .player-details span {
   margin: 2px 0;
   font-size: 14px;
   color: var(--text-gray);
 }
 
-.details p:first-child {
+.details .player-details span:first-child {
   color: var(--text-scheme);
   font-weight: bold;
 }
 
 .color-display {
   display: flex;
+  width: 20%;
+  max-width: 4dvh;
   align-items: center;
   justify-content: center;
 }
 
 .color-circle {
-  width: 2rem;
-  height: 2rem;
+  width: 100%;
   border-radius: 50%;
   border: 1px solid var(--border-gray);
+}
+
+.color-circle:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
 }
