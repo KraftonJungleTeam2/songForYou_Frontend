@@ -21,9 +21,10 @@ function Single() {
   };
 
   useEffect(() => {
-    
-    fetchSongLists();
-    console.log(songLists);
+    if(songLists.public.length === 0)
+      {
+      fetchSongLists();
+      }
   }, []);
 
   return (
