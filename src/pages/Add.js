@@ -191,19 +191,19 @@ function Add() {
       toggleSidebar={toggleSidebar}
       current={"add"}
     >
-      <div className={"main-content"}>
+
         <div className="add-content-area">
-          <div
-            className="component-container"
-          >
+          <div className="component-container add-container">
             <p className="has-text-info">유튜브 URL 또는 파일을 업로드하여 노래를 추가할 수 있습니다.</p>
-            <form onSubmit={handleSubmit} style={{ margin: "auto" }}>
-              <label>
+            <form className="add-form" onSubmit={handleSubmit} style={{ margin: "auto" }}>
+            
+              <label style={{display: "flex"}}>
                 파일로 업로드하기:
                 <input
                   type="checkbox"
                   checked={uploadWithFile}
                   onChange={(e) => setUploadWithFile(e.target.checked)}
+                  style={{width: "20%"}}
                 />
               </label>
               {uploadWithFile ? (
@@ -234,7 +234,7 @@ function Add() {
                 />
               </label>
               <label>
-                제목
+                제목:
                 <input
                   type="text"
                   value={title}
@@ -243,7 +243,7 @@ function Add() {
                 />
               </label>
               <label>
-                설명
+                가수:
                 <input
                   type="text"
                   value={description}
@@ -251,13 +251,14 @@ function Add() {
                   required
                 />
               </label>
-              <label>
+              <label  style={{display: "flex"}}>
                 공개 여부:
                 <input
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                   required
+                  style={{width: "20%"}}
                 />
               </label>
               <label>
@@ -270,8 +271,8 @@ function Add() {
                 />
               </label>
               <label>언어:</label>
-              <div style={{ display: "flex", justifyContent: "space-around" }}>
-                <label style={{ textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-around"}}>
+                <label style={{ textAlign: "center", flexDirection: "column"}}>
                   <input
                     type="radio"
                     value="ko"
@@ -281,7 +282,7 @@ function Add() {
                   한국어
                 </label>
 
-                <label style={{ textAlign: "center" }}>
+                <label style={{ textAlign: "center", flexDirection: "column" }}>
                   <input
                     type="radio"
                     value="en"
@@ -291,7 +292,7 @@ function Add() {
                   영어
                 </label>
 
-                <label style={{ textAlign: "center" }}>
+                <label style={{ textAlign: "center", flexDirection: "column" }}>
                   <input
                     type="radio"
                     value="others"
@@ -312,7 +313,7 @@ function Add() {
             </form>
           </div>
         </div>
-      </div>
+    
     </PageTemplate>
   );
 }

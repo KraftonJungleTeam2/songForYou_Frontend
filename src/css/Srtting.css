@@ -1,0 +1,213 @@
+/* Setting.css */
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  /* 프로필 사진 섹션 */
+  .profile-picture-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-picture {
+    width: 120px; /* 크기 조정 */
+    height: 120px; /* 크기 조정 */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+  }
+  
+  /* 추가: 프로필 사진 업로드 인풋 스타일 */
+  .profile-picture-input {
+    padding: 5px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  /* 기타 스타일 */
+  .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .form-group input {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  /* 로그아웃 버튼 스타일 */
+  .logout-button {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 15px;
+  }
+  
+  .logout-button:hover {
+    background-color: #555;
+  }
+  
+  /* 정보 업데이트 버튼 스타일 */
+  .update-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .update-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* 계정 삭제 버튼 스타일 */
+  .delete-button {
+    background-color: #d9534f;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .delete-button:hover {
+    background-color: #c9302c;
+  }
+  
+  /* 사이드바 토글 및 네비게이션 버튼 스타일 */
+  .multiplay-nav-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .multiplay-nav-button:hover {
+    color: #007bff;
+  }
+  
+
+  /* 전체 프로필 편집 컨테이너 */
+.profile-edit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    background-color: #2f3136;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* 프로필 이미지 섹션 */
+  .profile-image-section {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #5865f2;
+  }
+  
+  .change-image-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #5865f2;
+    color: #ffffff;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .change-image-btn:hover {
+    background-color: #4752c4;
+  }
+  
+  /* 프로필 정보 섹션 */
+  .profile-info-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+  }
+  
+  .profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .profile-label {
+    font-size: 0.9rem;
+    color: #b9bbbe;
+  }
+  
+  .profile-input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #40444b;
+    color: #ffffff;
+  }
+  
+  .profile-input:focus {
+    outline: none;
+    border: 1px solid #5865f2;
+  }
+  
+  /* 저장 버튼 스타일 */
+  .save-profile-btn {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #5865f2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .save-profile-btn:hover {
+    background-color: #4752c4;
+  }
+  
