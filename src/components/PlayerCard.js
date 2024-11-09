@@ -17,7 +17,6 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
           >
             {players[index] ? (
               <div className="player-info">
-
                 {/* 색깔 표시 영역 */}
                 <div className="color-display">
                   <div
@@ -35,13 +34,14 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                 {/* 플레이어 상세 정보 */}
                 <div className="details">
                   <p className="player-details">
-                    <span>{players[index].name}  {players[index].mic ? "🎤" : "  "}
+                    <span>
+                      {players[index].name} {players[index].mic ? "🎤" : "  "}
                     </span>
                     <span>
-                    {players[index].userId === socketId.current
-                      ? score
-                      : players[index].score}
-                    점
+                      {players[index].userId === socketId.current
+                        ? score
+                        : players[index].score}
+                      점
                     </span>
                   </p>
                   {players[index].userId !== socketId.current ? (
@@ -56,8 +56,6 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                     />
                   ) : null}
                 </div>
-
-                
               </div>
             ) : (
               <p>빈 자리</p>
