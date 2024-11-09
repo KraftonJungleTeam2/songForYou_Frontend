@@ -10,6 +10,7 @@ import {
 let dataCanvas, backgroundCanvas, dataCtx, backgroundCtx, frequencies, scales;
 let referData = [];
 let realData = [];
+let multiDataArrays = {};
 let dimensions = { width: 1, height: 1 }; // 초기 dimensions 값 설정
 let stars = [];
 let starImage;
@@ -71,20 +72,35 @@ self.onmessage = async (event) => {
     // console.log(data.currentTimeIndex);
     // 프레임을 그리는 함수 호출
     if (
-      referData && realData&&
+      referData && realData &&
       Array.isArray(referData)
     ) {
-      if(data.currentTimeIndex > 0){
-      realData[data.currentTimeIndex-1] = data.realtimeData;
-      // console.log(realData.slice(0, data.currentTimeIndex+1));
+      if (data.currentTimeIndex > 0) {
+        realData[data.currentTimeIndex - 1] = data.realtimeData;
+        // console.log(realData.slice(0, data.currentTimeIndex+1));
       }
+
+      if (data.multiData) {
+        Object.entries(data.multiData).forEach(([key, value]) => {
+          if (key in multiDataArrays) {
+            // 키가 존재하면 해당 인덱스에 값 할당
+            multiDataArrays[key][data.currentTimeIndex - 1] = value;
+          } else {
+            // 키가 없으면 빈 배열 생성 후 해당 인덱스에 값 할당
+            multiDataArrays[key] = new Array(referData.length).fill(null);
+            multiDataArrays[key][data.currentTimeIndex - 1] = value;
+          }
+        });
+      }
+
       drawFrame(
         realData,
-        data.multiRealDatas,
+        multiDataArrays,
         referData,
         data.dataPointCount,
         data.currentTimeIndex,
-        data.score
+        data.score,
+        data.socketId
       );
     }
   } else if (data.type === "dimensionsData") {
@@ -192,14 +208,15 @@ function drawFrame(
   referenceData,
   dataPointCount,
   currentTimeIndex,
-  score
+  score,
+  socketId
 ) {
   if (!dataCtx) return; // dataCtx가 초기화되었는지 확인
   dataCtx.clearRect(0, 0, dimensions.width, dimensions.height);
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
   // console.log(realtimeData.slice(0, currentTimeIndex));
-
+  
   drawPitchData(
     referenceData,
     "#EEEEEE",
@@ -210,41 +227,32 @@ function drawFrame(
     null
   );
   if (multiRealDatas) {
-    
-    Object.entries(multiRealDatas).forEach(([key, multiData]) => {
-      if (key !== "myId") {
-        drawPitchData(
-          multiData,
-          stringToColor(key),
-          "coral",
-          currentTimeIndex,
-          true,
-          dataPointCount,
-          null
-        );
-      } else {
-        drawPitchData(
-          realtimeData,
-          stringToColor(multiData),
-          "coral",
-          currentTimeIndex,
-          true,
-          dataPointCount,
-          score
-        );
-      }
+    Object.keys(multiDataArrays).forEach(key => {
+      if (!key in multiRealDatas)
+        delete multiDataArrays[key];
+    })
+
+    Object.entries(multiRealDatas).forEach(([key, value]) => {
+      drawPitchData(
+        value,
+        stringToColor(key),
+        "coral",
+        currentTimeIndex,
+        true,
+        dataPointCount,
+        score
+      );
     });
-  } else {
-    drawPitchData(
-      realtimeData,
-      "#FFA500",
-      "coral",
-      currentTimeIndex,
-      true,
-      dataPointCount,
-      score
-    );
   }
+  drawPitchData(
+    realtimeData,
+    stringToColor(socketId),
+    "coral",
+    currentTimeIndex,
+    true,
+    dataPointCount,
+    score
+  );
 }
 
 function drawPitchData(
@@ -259,7 +267,7 @@ function drawPitchData(
   if (!dataCtx || !Array.isArray(data)) return;
 
   console.log(data.slice(0, currentTimeIndex));
-  
+
   const graphWidth = dimensions.width;
   dataCtx.strokeStyle = color;
   dataCtx.lineWidth = 3;
@@ -278,9 +286,9 @@ function drawPitchData(
   const visibleData = isRealtime
     ? data.slice(start, currentTimeIndex + 1)
     : data.slice(
-        start,
-        Math.min(data.length, Math.floor(currentTimeIndex) + dataPointCount * 2)
-      );
+      start,
+      Math.min(data.length, Math.floor(currentTimeIndex) + dataPointCount * 2)
+    );
 
   const windowSize = dataPointCount * 3;
   const pixelsPerIndex = graphWidth / windowSize;
@@ -360,7 +368,7 @@ function drawPitchData(
 
   stars = stars.filter((star) => {
     const width = Math.floor(starImage.width * star.size * 1.5);
-    const height = Math.floor(starImage.height * star.size*1.5);
+    const height = Math.floor(starImage.height * star.size * 1.5);
     dataCtx.globalAlpha = star.alpha;
     dataCtx.drawImage(
       starImage,

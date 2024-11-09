@@ -205,10 +205,7 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
           setEntireReferData(processedPitchArray);
-
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
-
-          pitchArraysRef.current["myId"] = socketId.current;
 
           Object.keys(dataChannelsRef.current).forEach((key) => {
             pitchArraysRef.current[key] = new Array(
@@ -1177,6 +1174,7 @@ function MultiPlay() {
             currentTimeIndex={playbackPosition * 40}
             songimageProps={reservedSongs[0]}
             score={instantScore}
+            socketId={socketId.current}
           />
         </div>
 
