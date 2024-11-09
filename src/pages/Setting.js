@@ -133,58 +133,59 @@ function Setting() {
     >
       <div className="setting-content-area">
         <div className="settings-container component-container">
-          <h2>프로필 설정</h2>
+          <h1 style={{textAlign: "center"}}>프로필 설정</h1>
 
-          {/* 프로필 사진 섹션 */}
-          <div className="profile-picture-section">
-            <img
-              src={userData.profilePicture || "https://via.placeholder.com/100"}
-              alt="Profile"
-              className="profile-picture"
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleProfilePictureChange}
-              className="profile-picture-input"
-            />
-            <div className="profile-picture-overlay">
-              <span>이미지 업로드</span>
+          {/* 프로필 사진과 사용자 정보 수정 폼 */}
+          <div className="profile-settings">
+            {/* 프로필 사진 섹션 */}
+            <div className="profile-picture-section">
+              <img
+                src={userData.profilePicture || "https://via.placeholder.com/100"}
+                alt="Profile"
+                className="profile-picture"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                className="profile-picture-input"
+              />
+              <div className="profile-picture-overlay">
+                <span>이미지 업로드</span>
+              </div>
             </div>
+
+            {/* 사용자 정보 수정 폼 */}
+            <form onSubmit={handleSubmit} className="profile-edit-form">
+              <div className="form-group">
+                <label htmlFor="name">이름:</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={userData.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">이메일:</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={userData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <button type="submit" className="update-button">프로필 변경</button>
+            </form>
           </div>
 
-          {/* 사용자 정보 수정 폼 */}
-          <form onSubmit={handleSubmit} className="profile-edit-form">
-            <div className="form-group">
-              <label htmlFor="name">이름:</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={userData.name}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">이메일:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={userData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <button type="submit" className="update-button">프로필 변경</button>
-          </form>
-
-          <button className="logout-button" onClick={handleLogout}>
-            로그아웃
-          </button>
-          <button onClick={handleDeleteAccount} className="delete-button">
-            계정 삭제
-          </button>
-
+          {/* 로그아웃 및 계정 삭제 버튼 */}
+          <div className="button-group">
+            <button className="logout-button" onClick={handleLogout}>로그아웃</button>
+            <button onClick={handleDeleteAccount} className="delete-button">계정 삭제</button>
+          </div>
         </div>
       </div>
     </PageTemplate>
