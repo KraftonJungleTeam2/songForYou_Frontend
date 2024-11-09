@@ -194,7 +194,7 @@ function Add() {
 
         <div className="add-content-area">
           <div className="component-container add-container">
-            <p className="has-text-info">유튜브 URL 또는 파일을 업로드하여 노래를 추가할 수 있습니다.</p>
+            <p style={{color: "var(--text-scheme)", fontWeight: "bold"}}>유튜브 URL 또는 파일을 업로드하여 노래를 추가할 수 있습니다.</p>
             <form className="add-form" onSubmit={handleSubmit} style={{ margin: "auto" }}>
             
               <label style={{display: "flex"}}>
@@ -303,7 +303,7 @@ function Add() {
                 </label>
               </div>
               <button
-                className={`button ${isWaiting ? "is-loading" : ""}`}
+                className={`add-button ${isWaiting ? "is-loading" : ""}`}
                 disabled={isWaiting}
                 type="submit"
                 style={{marginTop: '2em'}}

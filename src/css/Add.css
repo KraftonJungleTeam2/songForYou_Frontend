@@ -42,7 +42,7 @@
 
 .add-form label {
   color: var(--text-scheme);
-  font-weight: bold;
+  /* font-weight: bold; */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,9 +58,8 @@
 .add-form textarea {
   padding: 0.5rem;
   font-size: 1rem;
-  border: 1px solid var(--border-gray);
+  border: 1px solid var(--border-hover);
   border-radius: 5px;
-  background-color: var(--text-neutral-bg);
   width: 70%; /* 입력 필드의 폭을 조정 */
 }
 
@@ -120,26 +119,9 @@
   margin-right: 0.4rem;
 }
 
-/* 버튼 스타일 */
-.button {
-  margin-top: 2rem;
-  padding: 0.75rem;
+
+.add-button{
   font-weight: bold;
-  font-size: 1rem;
-  color: var(--text-white);
+  color: var(--text-black);
   background-color: var(--border-hover);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  /* transition: background-color 0.2s ease;  호버 효과 굳이??*/
-}
-
-.button:hover {
-  background-color: var(--border-hover);
-}
-
-.button.is-loading {
-  background-color: var(--text-neutral-bg);
-  cursor: not-allowed;
-  color: var(--text-gray);
 }
