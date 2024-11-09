@@ -1,19 +1,15 @@
 // src/pages/Play.js
 import React, { useState, useEffect, useRef } from "react";
 import { usePitchDetection } from "../components/usePitchDetection";
-import { getNote } from "../utils/NoteUtils";
 import PitchGraph from "../components/PitchGraph";
 import AudioPlayer from "../components/AudioPlayer";
 import "../css/slider.css";
 import "../css/karaoke-lyrics.css";
 import "../css/Play.css";
 import { useLocation, useParams } from "react-router-dom";
-import TopBar from "../components/TopBar";
 import { useNavigate } from "react-router-dom";
 import NowPlayingLyrics from "../components/nowPlayingLyrics";
 import { useScreen } from "../Context/ScreenContext";
-import MobileNav from "../components/MobileNav";
-import Sidebar from "../components/SideBar";
 import PageTemplate from "../template/PageTemplate";
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -144,6 +140,7 @@ const Play = () => {
   // 화면 비율 조정 감지
   useEffect(() => {
     function handleResize() {
+
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
@@ -285,6 +282,9 @@ const Play = () => {
   }, [playbackPosition, lyricsData]);
 
   useEffect(() => {
+    if(isMobile){
+      setDataPointCount(50);
+    }
     getLocalStream();
   }, []);
 

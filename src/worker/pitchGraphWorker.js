@@ -216,7 +216,7 @@ function drawFrame(
   dataCtx.drawImage(backgroundCanvas, 0, 0);
 
   // console.log(realtimeData.slice(0, currentTimeIndex));
-  
+
   drawPitchData(
     referenceData,
     "#EEEEEE",
@@ -266,8 +266,8 @@ function drawPitchData(
 ) {
   if (!dataCtx || !Array.isArray(data)) return;
 
-  console.log(data.slice(0, currentTimeIndex));
-
+  // console.log(data.slice(0, currentTimeIndex));
+  
   const graphWidth = dimensions.width;
   dataCtx.strokeStyle = color;
   dataCtx.lineWidth = 3;

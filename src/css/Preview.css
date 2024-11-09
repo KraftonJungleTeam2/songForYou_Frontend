@@ -15,10 +15,10 @@
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   padding: 0.5rem;
-  gap: 1rem;
+  gap: 3%;
 }
 
 /* 플레이스홀더 스타일 */
@@ -123,13 +123,14 @@
 /* 반응형 스타일 */
 @media (max-width: 1023px) {
   .preview-image-container {
-    width: 16vh;
-    height: 100%;
+    width: 17vh;
+    height: 17vh;
+    min-height: 17vh;
     margin-top: 0;
   }
   .preview-info-container {
-    width: 25vh;
-    height: 100%;
+    width: 22vh;
+    height: 17vh;
   }
   .preview-title {
     font-size: 1.2rem;
@@ -150,5 +151,9 @@
   .preview-sing-button {
     font-size: 0.9rem;
     padding: 8px 16px;
+  }
+
+  .preview-lyrics {
+    display: none;
   }
 }

@@ -136,9 +136,9 @@ const ReservationPopup = ({
             )}
           </div>
 
-          <button className="close-button-pop"onClick={onClose}>
+          {/* <button className="close-button-pop"onClick={onClose}>
             닫기
-          </button>
+          </button> */}
         </div>
 
         <div className="reserve-list-area">
@@ -186,6 +186,8 @@ const ReservationPopup = ({
             )}
           </div>
         </div>
+        
+        <div className="close-button-pop is-ghost" onClick={onClose}><i className="fa-solid fa-xmark"></i></div>
       </div>
     </div>
   );

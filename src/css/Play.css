@@ -228,13 +228,13 @@
   }
 }
 @media (max-width: 1023px) {
-  .content-area.single {
+  .content-area {
     flex-direction: column;
     /* align-items: stretch; */
   }
   .pitch-graph-play {
     min-height: 60%;
-    height: 60%;
+    height: 70%;
   }
 
   .prev-lyrics,
@@ -269,12 +269,6 @@
     border-bottom: 0;
     border-right: 1px solid var(--border-gray);
     align-items: center;
-  }
-
-  .score-area #score-title {
-  }
-
-  .score-area #score {
   }
 
   .play-info-area {

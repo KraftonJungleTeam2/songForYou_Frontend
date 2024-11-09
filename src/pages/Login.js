@@ -14,18 +14,13 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      console.log("first");
       const response = await axios.post(
         `${process.env.REACT_APP_API_ENDPOINT}/users/login`,
         { email, password }
       );
 
       if (response.status === 200) {
-        // JWT를 헤더에서 추출
-
-        const jwtToken = response.headers["authorization"]?.split(" ")[1]; // 'Bearer '를 제거하고 토큰만 가져옴
-
-        // JWT를 세션 스토리지에 저장
+        const jwtToken = response.headers["authorization"]?.split(" ")[1];
         if (jwtToken) {
           sessionStorage.setItem("userToken", jwtToken);
         }
@@ -37,7 +32,6 @@ function Login() {
       }
     } catch (err) {
       if (err.response) {
-        // 서버가 2xx 범위를 벗어나는 상태 코드로 응답한 경우
         if (err.response.status === 401) {
           setError("비밀번호가 유효하지 않습니다.");
         } else if (err.response.status === 404) {
@@ -46,10 +40,8 @@ function Login() {
           setError("로그인에 실패하였습니다.");
         }
       } else if (err.request) {
-        // 요청이 이루어졌으나 응답을 받지 못한 경우
         setError("서버로부터 응답을 받지 못했습니다.");
       } else {
-        // 요청을 설정하는 중에 문제가 발생한 경우
         setError("요청 설정 중 오류가 발생했습니다.");
       }
     }
@@ -58,20 +50,26 @@ function Login() {
   return (
     <div className="background-container">
       <div className="login-container">
-        <h2>Login</h2>
+        <h1>Login</h1>
         <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="input-container">
+            <i className="fa-solid fa-at input-icon"></i>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="input-container">
+            <i className="fa-solid fa-lock input-icon"></i>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
           <button type="submit">Login</button>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}

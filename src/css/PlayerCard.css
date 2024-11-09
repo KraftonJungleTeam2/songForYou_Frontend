@@ -8,7 +8,6 @@
   border-radius: 8px 0 0 8px;
   overflow: hidden;
   margin-top: 1vh;
-  margin-left: 0.5vw;
 }
 
 .player-card {
@@ -21,14 +20,20 @@
   background-color: var(--background-section);
 }
 
+.player-card.has-mic {
+  box-shadow: inset 0 0 1em #ffcc0088;
+}
+
 .player-card:last-child {
   border-bottom: none;
+  border-right: none;
 }
 
 .player-info {
   display: flex;
   align-items: center;
   width: 100%;
+  height: 100%;
 }
 
 .details {
@@ -37,28 +42,90 @@
   flex-direction: column;
   margin-left: 10px;
   text-align: center;
+  height: 100%;
+  justify-content: space-around;
 }
 
-.details p {
+.details .player-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.details .player-details span {
   margin: 2px 0;
   font-size: 14px;
   color: var(--text-gray);
 }
 
-.details p:first-child {
+.details .player-details .player-name {
   color: var(--text-scheme);
   font-weight: bold;
 }
 
+.details .player-details .score {
+  font-size: larger;
+}
+
+.details .range-slider {
+  margin: 0.3rem 0;
+}
+
 .color-display {
   display: flex;
+  width: 20%;
+  max-width: 4dvh;
   align-items: center;
   justify-content: center;
 }
 
 .color-circle {
-  width: 2rem;
-  height: 2rem;
+  width: 100%;
   border-radius: 50%;
   border: 1px solid var(--border-gray);
+}
+
+.color-circle:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+@media (max-width: 1023px) {
+  .player-cards-container {
+    flex-direction: row;
+    margin: 0 0.5rem;
+    width: calc(100% - 1rem);
+    height: 100%;
+    border-radius: 15px;
+  }
+
+  .player-info {
+    flex-direction: column;
+  }
+
+  .player-card {
+    width: 25%;
+    height: 100%;
+    border-bottom: none;
+    border-right: 1px solid var(--border-gray);;
+  }
+  
+  .details {
+    margin: 0px;
+  }
+
+  .details .player-details{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .details .player-details .player-name {
+    margin: 0;
+  }
+
+  .details .player-details .score {
+    margin: 0;
+    font-size: medium;
+  }
 }
