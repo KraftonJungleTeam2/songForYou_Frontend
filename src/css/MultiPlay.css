@@ -124,6 +124,7 @@
 .input-area input {
   flex: 1;
   padding: 8px;
+  width: 100%;
   border: 1px solid var(--border-gray);
   border-radius: 4px;
   margin-right: 8px;
