@@ -98,39 +98,42 @@ function Multi() {
         <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
       ) : (
         <div className="main-area">
-          <div className="room-list">
-            {roomCards.map((room, index) => (
-              <div
-                className={`room-card ${room.empty ? "empty" : ""}`}
-                key={room.empty ? `empty-${index}` : room.id}
-              >
-                {room.empty ? (
-                  <div className="room-info-empty">빈 방</div>
-                ) : (
-                  <div
-                    onClick={(e) => handlePlay(e, room.id, room.password)}
-                    className="room-content"
-                  >
-                    <img
-                      className="thumbnail"
-                      src={room.image}
-                      alt={`Thumbnail for ${room.roomTitle}`}
-                    />
-                    <div className="room-info">
-                      <h3>{room.roomTitle}</h3>
-                      <p>
-                        Players: {room.users.length}/{room.max_user}
-                      </p>
+          <div id="room-list-container" className="component-container">
+            <div className="top-section">새로고침 검색 방만들기</div>
+            <div className="room-list">
+              {roomCards.map((room, index) => (
+                <div
+                  className={`room-card ${room.empty ? "empty" : ""}`}
+                  key={room.empty ? `empty-${index}` : room.id}
+                >
+                  {room.empty ? (
+                    <div className="room-info-empty">빈 방</div>
+                  ) : (
+                    <div
+                      onClick={(e) => handlePlay(e, room.id, room.password)}
+                      className="room-content"
+                    >
+                      <img
+                        className="thumbnail"
+                        src={room.image}
+                        alt={`Thumbnail for ${room.roomTitle}`}
+                      />
+                      <div className="room-info">
+                        <h3>{room.roomTitle}</h3>
+                        <p>
+                          Players: {room.users.length}/{room.max_user}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      <div className={`bottom-buttons`}>
+      {/* <div className={`bottom-buttons`}>
         <button className="quick-join">빠른 입장</button>
         <button className="sort-by">정렬 조건</button>
         <button className="create-room" onClick={() => setIsCreatingRoom(true)}>
@@ -139,7 +142,7 @@ function Multi() {
         <button className="refresh" onClick={fetchRooms}>
           새로고침
         </button>
-      </div>
+      </div> */}
     </PageTemplate>
   );
 }

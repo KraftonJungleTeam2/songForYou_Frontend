@@ -258,7 +258,7 @@ function drawPitchData(
 ) {
   if (!dataCtx || !Array.isArray(data)) return;
 
-  console.log(data.slice(0, currentTimeIndex));
+  // console.log(data.slice(0, currentTimeIndex));
   
   const graphWidth = dimensions.width;
   dataCtx.strokeStyle = color;
