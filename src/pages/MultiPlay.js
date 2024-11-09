@@ -121,6 +121,7 @@ function MultiPlay() {
   const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
   const latencyDataChannelsRef = useRef({}); // 레이턴시용 DataChannel 저장소 추가
   const pitchArraysRef = useRef({}); //  pitchArrays
+  const candidatesRef = useRef({}); // candidates before est
 
   const [useCorrection, setUseCorrection] = useState(true);
 
@@ -206,10 +207,7 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
           setEntireReferData(processedPitchArray);
-
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
-
-          pitchArraysRef.current["myId"] = socketId.current;
 
           Object.keys(dataChannelsRef.current).forEach((key) => {
             pitchArraysRef.current[key] = new Array(
@@ -543,6 +541,13 @@ function MultiPlay() {
       };
       await peerConnection.setRemoteDescription(offer);
 
+      if (candidatesRef.current[callerId]) {
+        for (const candidate of candidatesRef.current[callerId]) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        delete candidatesRef.current[callerId];
+      }
+
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
@@ -559,29 +564,29 @@ function MultiPlay() {
     socketRef.current.on("answer", async ({ answer, callerId }) => {
       const peerConnection = peerConnectionsRef.current[callerId];
       console.log(callerId, "에서 answer 수신");
-
-      // peerConnection.onicecandidate = (event) => {
-      //   if (event.candidate) {
-      //     socketRef.current.emit('ice-candidate', {
-      //       targetId: callerId,
-      //       candidate: event.candidate,
-      //     });
-      //   }
-      // };
+      
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
+      }
+
+      if (candidatesRef.current[callerId]) {
+        for (const candidate of candidatesRef.current[callerId]) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        delete candidatesRef.current[callerId];
       }
     });
 
     // ICE candidate 처리
     socketRef.current.on("ice-candidate", async ({ candidate, callerId }) => {
       const peerConnection = peerConnectionsRef.current[callerId];
-      if (peerConnection) {
-        await peerConnection
-          .addIceCandidate(new RTCIceCandidate(candidate))
-          .catch((error) =>
-            console.error("Error adding received ICE candidate:", error)
-          );
+      if (peerConnection?.remoteDescription) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } else {
+        if (!candidatesRef.current[callerId])
+          candidatesRef.current[callerId] = new Array();
+
+        candidatesRef.current[callerId].push(candidate);
       }
     });
 
@@ -682,7 +687,13 @@ function MultiPlay() {
             return song; // 일치하지 않는 곡은 그대로 반환
           });
         });
-      } catch (error) {}
+      } catch (error) { }
+    });
+
+    socketRef.current.on("reservationCanceled", ({ songId }) => {
+      setReservedSongs((prevSongs) => {
+        return prevSongs.filter(reserved => reserved.song.id !== songId);
+      });
     });
 
     return () => {
@@ -1168,6 +1179,7 @@ function MultiPlay() {
             currentTimeIndex={playbackPosition * 40}
             songimageProps={reservedSongs[0]}
             score={instantScore}
+            socketId={socketId.current}
           />
         </div>
 
@@ -1229,9 +1241,8 @@ function MultiPlay() {
           <button
             onClick={isPlaying ? handleStopClick : handleStartClick}
             disabled={!audioLoaded || isWaiting}
-            className={`button start-button ${
-              !audioLoaded || isWaiting ? "is-loading" : ""
-            }`}
+            className={`button start-button ${!audioLoaded || isWaiting ? "is-loading" : ""
+              }`}
           >
             {audioLoaded
               ? isPlaying
