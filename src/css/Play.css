@@ -234,7 +234,7 @@
   }
   .pitch-graph-play {
     min-height: 60%;
-    height: 60%;
+    height: 70%;
   }
 
   .prev-lyrics,
@@ -271,11 +271,6 @@
     align-items: center;
   }
 
-  .score-area #score-title {
-  }
-
-  .score-area #score {
-  }
 
   .play-info-area {
     width: 50%;
