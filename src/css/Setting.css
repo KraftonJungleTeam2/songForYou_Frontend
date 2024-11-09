@@ -150,6 +150,7 @@
 }
 
 .logout-button:hover {
+  outline: 3px solid var(--border-hover);
   background-color: var(--text-neutral-bg);
 }
 
