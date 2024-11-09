@@ -54,10 +54,10 @@ function Setting() {
           "Content-Type": "application/json",
         },
       });
-      alert("User information updated successfully");
+      alert("프로필 정보가 성공적으로 업데이트되었습니다.");
     } catch (error) {
       console.error("Error updating user information:", error);
-      alert("Failed to update user information");
+      alert("프로필 정보 업데이트에 실패했습니다.");
     }
   };
 
@@ -103,23 +103,23 @@ function Setting() {
   };
 
   const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (window.confirm("계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
       try {
         const token = sessionStorage.getItem("userToken");
         const response = await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/users/delete`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200 && response.data.success) {
-          alert("Account deleted successfully");
+          alert("계정이 성공적으로 삭제되었습니다.");
           sessionStorage.removeItem("userToken");
           setIsLoggedIn(false);
           navigate("/");
         } else {
-          alert("Failed to delete account");
+          alert("계정 삭제에 실패했습니다.");
         }
       } catch (error) {
         console.error("Error deleting account:", error);
-        alert("Failed to delete account");
+        alert("계정 삭제에 실패했습니다.");
       }
     }
   };
@@ -131,55 +131,62 @@ function Setting() {
       toggleSidebar={toggleSidebar}
       current={"setting"}
     >
-      <div className="settings-container">
-        <h2>프로필 설정</h2>
+      <div className="setting-content-area">
+        <div className="settings-container component-container">
+          <h1 style={{textAlign: "center"}}>프로필 설정</h1>
 
-        {/* 프로필 사진 섹션 */}
-        <div className="profile-picture-section">
-          <img
-            src={userData.profilePicture || "https://via.placeholder.com/100"}
-            alt="Profile"
-            className="profile-picture"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleProfilePictureChange}
-            className="profile-picture-input"
-          />
+          {/* 프로필 사진과 사용자 정보 수정 폼 */}
+          <div className="profile-settings">
+            {/* 프로필 사진 섹션 */}
+            <div className="profile-picture-section">
+              <img
+                src={userData.profilePicture || "https://via.placeholder.com/100"}
+                alt="Profile"
+                className="profile-picture"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                className="profile-picture-input"
+              />
+              <div className="profile-picture-overlay">
+                <span>이미지 업로드</span>
+              </div>
+            </div>
+
+            {/* 사용자 정보 수정 폼 */}
+            <form onSubmit={handleSubmit} className="profile-edit-form">
+              <div className="form-group">
+                <label htmlFor="name">이름:</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={userData.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">이메일:</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={userData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <button type="submit" className="update-button">프로필 변경</button>
+            </form>
+          </div>
+
+          {/* 로그아웃 및 계정 삭제 버튼 */}
+          <div className="button-group">
+            <button className="logout-button" onClick={handleLogout}>로그아웃</button>
+            <button onClick={handleDeleteAccount} className="delete-button">계정 삭제</button>
+          </div>
         </div>
-
-        {/* 사용자 정보 수정 폼 */}
-        <form onSubmit={handleSubmit} className="profile-edit-form">
-          <div className="form-group">
-            <label htmlFor="name">Name:</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={userData.name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={userData.email}
-              onChange={handleChange}
-            />
-          </div>
-          <button type="submit" className="update-button">프로필 변경</button>
-        </form>
-
-        <button className="logout-button" onClick={handleLogout}>
-          로그아웃
-        </button>
-        <button onClick={handleDeleteAccount} className="delete-button">
-          계정 삭제
-        </button>
       </div>
     </PageTemplate>
   );

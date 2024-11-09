@@ -37,7 +37,7 @@
 
 .add-form label {
   color: var(--text-scheme);
-  font-weight: bold;
+  /* font-weight: bold; */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -53,9 +53,8 @@
 .add-form textarea {
   padding: 0.5rem;
   font-size: 1rem;
-  border: 1px solid var(--border-gray);
+  border: 1px solid var(--border-hover);
   border-radius: 5px;
-  background-color: var(--text-neutral-bg);
   width: 70%; /* 입력 필드의 폭을 조정 */
 }
 
@@ -113,4 +112,11 @@
 
 .radio-group input[type="radio"] {
   margin-right: 0.4rem;
+}
+
+
+.add-button{
+  font-weight: bold;
+  color: var(--text-black);
+  background-color: var(--border-hover);
 }
