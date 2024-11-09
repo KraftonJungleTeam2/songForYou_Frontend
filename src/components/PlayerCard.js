@@ -34,14 +34,15 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
 
                 {/* 플레이어 상세 정보 */}
                 <div className="details">
-                  <p>
-                    {players[index].mic ? "🎤" : "  "} {players[index].name} 
-                  </p>
-                  <p>
+                  <p className="player-details">
+                    <span>{players[index].name}  {players[index].mic ? "🎤" : "  "}
+                    </span>
+                    <span>
                     {players[index].userId === socketId.current
                       ? score
                       : players[index].score}
                     점
+                    </span>
                   </p>
                   {players[index].userId !== socketId.current ? (
                     <input
