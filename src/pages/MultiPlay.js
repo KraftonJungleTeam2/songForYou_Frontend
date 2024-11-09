@@ -694,6 +694,12 @@ function MultiPlay() {
       } catch (error) { }
     });
 
+    socketRef.current.on("reservationCanceled", ({ songId }) => {
+      setReservedSongs((prevSongs) => {
+        return prevSongs.filter(reserved => reserved.song.id !== songId);
+      });
+    });
+
     return () => {
       // Peer 연결 정리
       Object.values(peerConnectionsRef.current).forEach((connection) => {
