@@ -89,15 +89,18 @@ pointer-events: none; /* 호버와 클릭을 모두 비활성화 */
 
 /* 닫기 버튼 */
 .close-button-pop {
-background-color: var(--text-neutral-bg);
+font-size: 1.5rem; /* 기본 폰트 사이즈를 키워서 버튼 크기 조정 */
+position: absolute;
+top: 0.2rem;
+right: 1rem;
 color: var(--text-black);
-width: 100%;
+transition: transform 0.2s ease-in-out; /* 스케일 변화에 부드러운 애니메이션 적용 */
 }
 
 .close-button-pop:hover {
-background-color: var(--border-hover);
-color: var(--text-black);
+color: var(--border-hover);
 cursor: pointer;
+transform: scale(1.2); /* 버튼의 크기를 1.2배로 확대 */
 }
 
 /* 삭제 버튼 */
