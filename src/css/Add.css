@@ -118,7 +118,6 @@
 .radio-group input[type="radio"] {
   margin-right: 0.4rem;
 }
-<<<<<<< HEAD
 
 
 .add-button{
@@ -126,5 +125,3 @@
   color: var(--text-black);
   background-color: var(--border-hover);
 }
-=======
->>>>>>> dcc9423c4c62c165217a616c1fc192eafb5fad44
