@@ -54,10 +54,10 @@ function Setting() {
           "Content-Type": "application/json",
         },
       });
-      alert("User information updated successfully");
+      alert("프로필 정보가 성공적으로 업데이트되었습니다.");
     } catch (error) {
       console.error("Error updating user information:", error);
-      alert("Failed to update user information");
+      alert("프로필 정보 업데이트에 실패했습니다.");
     }
   };
 
@@ -103,23 +103,23 @@ function Setting() {
   };
 
   const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (window.confirm("계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
       try {
         const token = sessionStorage.getItem("userToken");
         const response = await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/users/delete`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200 && response.data.success) {
-          alert("Account deleted successfully");
+          alert("계정이 성공적으로 삭제되었습니다.");
           sessionStorage.removeItem("userToken");
           setIsLoggedIn(false);
           navigate("/");
         } else {
-          alert("Failed to delete account");
+          alert("계정 삭제에 실패했습니다.");
         }
       } catch (error) {
         console.error("Error deleting account:", error);
-        alert("Failed to delete account");
+        alert("계정 삭제에 실패했습니다.");
       }
     }
   };
@@ -147,12 +147,15 @@ function Setting() {
             onChange={handleProfilePictureChange}
             className="profile-picture-input"
           />
+          <div className="profile-picture-overlay">
+            <span>이미지 업로드</span>
+          </div>
         </div>
 
         {/* 사용자 정보 수정 폼 */}
         <form onSubmit={handleSubmit} className="profile-edit-form">
           <div className="form-group">
-            <label htmlFor="name">Name:</label>
+            <label htmlFor="name">이름:</label>
             <input
               type="text"
               id="name"
@@ -162,7 +165,7 @@ function Setting() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="email">Email:</label>
+            <label htmlFor="email">이메일:</label>
             <input
               type="email"
               id="email"

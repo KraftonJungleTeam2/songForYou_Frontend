@@ -149,3 +149,13 @@
 .refresh {
   background-color: #ff5722;
 }
+
+.search-bar {
+  height: 100%
+}
+.search-bar input {
+  height: 100%;
+}
+.search-bar .search-button {
+  min-height: 100%;
+}
