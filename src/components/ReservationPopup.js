@@ -53,6 +53,7 @@ const ReservationPopup = ({
   return (
     <div className="overlay">
       <div className="popup">
+      <div className="close-button is-ghost" onClick={onClose}><i className="fa-solid fa-xmark"></i></div>
         <div className="song-list-area" style={{borderRight: "2px solid var(--border-gray)", borderRadius: 0, paddingRight: '1vw'}}>
           <div className="top-section">
             <div
@@ -135,9 +136,9 @@ const ReservationPopup = ({
             )}
           </div>
 
-          <button className="close-button-pop"onClick={onClose}>
+          {/* <button className="close-button-pop"onClick={onClose}>
             닫기
-          </button>
+          </button> */}
         </div>
 
         <div className="reserve-list-area">

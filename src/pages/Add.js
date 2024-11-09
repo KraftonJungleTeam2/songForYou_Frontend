@@ -303,7 +303,7 @@ function Add() {
                 </label>
               </div>
               <button
-                className={`button ${isWaiting ? "is-loading" : ""}`}
+                className={`button is-highlight ${isWaiting ? "is-loading" : ""}`}
                 disabled={isWaiting}
                 type="submit"
                 style={{marginTop: '2em'}}
