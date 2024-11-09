@@ -11,12 +11,14 @@ import PageTemplate from "../template/PageTemplate";
 
 function Multi() {
   const [rooms, setRooms] = useState([]);
+  const [roomCards, setRoomCards] = useState(rooms);
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false); // 방 생성 상태
   const roomsPerPage = 10;
 
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { isMobile } = useScreen();
 
@@ -60,7 +62,8 @@ function Multi() {
     if (roomPassword === "")
       navigate(`/multiplay/${roomId}`, {
         replace: true,
-      }); // 상태와 함께 네비게이션
+      });
+    // 상태와 함께 네비게이션
     else {
       // 비밀번호가 있는 경우 팝업으로 확인
       const userPassword = prompt("방 비밀번호를 입력하세요:");
@@ -74,18 +77,19 @@ function Multi() {
     }
   };
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  useEffect(() => {
+    const temp = rooms.filter((room) => room.roomTitle.toLowerCase().includes(searchTerm.toLowerCase()));
+    while (temp.length < 1) {
+      temp.push({ roomId: `empty-${temp.length}`, empty: true });
+    }
+
+    setRoomCards(temp);
+  }, [searchTerm, rooms])
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
-  const roomCards = [...rooms];
-  // while (roomCards.length < roomsPerPage) {
-  //   roomCards.push({ roomId: `empty-${roomCards.length}`, empty: true });
-  // }
 
   return (
     <PageTemplate
@@ -97,30 +101,50 @@ function Multi() {
       {isCreatingRoom ? (
         <RoomCreation onCancel={() => setIsCreatingRoom(false)} />
       ) : (
-        <div className="main-area">
+        ""
+      )}
+      <div className="main-area">
+        <div id="room-list-container" className="component-container">
+          <div className="top-section room">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="검색"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <button className="search-button">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+            <button className="button is-normal button-refresh" onClick={fetchRooms}>
+              <i className="fa-solid fa-rotate-right"></i>
+            </button>
+            <button
+              className="button is-highlight button-create"
+              onClick={() => setIsCreatingRoom(true)}
+            >
+              <i className={`fa-solid fa-plus`}></i> 방 만들기
+            </button>
+          </div>
           <div className="room-list">
             {roomCards.map((room, index) => (
               <div
                 className={`room-card ${room.empty ? "empty" : ""}`}
                 key={room.empty ? `empty-${index}` : room.id}
+                onClick={(e) => handlePlay(e, room.id, room.password)}
               >
                 {room.empty ? (
-                  <div className="room-info-empty">빈 방</div>
+                  <div className="room-info-empty">방 없음</div>
                 ) : (
                   <div
-                    onClick={(e) => handlePlay(e, room.id, room.password)}
                     className="room-content"
                   >
-                    <img
-                      className="thumbnail"
-                      src={room.image}
-                      alt={`Thumbnail for ${room.roomTitle}`}
-                    />
                     <div className="room-info">
                       <h3>{room.roomTitle}</h3>
-                      <p>
-                        Players: {room.users.length}/{room.max_user}
-                      </p>
+                      <span>
+                        {Array.from({ length: room.max_user }, (_, index) => index < room.users.length ? (<i className="fa-solid fa-user"></i>) : (<i className="fa-regular fa-user"></i>))}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -128,9 +152,9 @@ function Multi() {
             ))}
           </div>
         </div>
-      )}
+      </div>
 
-      <div className={`bottom-buttons`}>
+      {/* <div className={`bottom-buttons`}>
         <button className="quick-join">빠른 입장</button>
         <button className="sort-by">정렬 조건</button>
         <button className="create-room" onClick={() => setIsCreatingRoom(true)}>
@@ -139,7 +163,7 @@ function Multi() {
         <button className="refresh" onClick={fetchRooms}>
           새로고침
         </button>
-      </div>
+      </div> */}
     </PageTemplate>
   );
 }

@@ -56,6 +56,11 @@
   font-size: 20px;
   cursor: pointer;
   color: var(--text-scheme);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.settings-button:hover{
+  transform: scale(1.5); /* 크기 약간 증가 */
+  color: var(--border-hover); /* 텍스트 색상 변화 */
 }
 
 .logout-button {
