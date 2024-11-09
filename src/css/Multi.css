@@ -18,8 +18,17 @@
 
 .top-section.room {
   justify-content: right;
-  gap: 1em;
   height: 3.3rem;
+}
+
+.top-section .buttons-room .button-create {
+  display: inline;
+  height: 100%;
+}
+.top-section .buttons-room .button-refresh {
+  display: inline;
+  height: 100%;
+  margin-right: 0.7em;
 }
 
 /* 방 리스트: 반응형 그리드 */
@@ -36,6 +45,22 @@
 @media (max-width: 767px) {
   .room-list {
     grid-template-columns: 1fr;
+  }
+
+  .top-section.room {
+    height: 6rem;
+    flex-direction: column-reverse;
+    justify-content: right;
+  }
+
+  .top-section.room .buttons-room {
+    margin-left: auto;
+    margin-bottom: 0.5rem;
+    height: 50%;
+  }
+
+  .top-section.room .search-bar {
+    height: 50%
   }
 }
 
@@ -84,14 +109,6 @@
 .room-info-empty {
   font-size: 1.2em;
   color: #aaa;
-}
-
-.button-create {
-  height: 100%;
-}
-
-.button-refresh {
-  height: 100%;
 }
 
 /* 페이지 버튼 */
