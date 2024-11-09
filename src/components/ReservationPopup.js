@@ -27,9 +27,10 @@ const ReservationPopup = ({
   };
 
   const handleRemove = (id) => {
-    const updatedReservedSongs = reservedSongs.filter(reserved => reserved.song.id !== id);
-    // reservedSongs 상태 업데이트 - 필요에 따라 setState 함수를 사용하세요
-    // 예: setReservedSongs(updatedReservedSongs);
+    socket.emit("cancelReservation", {
+      roomId: roomid,
+      songId: id,
+    });
   };
 
   const isReserved = (id) => reservedSongs.some(reserved => reserved.songId === id);
