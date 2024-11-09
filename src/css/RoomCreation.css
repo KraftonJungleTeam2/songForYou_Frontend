@@ -15,13 +15,14 @@
 
 .room-creation-window {
   background-color: white;
-  padding: 20px 30px;
+  padding: 2rem;
   border-radius: 8px;
   width: 300px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
   transform: translateY(100px); /* 초기 위치 */
   animation: slideUp 0.2s ease-in-out forwards; /* 위로 슬라이드 애니메이션 */
+  position: relative;
 }
 
 @keyframes fadeIn {
@@ -40,6 +41,12 @@
   to {
     transform: translateY(0); /* 원래 위치로 이동 */
   }
+}
+
+.close-button {
+  position: absolute;
+  right: 1.5rem;
+  top: 1rem;
 }
 
 .room-creation-window h2 {
@@ -73,7 +80,7 @@
   cursor: pointer;
 }
 
-.room-creation-window button[type="submit"] {
+/* .room-creation-window button[type="submit"] {
   background-color: #4caf50;
   color: white;
 }
@@ -81,7 +88,7 @@
 .room-creation-window button[type="button"] {
   background-color: #f44336;
   color: white;
-}
+} */
 
 .room-creation-window button:hover {
   opacity: 0.9;
