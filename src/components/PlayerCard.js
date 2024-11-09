@@ -17,6 +17,16 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
           >
             {players[index] ? (
               <div className="player-info">
+
+                {/* 색깔 표시 영역 */}
+                <div className="color-display">
+                  <div
+                    className="color-circle"
+                    style={{
+                      backgroundColor: stringToColor(players[index].userId),
+                    }}
+                  ></div>
+                </div>
                 {/* 프로필 사진 영역 */}
                 {/* <div className="profile-picture">
                   <img src={players[index].profilePictureUrl || '/default-profile.png'} alt={`${players[index].name}'s profile`} />
@@ -25,7 +35,7 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                 {/* 플레이어 상세 정보 */}
                 <div className="details">
                   <p>
-                    {players[index].name} {players[index].mic ? "🎤" : "  "}
+                    {players[index].mic ? "🎤" : "  "} {players[index].name} 
                   </p>
                   <p>
                     {players[index].userId === socketId.current
@@ -46,15 +56,7 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                   ) : null}
                 </div>
 
-                {/* 색깔 표시 영역 */}
-                <div className="color-display">
-                  <div
-                    className="color-circle"
-                    style={{
-                      backgroundColor: stringToColor(players[index].userId),
-                    }}
-                  ></div>
-                </div>
+                
               </div>
             ) : (
               <p>빈 자리</p>
