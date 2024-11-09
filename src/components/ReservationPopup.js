@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import '../css/ReservationPopup.css';
 
 const ReservationPopup = ({
   roomid,
@@ -6,10 +7,10 @@ const ReservationPopup = ({
   onClose,
   reservedSongs,
   songLists,
+  isPlaying,
 }) => {
   const [viewType, setViewType] = useState("public");
   const [searchTerm, setSearchTerm] = useState("");
-  // const { roomid } = useParams(); // URL에서 songId 추출
 
   const handleTabClick = (view) => {
     setViewType(view);
@@ -21,11 +22,17 @@ const ReservationPopup = ({
 
   const handleReserve = (e, song) => {
     e.stopPropagation();
-
+    console.log(song);
     socket.emit("reserveSong", { song: song, roomId: roomid });
   };
 
-  const isReserved = (song) => reservedSongs.includes(song); // 예약 여부 확인
+  const handleRemove = (id) => {
+    const updatedReservedSongs = reservedSongs.filter(reserved => reserved.song.id !== id);
+    // reservedSongs 상태 업데이트 - 필요에 따라 setState 함수를 사용하세요
+    // 예: setReservedSongs(updatedReservedSongs);
+  };
+
+  const isReserved = (id) => reservedSongs.some(reserved => reserved.songId === id);
 
   function arrayBufferToBase64(buffer) {
     let binary = "";
@@ -44,9 +51,9 @@ const ReservationPopup = ({
   );
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.popup}>
-        <div className="song-list-area">
+    <div className="overlay">
+      <div className="popup">
+        <div className="song-list-area" style={{borderRight: "2px solid var(--border-gray)", borderRadius: 0, paddingRight: '1vw'}}>
           <div className="top-section">
             <div
               className="tabs"
@@ -73,13 +80,13 @@ const ReservationPopup = ({
                 value={searchTerm}
                 onChange={handleSearch}
               />
-              <button className="button is-dark">
+              <button className="search-button">
                 <i className="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>
           </div>
 
-          <div className="song-list">
+          <div className="song-list" style={{marginBottom: "2vh"}}>
             {filteredSongs.length === 0 ? (
               <p>노래가 없습니다.</p>
             ) : (
@@ -107,13 +114,12 @@ const ReservationPopup = ({
 
                   <div
                     className="buttons has-addons is-right"
-                    style={{ width: "8rem" }}
                   >
                     <button
                       className={`button is-dark`}
-                      disabled={isReserved(song)}
+                      disabled={isReserved(song.id)}
                       onClick={(e) =>
-                        !isReserved(song) && handleReserve(e, song)
+                        !isReserved(song.id) && handleReserve(e, song)
                       }
                       style={{ height: "2.2rem", width: "3rem" }}
                     >
@@ -128,38 +134,60 @@ const ReservationPopup = ({
               ))
             )}
           </div>
+
+          <button className="close-button-pop"onClick={onClose}>
+            닫기
+          </button>
         </div>
 
-        <button className="button" onClick={onClose}>
-          닫기
-        </button>
+        <div className="reserve-list-area">
+          <h2 className="reserve-list-title">예약 리스트</h2>
+          <div className="reserve-list">
+            {reservedSongs.length === 0 ? (
+              <p>노래가 없습니다.</p>
+            ) : (
+              reservedSongs.map((reserved, index) => (
+                <div className={`song-item ${index === 0 ? 'highlighted-border' : ''} ${index === 0 && isPlaying ? 'playing-overlay' : ''}`}>
+                  <div
+                    className="song-icon"
+                    style={{
+                      backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(
+                        reserved.song.image.data
+                      )})`,
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      width: "4rem",
+                      height: "4rem",
+                    }}
+                    alt={reserved.song.metadata.title}
+                  />
+
+                  <div className="song-info has-text-left">
+                    <h3>{reserved.song.metadata.title}</h3>
+                    <p>{reserved.song.metadata.description}</p>
+                  </div>
+
+                  <div
+                    className="buttons has-addons is-right"
+                  >
+                    <button
+                      className={`button is-danger`}
+                      disabled={index === 0 && isPlaying}
+                      onClick={() => handleRemove(reserved.song.id)}
+                      style={{ height: "2.2rem", width: "3rem" }}
+                    >
+                      {index === 0 && isPlaying ? "진행 중" : <i className="fa-solid fa-trash"></i>}
+                    </button>
+                  </div>
+                  
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  popup: {
-    backgroundColor: "#fff",
-    padding: "20px",
-    borderRadius: "8px",
-    width: "40rem",
-    height: "80%",
-    textAlign: "center",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-  },
 };
 
 export default ReservationPopup;

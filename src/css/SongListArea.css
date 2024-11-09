@@ -3,7 +3,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - 1.5rem);
   background-color: var(--background-section);
   border-radius: 15px;
   margin: 10px;
@@ -27,6 +27,7 @@
   background-color: transparent;
   border: none;
   border-radius: 8px;
+  max-width: 6rem;
   cursor: pointer;
   color: var(--text-scheme);
   transition: background-color 0.3s, color 0.3s;
@@ -132,12 +133,12 @@
   }
 
   .search-bar input {
-    width: 70%;
+    width: 100%;
     font-size: 0.85rem;
   }
 
   .search-button {
-    width: 30%;
+    width: 3rem;
     font-size: 0.85rem;
   }
 }

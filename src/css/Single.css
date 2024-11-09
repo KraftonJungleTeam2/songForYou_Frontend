@@ -1,5 +1,5 @@
 /* 데스크톱 환경 */
-@media (min-width: 1025px) {
+@media (min-width: 1024px) {
   .song-list-area-container {
     width: 75%; /* 너비의 75% */
     margin-left: 1vw;
@@ -14,7 +14,7 @@
 }
 
 /* 모바일 환경 */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .song-list-area-container {
     height: 75%; /* 높이의 75% */
   }
