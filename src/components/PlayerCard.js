@@ -13,7 +13,7 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
             key={index}
             className={`player-card ${
               players[index]?.isAudioActive ? "active" : ""
-            }`}
+            } ${players[index]?.mic ? 'has-mic' : ''}`}
           >
             {players[index] ? (
               <div className="player-info">
@@ -34,10 +34,10 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                 {/* 플레이어 상세 정보 */}
                 <div className="details">
                   <p className="player-details">
-                    <span>
+                    <span className="player-name">
                       {players[index].name} {players[index].mic ? "🎤" : "  "}
                     </span>
-                    <span>
+                    <span className="score">
                       {players[index].userId === socketId.current
                         ? score
                         : players[index].score}
@@ -58,7 +58,7 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                 </div>
               </div>
             ) : (
-              <p>빈 자리</p>
+              <p style={{color: 'grey'}}>빈 자리</p>
             )}
           </div>
         ))}
