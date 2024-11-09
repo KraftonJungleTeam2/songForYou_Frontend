@@ -180,7 +180,10 @@ function MultiPlay() {
 
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
+    if(songLists.public.length === 0)
+    {
     fetchSongLists();
+    }
   }, []);
 
   useEffect(() => {
