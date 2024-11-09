@@ -53,7 +53,7 @@ const ReservationPopup = ({
   return (
     <div className="overlay">
       <div className="popup">
-        <div className="song-list-area" style={{borderRight: "2px solid var(--border-gray)", borderRadius: 0, paddingRight: '1vw'}}>
+        <div className="song-list-area">
           <div className="top-section">
             <div
               className="tabs"
