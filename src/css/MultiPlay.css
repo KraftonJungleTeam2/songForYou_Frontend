@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 15%; /* 좌측 영역 너비 설정 */
+  min-width: 10rem;
+  width: 17%; /* 좌측 영역 너비 설정 */
   background-color: var(--background-main);
   gap: 1rem;
 }
@@ -22,6 +23,7 @@
   width: 100%;
   padding: 10px 0;
   align-self: stretch; /* 상단에 고정되도록 설정 */
+  white-space: nowrap;
 }
 
 .information-area p {
@@ -43,13 +45,14 @@
   flex-direction: column;
   gap: 10px;
   margin-bottom: 10px;
+  margin-right: 0.5em;
 }
 
 .button-area .button {
   padding: 10px;
   background-color: var(--text-neutral-bg);
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   color: var(--text-black);
   cursor: pointer;
   width: 100%;
@@ -62,14 +65,17 @@
 
 .button-area .start-button {
   background-color: var(--text-highlight-bg);
+  height: 33%;
 }
 
 .button-area .mic-button {
   background-color: var(--background-main);
+  height: 33%;
 }
 
 .button-area .reservation-button {
   background-color: var(--gradient-end);
+  height: 33%;
 }
 
 /* Chat area */
@@ -139,4 +145,63 @@
   color: var(--text-black);
   cursor: pointer;
   font-size: 14px;
+}
+
+@media (max-width: 1023px) {
+  .sing-area {
+    width: calc(100% - 1em);
+    height: 100%;
+    margin: 0.5em;
+    border-radius: 15px;
+  }
+
+  .information-area {
+    padding: 0.1rem;
+    font-size: smaller;
+  }
+
+  /* .information-area p:last-child {
+    display: none;
+  } */
+
+  .pitch-graph-play {
+    min-height: 60%;
+    height: 60%;
+  }
+  
+  .prev-lyrics,
+  .next-lyrics {
+    font-size: clamp(0rem, 5vmin, 100rem);
+  }
+
+  .curr-lyrics {
+    font-size: clamp(0rem, 8vmin, 100rem);
+  }
+
+  .players-chat {
+    flex-direction: column-reverse;
+    height: 13rem;
+    max-height: 40%;
+    /* flex-direction: row; */
+    min-width: 0;
+    width: 100%;
+    padding-bottom: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .button-area {
+    /* display: none; */
+    flex-direction: row;
+    max-height: 2rem;
+    gap: 0.5rem;
+    margin: 0 0.5rem;
+  }
+
+  .button-area .button {
+    height: 100%;
+  }
+
+  .chat-area {
+    display: none;
+  }
 }

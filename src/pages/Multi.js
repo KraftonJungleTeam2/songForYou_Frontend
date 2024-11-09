@@ -132,12 +132,12 @@ function Multi() {
               <div
                 className={`room-card ${room.empty ? "empty" : ""}`}
                 key={room.empty ? `empty-${index}` : room.id}
+                onClick={(e) => handlePlay(e, room.id, room.password)}
               >
                 {room.empty ? (
                   <div className="room-info-empty">방 없음</div>
                 ) : (
                   <div
-                    onClick={(e) => handlePlay(e, room.id, room.password)}
                     className="room-content"
                   >
                     <div className="room-info">
