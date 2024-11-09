@@ -58,6 +58,14 @@
   font-size: 2rem;
   flex-shrink: 0;
   margin-left: 0.5rem;
+  cursor: pointer;
+  color: var(--text-scheme);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.play-button:hover {
+  transform: scale(1.5); /* 크기 약간 증가 */
+  color: var(--action-green); /* 텍스트 색상 변화 */
 }
 
 /* 추가 배너 스타일 */
