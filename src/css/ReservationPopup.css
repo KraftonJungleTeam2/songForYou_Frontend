@@ -15,12 +15,12 @@
 /* Centered popup */
 .popup {
   background-color: var(--background-section);
-  padding-top: 2vh;
-  padding-right: 2vh;
-  padding-left: 2vh;
-  border-radius: 1vw;
-  width: 65%;
+  padding: 1.5rem 1rem 0 1rem;
+  border-radius: 1rem;
+  width: calc(100% - 1rem);
+  max-width: 60rem;
   height: 85%;
+  max-height: 50rem;
   display: flex;
   gap: 1%;
   position: relative;
@@ -39,20 +39,11 @@
 }
 
 .reserve-list {
-  padding-top: 4px;
-  height: 90%;
+  margin: 0;
+  height: calc(100% - 2rem);
   width: 100%;
   overflow-y: auto;
   scrollbar-width: none;
-}
-/* Optional media query to adjust for smaller screens */
-@media (max-width: 768px) {
-  .popup {
-    width: 80vw;
-  }
-  .reserve-list {
-    display: none; /* Hide reserve list on small screens if needed */
-  }
 }
 
 /* 탭의 기본 배경색과 텍스트 색상 */
@@ -66,25 +57,11 @@
   border-bottom-color: #ffcc00; /* 탭의 밑줄 색상도 동일하게 */
 }
 
-/* 예약 버튼 */
-.button.is-dark {
-  /* background-color: var(--text-scheme);
-  color: var(--text-white);
-  border: none;
-  opacity: 0.7; */
+.popup .song-list-area {
+  border-right: 2px solid var(--border-gray);
+  border-radius: 0;
+  padding-right: 1vw;
 }
-
-/* .button.is-dark:hover:not([disabled]) {
-  background-color: var(--action-green-hover);
-  cursor: pointer;
-}
-
-.button.is-dark[disabled] {
-  background-color: var(--text-neutral-bg);
-  color: var(--text-gray);
-  cursor: not-allowed;
-  pointer-events: none;
-} */
 
 /* 닫기 버튼 */
 .close-button-pop {
@@ -124,4 +101,36 @@
 .playing-overlay {
   position: relative;
   overflow: hidden; /* 내부 영역 제한 */
+}
+
+@media (max-width: 767px) {
+  .popup {
+    flex-direction: column-reverse;
+    height: 90%
+  }
+
+  .reserve-list-area {
+    width: 100%;
+    height: 30%;
+  }
+
+  .popup .song-list-area {
+    height: 70%;
+    margin: 0;
+    border-right: none;
+  }
+
+  .popup .top-section {
+    flex-direction: column;
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .popup .tabs {
+    height: 50%;
+  }
+
+  .popup .search-bar {
+    height: 45%;
+  }
 }

@@ -50,8 +50,8 @@ function Login() {
   return (
     <div className="background-container">
       <div className="login-container">
-        <h1>Login</h1>
-        <form onSubmit={handleLogin}>
+        <h1 className="title">Login</h1>
+        <form onSubmit={handleLogin} className="login-form">
           <div className="input-container">
             <i className="fa-solid fa-at input-icon"></i>
             <input
@@ -70,10 +70,14 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit">Login</button>
+          <div className="button-con">
+            <button type="submit" className="login-button">로그인</button>
+            <button className="toregister" onClick={() => navigate("/register")}>회원가입</button>
+          </div>
+          <div className="error-message">
+            {error && <p>{error}</p>}
+          </div>
         </form>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button onClick={() => navigate("/register")}>Register</button>
       </div>
     </div>
   );
