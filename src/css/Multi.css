@@ -7,31 +7,51 @@
   height: 100%;
 }
 
+.component-container#room-list-container {
+  --margin-top-bottom: 1rem;
+  --margin-left-right: 1rem;
+  width: calc(100% - 2 * var(--margin-left-right));
+  height: calc(100% - 2 * var(--margin-top-bottom));
+  margin: var(--margin-top-bottom) var(--margin-left-right);
+  padding: 1rem;
+}
+
+.top-section.room {
+  justify-content: right;
+  gap: 1em;
+  height: 3.3rem;
+}
+
 /* 방 리스트: 반응형 그리드 */
 .room-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(200px, 1fr));
   gap: 20px; /* 카드 간격 */
-  width: 80%;
-  margin: 1rem auto;
-  margin-top: 1.5rem;
+  width: 100%;
+  max-height: calc(100% - 3rem);
+  padding-bottom: 10px;
+  overflow-y: auto;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .room-list {
-    grid-template-columns: 1fr; /* 1열로 변경 */
+    grid-template-columns: 1fr;
   }
 }
 
 /* 방 카드 스타일 */
 .room-card {
   background-color: #f9f9f9;
+  height: 7rem;
+  border: solid;
   border-radius: 15px;
-  box-shadow: var(--shadow);
+  border-width: 1px;
+  border-color: var(--border-gray);
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   transition: background-color 0.3s ease;
   text-align: center;
 }
@@ -64,6 +84,14 @@
 .room-info-empty {
   font-size: 1.2em;
   color: #aaa;
+}
+
+.button-create {
+  height: 100%;
+}
+
+.button-refresh {
+  height: 100%;
 }
 
 /* 페이지 버튼 */
@@ -120,4 +148,14 @@
 
 .refresh {
   background-color: #ff5722;
+}
+
+.search-bar {
+  height: 100%
+}
+.search-bar input {
+  height: 100%;
+}
+.search-bar .search-button {
+  min-height: 100%;
 }
