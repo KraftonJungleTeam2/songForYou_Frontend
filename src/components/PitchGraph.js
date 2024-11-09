@@ -19,6 +19,7 @@ const PitchGraph = ({
   currentTimeIndex,
   songimageProps,
   score,
+  socketId,
 }) => {
   const canvasRef = useRef(null);
   const workerRef = useRef(null);
@@ -73,13 +74,23 @@ const PitchGraph = ({
       return;
     }
 
+    let multiData = {};
+
+    if (multiRealDatas) {
+      multiData = Object.fromEntries(
+        Object.entries(multiRealDatas)
+          .map(([key, arr]) => [key, arr[currentTimeIndex - 1]])
+      );
+    }
+
     worker.postMessage({
       type: "timeData",
-      realtimeData: realtimeData[currentTimeIndex-1],
-      multiRealDatas,
+      realtimeData: realtimeData[currentTimeIndex - 1],
+      multiData,
       dataPointCount,
       currentTimeIndex,
       score,
+      socketId: socketId || "colorForSinglePlayyy"
     });
   }, [
     dimensions,

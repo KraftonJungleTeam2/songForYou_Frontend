@@ -55,7 +55,7 @@ function Sidebar({ isOpen, toggleSidebar, current }) {
           <button className="nav-button" onClick={() => navigate("/add")}>
             <i
               id="nav-add"
-              className={`fa-solid fa-plus nav-icon ${
+              className={`fa-solid fa-circle-plus nav-icon ${
                 current === "add" ? "selected" : ""
               }`}
             ></i>

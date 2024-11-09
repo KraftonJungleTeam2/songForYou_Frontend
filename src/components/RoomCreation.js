@@ -57,7 +57,8 @@ function RoomCreation({ onCancel }) {
   return (
     <div className="room-creation-background">
       <div className="room-creation-window">
-        <h2>방 생성</h2>
+        <div className="close-button is-ghost" onClick={onCancel}><i className="fa-solid fa-xmark"></i></div>
+        <h2>방 만들기</h2>
         <form onSubmit={handleSubmit}>
           <label>
             방 제목:
@@ -90,10 +91,7 @@ function RoomCreation({ onCancel }) {
               onChange={(e) => setRoomPassword(e.target.value)}
             />
           </label>
-          <button type="submit">생성</button>
-          <button type="button" onClick={onCancel}>
-            취소
-          </button>
+          <button type="submit" className="button is-highlight">만들기</button>
         </form>
       </div>
     </div>
