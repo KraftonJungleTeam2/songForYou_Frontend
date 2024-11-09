@@ -7,6 +7,15 @@
   height: 100%;
 }
 
+.component-container#room-list-container {
+  --margin-top-bottom: 1rem;
+  --margin-left-right: 1rem;
+  width: calc(100% - 2 * var(--margin-left-right));
+  height: calc(100% - 2 * var(--margin-top-bottom));
+  margin: var(--margin-top-bottom) var(--margin-left-right);
+  padding: 1rem;
+}
+
 /* 방 리스트: 반응형 그리드 */
 .room-list {
   display: grid;
