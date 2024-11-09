@@ -11,12 +11,14 @@ import PageTemplate from "../template/PageTemplate";
 
 function Multi() {
   const [rooms, setRooms] = useState([]);
+  const [roomCards, setRoomCards] = useState(rooms);
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false); // 방 생성 상태
   const roomsPerPage = 10;
 
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { isMobile } = useScreen();
 
@@ -75,18 +77,19 @@ function Multi() {
     }
   };
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  useEffect(() => {
+    const temp = rooms.filter((room) => room.roomTitle.toLowerCase().includes(searchTerm.toLowerCase()));
+    while (temp.length < 1) {
+      temp.push({ roomId: `empty-${temp.length}`, empty: true });
+    }
+
+    setRoomCards(temp);
+  }, [searchTerm, rooms])
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
-  const roomCards = [...rooms];
-  while (roomCards.length < 1) {
-    roomCards.push({ roomId: `empty-${roomCards.length}`, empty: true });
-  }
 
   return (
     <PageTemplate
@@ -106,9 +109,9 @@ function Multi() {
           <div className="search-bar">
             <input
               type="text"
-              placeholder="노래 검색"
-              // value={searchTerm}
-              // onChange={handleSearch}
+              placeholder="검색"
+              value={searchTerm}
+              onChange={handleSearch}
             />
             <button className="search-button">
               <i className="fa-solid fa-magnifying-glass"></i>
@@ -131,7 +134,7 @@ function Multi() {
                 key={room.empty ? `empty-${index}` : room.id}
               >
                 {room.empty ? (
-                  <div className="room-info-empty">빈 방</div>
+                  <div className="room-info-empty">방 없음</div>
                 ) : (
                   <div
                     onClick={(e) => handlePlay(e, room.id, room.password)}

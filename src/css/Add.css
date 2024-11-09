@@ -119,27 +119,3 @@
 .radio-group input[type="radio"] {
   margin-right: 0.4rem;
 }
-
-/* 버튼 스타일 */
-.button {
-  margin-top: 2rem;
-  padding: 0.75rem;
-  font-weight: bold;
-  font-size: 1rem;
-  color: var(--text-white);
-  background-color: var(--border-hover);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  /* transition: background-color 0.2s ease;  호버 효과 굳이??*/
-}
-
-.button:hover {
-  background-color: var(--border-hover);
-}
-
-.button.is-loading {
-  background-color: var(--text-neutral-bg);
-  cursor: not-allowed;
-  color: var(--text-gray);
-}
