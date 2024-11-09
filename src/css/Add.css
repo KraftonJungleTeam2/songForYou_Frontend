@@ -53,7 +53,7 @@
 .add-form textarea {
   padding: 0.5rem;
   font-size: 1rem;
-  border: 1px solid var(--border-hover);
+  border: 1px solid var(--border-gray);
   border-radius: 5px;
   width: 70%; /* 입력 필드의 폭을 조정 */
 }
@@ -119,4 +119,9 @@
   font-weight: bold;
   color: var(--text-black);
   background-color: var(--border-hover);
+  transition: transform 0.3s ease-in-out;
+}
+
+.add-button:hover{
+  background-color: var(--gradient-end);
 }

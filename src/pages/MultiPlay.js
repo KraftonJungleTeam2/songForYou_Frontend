@@ -107,7 +107,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
   const entireReferDataRef = useRef([]);
-  const [dataPointCount, setDataPointCount] = useState(50);
+  const [dataPointCount, setDataPointCount] = useState(75);
 
   //채팅 관련
   const [messages, setMessages] = useState([]);
@@ -994,6 +994,13 @@ function MultiPlay() {
           width: containerRef.current.offsetWidth,
           height: containerRef.current.offsetHeight * 0.7,
         });
+      }
+
+      if (containerRef.current.offsetWidth < 1024) {
+        const newDataPointCount = 25 + ((containerRef.current.offsetWidth - 300) / (1024 - 300)) * (75 - 25);
+        setDataPointCount(Math.round(newDataPointCount));
+      } else {
+        setDataPointCount(75);
       }
     }
 
