@@ -119,4 +119,9 @@
   font-weight: bold;
   color: var(--text-black);
   background-color: var(--border-hover);
+  transition: transform 0.3s ease-in-out;
+}
+
+.add-button:hover{
+  background-color: var(--gradient-end);
 }
