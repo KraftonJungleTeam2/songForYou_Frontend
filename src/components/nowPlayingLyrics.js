@@ -15,26 +15,10 @@ const NowPlayingLyrics = ({ segment, playbackPosition }) => {
     textAlign: "center", // 추가
   };
 
-  const grayTextStyle = {
-    position: "absolute",
-    color: "gray",
-    top: 0,
-    left: 0,
-    width: "100%", // 추가
-    textAlign: "center", // 추가
-  };
-
-  const highlightContainerStyle = {
-    position: "relative",
-    zIndex: 1,
-    width: "100%", // 추가
-    textAlign: "center", // 추가
-  };
-
   return (
-    <div style={containerStyle}>
-      <span style={grayTextStyle}>{fullText}</span>
-      <div style={highlightContainerStyle}>
+    <div className="curr-lyrics">
+      <span className="curr-lyrics-back">{fullText}</span>
+      <div className="curr-lyrics-highlight">
         {segment.words.map((wordData, index) => {
           const progress = Math.max(
             0,

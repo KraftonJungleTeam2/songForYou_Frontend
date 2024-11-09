@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../css/Single.css";
-import Sidebar from "../components/SideBar";
 import SongListArea from "../components/SongListArea";
 import Preview from "../components/Preview";
-import TopBar from "../components/TopBar";
 import { useSongs } from "../Context/SongContext";
 import { useScreen } from "../Context/ScreenContext";
-import MobileNav from "../components/MobileNav";
 import PageTemplate from "../template/PageTemplate";
 
 function Single() {
@@ -24,7 +21,9 @@ function Single() {
   };
 
   useEffect(() => {
+    
     fetchSongLists();
+    console.log(songLists);
   }, []);
 
   return (

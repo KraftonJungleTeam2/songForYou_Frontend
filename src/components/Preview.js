@@ -115,7 +115,7 @@ function Preview({ selectedSong }) {
         isMobile ? "preview-container-mobile" : "preview-container-desktop"
       }`}
     >
-      <div className="preview-image-container">
+      <div className="preview-image-container" style={{backgroundPosition: 'center'}}>
         {selectedSong.image && selectedSong.image.data ? (
           <img
             src={`data:image/jpeg;base64,${arrayBufferToBase64(
@@ -141,19 +141,24 @@ function Preview({ selectedSong }) {
           <button
             className={`preview-play-button ${isPlaying ? "playing" : ""}`}
             onClick={(e) => handlePreview(e, selectedSong.id)}
-            aria-label={isPlaying ? "Pause Preview" : "Play Preview"}
+            aria-label={isPlaying ? "멈추기" : "미리듣기"}
           >
-            {isPlaying ? "Pause" : "Play Preview"}
+            {isPlaying ? "멈추기" : "미리듣기"}
           </button>
           <button
             className="preview-sing-button"
             onClick={(e) => handlePlay(e, selectedSong)}
             aria-label="Sing Song"
           >
-            Sing
+            부르기
           </button>
         </div>
       </div>
+        <div className="preview-lyrics">
+          {selectedSong.lyrics.segments.map((segment, index) => (
+            <p>{segment.text}</p>
+          ))}
+        </div>
     </div>
   );
 }
