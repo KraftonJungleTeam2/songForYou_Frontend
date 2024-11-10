@@ -41,13 +41,14 @@ export const UserProvider = ({ children }) => {
         }
       );
       
+      // 일단 작업해야함 프로필 ㅇㅇ 11/12일에 하기
       const { email, name, imageData } = response.data;
       const imgurl = `data:image/png;base64,${arrayBufferToBase64(imageData)}`;
 
       setUserData({
         email,
         name,
-        imgurl,
+        // imgurl,
       });
       
     } catch (error) {

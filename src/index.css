@@ -102,6 +102,7 @@ body {
     --text-black: #000000;
     --text-gray: #989fa0;
     --text-scheme: #ffffff;
+    --input-color: #4d4d4d;
 
     --border-gray: #838383;
   }
@@ -125,12 +126,9 @@ body {
 .button.is-highlight {
   border: none;
   font-size: 16px;
-  cursor: pointer;
   border-radius: 8px;
   background-color: var(--text-highlight-bg);
   color: var(--text-black);
-  display: flex;
-  align-items: center;
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -142,12 +140,9 @@ body {
 .button.is-normal {
   border: none;
   font-size: 16px;
-  cursor: pointer;
   border-radius: 8px;
   background-color: var(--text-white);
   color: var(--text-black);
-  display: flex;
-  align-items: center;
   transition: background-color 0.3s, color 0.3s;
 }
 
