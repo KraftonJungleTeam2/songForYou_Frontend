@@ -1,7 +1,6 @@
-.sim-container{
-    position: fixed;
-    top: 15px;
-    left: 10px;
-    display: flex;
-
+.sim-container {
+  position: fixed;
+  top: 15px;
+  left: 10px;
+  display: flex;
 }

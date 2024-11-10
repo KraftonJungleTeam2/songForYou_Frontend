@@ -1,89 +1,95 @@
 /* src/css/RoomCreation.css */
 .room-creation-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 3;
-    animation: fadeIn 0.3s ease-in-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.room-creation-window {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transform: translateY(100px); /* 초기 위치 */
+  animation: slideUp 0.2s ease-in-out forwards; /* 위로 슬라이드 애니메이션 */
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  .room-creation-window {
-    background-color: white;
-    padding: 20px 30px;
-    border-radius: 8px;
-    width: 300px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    transform: translateY(100px); /* 초기 위치 */
-    animation: slideUp 0.2s ease-in-out forwards; /* 위로 슬라이드 애니메이션 */
+  to {
+    opacity: 1;
   }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(200px); /* 아래에서 시작 */
   }
-  
-  @keyframes slideUp {
-    from {
-      transform: translateY(200px); /* 아래에서 시작 */
-    }
-    to {
-      transform: translateY(0); /* 원래 위치로 이동 */
-    }
+  to {
+    transform: translateY(0); /* 원래 위치로 이동 */
   }
-  
-  .room-creation-window h2 {
-    margin-bottom: 20px;
-    font-size: 1.5em;
-  }
-  
-  .room-creation-window form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .room-creation-window label {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-  }
-  
-  .room-creation-window input {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .room-creation-window button {
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    font-size: 1em;
-    cursor: pointer;
-  }
-  
-  .room-creation-window button[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  .room-creation-window button[type="button"] {
-    background-color: #f44336;
-    color: white;
-  }
-  
-  .room-creation-window button:hover {
-    opacity: 0.9;
-  }
-  
+}
+
+.close-button {
+  position: absolute;
+  right: 1.5rem;
+  top: 1rem;
+}
+
+.room-creation-window h2 {
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.room-creation-window form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.room-creation-window label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.room-creation-window input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.room-creation-window button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+/* .room-creation-window button[type="submit"] {
+  background-color: #4caf50;
+  color: white;
+}
+
+.room-creation-window button[type="button"] {
+  background-color: #f44336;
+  color: white;
+} */
+
+.room-creation-window button:hover {
+  opacity: 0.9;
+}

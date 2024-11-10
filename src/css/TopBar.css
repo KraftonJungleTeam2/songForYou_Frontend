@@ -2,13 +2,25 @@
 .top-bar {
   display: flex;
   justify-content: flex-end;
-  padding: 10px 20px;
+  padding: 0.5rem 1rem 0 1rem;
   background-color: var(--background-main);
   height: var(--top-bar-height);
 }
 
-@media (max-width: 1024px) {
-  .dark-mode-toggle{
+.top-bar .logo {
+  margin: 0.2rem;
+  margin-right: auto;
+}
+
+@media (max-width: 767px) {
+  .top-bar .logo {
+    width: calc(var(--top-bar-height) - 0.9rem);
+    object-fit: cover;
+    object-position: left;
+  }
+}
+@media (max-width: 1023px) {
+  .dark-mode-toggle {
     position: fixed;
     top: 0.25rem;
     left: 2.6vw;
@@ -56,6 +68,11 @@
   font-size: 20px;
   cursor: pointer;
   color: var(--text-scheme);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.settings-button:hover{
+  transform: scale(1.5); /* 크기 약간 증가 */
+  color: var(--border-hover); /* 텍스트 색상 변화 */
 }
 
 .logout-button {

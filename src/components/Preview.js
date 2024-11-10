@@ -1,8 +1,8 @@
 // Preview.js
-import React, { useState, useRef, useEffect } from 'react';
-import '../css/Preview.css';
-import { useNavigate } from 'react-router-dom';
-import { useScreen } from '../Context/ScreenContext';
+import React, { useState, useRef, useEffect } from "react";
+import "../css/Preview.css";
+import { useNavigate } from "react-router-dom";
+import { useScreen } from "../Context/ScreenContext";
 
 function Preview({ selectedSong }) {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ function Preview({ selectedSong }) {
   }, [selectedSong]);
 
   const arrayBufferToBase64 = (buffer) => {
-    let binary = '';
+    let binary = "";
     const bytes = new Uint8Array(buffer);
     const len = bytes.byteLength;
     for (let i = 0; i < len; i++) {
@@ -61,14 +61,17 @@ function Preview({ selectedSong }) {
         audioRef.current.load();
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/songs/preview`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ songId }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_ENDPOINT}/songs/preview`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ songId }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Preview request failed');
+        throw new Error("Preview request failed");
       }
 
       const audioBlob = await response.blob();
@@ -81,15 +84,16 @@ function Preview({ selectedSong }) {
       audioRef.current.load();
 
       setTimeout(() => {
-        audioRef.current.play()
+        audioRef.current
+          .play()
           .then(() => setIsPlaying(true))
           .catch((error) => {
-            console.error('Failed to play audio:', error);
+            console.error("Failed to play audio:", error);
             setIsPlaying(false);
           });
       }, 100);
     } catch (error) {
-      console.error('Error playing preview:', error);
+      console.error("Error playing preview:", error);
       setIsPlaying(false);
     }
   };
@@ -101,46 +105,60 @@ function Preview({ selectedSong }) {
 
   if (!selectedSong) {
     return (
-      <div className='preview-placeholder'>
-        곡 선택 후 세부사항이 보입니다.
-      </div>
+      <div className="preview-placeholder">곡 선택 후 세부사항이 보입니다.</div>
     );
   }
 
   return (
-    <div className={`${isMobile ? 'preview-container-mobile' : 'preview-container-desktop'}`}>
-      <div className='preview-image-container'>
+    <div
+      className={`${
+        isMobile ? "preview-container-mobile" : "preview-container-desktop"
+      }`}
+    >
+      <div className="preview-image-container" style={{backgroundPosition: 'center'}}>
         {selectedSong.image && selectedSong.image.data ? (
           <img
-            src={`data:image/jpeg;base64,${arrayBufferToBase64(selectedSong.image.data)}`}
+            src={`data:image/jpeg;base64,${arrayBufferToBase64(
+              selectedSong.image.data
+            )}`}
             alt={selectedSong.metadata.title}
           />
         ) : (
-          <div className='no-image'>이미지가 존재하지 않습니다.</div>
+          <div className="no-image">이미지가 존재하지 않습니다.</div>
         )}
       </div>
 
-      <div className='preview-info-container'>
-        <h3 className='preview-title'>{selectedSong.metadata.title}</h3>
-        <p className='preview-subtitle'>{selectedSong.metadata.description}</p>
-        <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />
-        <div className='preview-buttons'>
+      <div className="preview-info-container">
+        <h3 className="preview-title">{selectedSong.metadata.title}</h3>
+        <p className="preview-subtitle">{selectedSong.metadata.description}</p>
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          onEnded={handleAudioEnded}
+          style={{ display: "none" }}
+        />
+        <div className="preview-buttons">
           <button
-            className={`preview-play-button ${isPlaying ? 'playing' : ''}`}
+            className={`preview-play-button ${isPlaying ? "playing" : ""}`}
             onClick={(e) => handlePreview(e, selectedSong.id)}
-            aria-label={isPlaying ? 'Pause Preview' : 'Play Preview'}
+            aria-label={isPlaying ? "멈추기" : "미리듣기"}
           >
-            {isPlaying ? 'Pause' : 'Play Preview'}
+            {isPlaying ? "멈추기" : "미리듣기"}
           </button>
           <button
-            className='preview-sing-button'
+            className="preview-sing-button"
             onClick={(e) => handlePlay(e, selectedSong)}
             aria-label="Sing Song"
           >
-            Sing
+            부르기
           </button>
         </div>
       </div>
+        <div className="preview-lyrics">
+          {selectedSong.lyrics.segments.map((segment, index) => (
+            <p>{segment.text}</p>
+          ))}
+        </div>
     </div>
   );
 }
