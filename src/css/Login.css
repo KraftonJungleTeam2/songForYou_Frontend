@@ -19,7 +19,13 @@
   justify-content: center;
   align-items: center;
   width: 400px;
-  height: 400px;
+  max-width: calc(100%-1rem);
+  /* height: 400px; */
+}
+
+.login-container .logo {
+  margin: 3rem auto;
+  width: calc(90% - 3rem);
 }
 
 .login-form {
