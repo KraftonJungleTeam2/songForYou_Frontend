@@ -352,6 +352,8 @@ function MultiPlay() {
       ready: song.readyBool,
       songData: null, // 데이터는 나중에 로드
       image: song.image,
+      title: song.title,
+      description: song.description,
     }));
 
     if (songs[0] && songs[0].readyBool) {
@@ -658,13 +660,15 @@ function MultiPlay() {
 
     socketRef.current.on("songAdded", (data) => {
       try {
+        console.log(data);
+
         const reserved = {
           ready: false,
           songId: data.song.id,
           image: data.song.image,
           songData: null,
-          // 예약 리스트를 위한 song state저장
-          song: data.song,
+          title: data.song.metadata.title,
+          description: data.song.metadata.description,
         };
         setReservedSongs((prev) => [...prev, reserved]);
       } catch (error) {
@@ -1113,6 +1117,7 @@ function MultiPlay() {
   };
 
   const OnPopup = () => {
+    console.log(songLists);
     setshowPopup(true);
   };
 
@@ -1165,8 +1170,8 @@ function MultiPlay() {
     >
       <div className="sing-area component-container-play" ref={containerRef}>
         <div className="information-area">
-          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
-          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p>
+          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].title+' - '+reservedSongs[0].description : '없음'}`}</p>
+          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].title+' - '+reservedSongs[1].description : '없음'}`}</p>
         </div>
 
         <div className="pitch-graph-multi">
