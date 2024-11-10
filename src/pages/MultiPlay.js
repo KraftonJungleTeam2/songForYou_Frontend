@@ -146,7 +146,7 @@ function MultiPlay() {
   const latencyCalcRef = useRef({});
 
   // 볼륨 조절 용. 0.0-1.0의 값
-  const [musicGain, setMusicGain] = useState(1);
+  const [musicGain, setMusicGain] = useState(0.5);
 
   // 점수 확인 용
   const [score, setScore] = useState(0);
