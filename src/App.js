@@ -17,6 +17,7 @@ import { ToastContainer } from "react-toastify";
 import { AuthProvider, useAuth } from "./Context/AuthContext";
 import { SongProvider } from "./Context/SongContext";
 import { ScreenProvider } from "./Context/ScreenContext";
+import { UserProvider } from "./Context/UserContext";
 
 function ProtectedRoute({ element }) {
   const { isLoggedIn } = useAuth();
@@ -34,48 +35,50 @@ function App() {
   return (
     <AuthProvider>
       <ScreenProvider>
-        <Router>
-          <div className="App">
-            <SongProvider>
-              <ToastContainer />
-              <Routes>
-                <Route
-                  path="/login"
-                  element={<CheckLoggedIn element={<Login />} />}
-                />
-                <Route
-                  path="/register"
-                  element={<CheckLoggedIn element={<Register />} />}
-                />
-                <Route
-                  path="/single"
-                  element={<ProtectedRoute element={<Single />} />}
-                />
-                <Route
-                  path="/multi"
-                  element={<ProtectedRoute element={<Multi />} />}
-                />
-                <Route
-                  path="/setting"
-                  element={<ProtectedRoute element={<Setting />} />}
-                />
-                <Route
-                  path="/play/:id"
-                  element={<ProtectedRoute element={<Play />} />}
-                />
-                <Route
-                  path="/add"
-                  element={<ProtectedRoute element={<Add />} />}
-                />
-                <Route
-                  path="/multiplay/:roomId"
-                  element={<ProtectedRoute element={<MultiPlay />} />}
-                />
-                <Route path="/" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </SongProvider>
-          </div>
-        </Router>
+        <UserProvider>
+          <Router>
+            <div className="App">
+              <SongProvider>
+                <ToastContainer />
+                <Routes>
+                  <Route
+                    path="/login"
+                    element={<CheckLoggedIn element={<Login />} />}
+                  />
+                  <Route
+                    path="/register"
+                    element={<CheckLoggedIn element={<Register />} />}
+                  />
+                  <Route
+                    path="/single"
+                    element={<ProtectedRoute element={<Single />} />}
+                  />
+                  <Route
+                    path="/multi"
+                    element={<ProtectedRoute element={<Multi />} />}
+                  />
+                  <Route
+                    path="/setting"
+                    element={<ProtectedRoute element={<Setting />} />}
+                  />
+                  <Route
+                    path="/play/:id"
+                    element={<ProtectedRoute element={<Play />} />}
+                  />
+                  <Route
+                    path="/add"
+                    element={<ProtectedRoute element={<Add />} />}
+                  />
+                  <Route
+                    path="/multiplay/:roomId"
+                    element={<ProtectedRoute element={<MultiPlay />} />}
+                  />
+                  <Route path="/" element={<Navigate to="/login" replace />} />
+                </Routes>
+              </SongProvider>
+            </div>
+          </Router>
+        </UserProvider>
       </ScreenProvider>
     </AuthProvider>
   );

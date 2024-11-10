@@ -1,39 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/Setting.css";
 import { useAuth } from "../Context/AuthContext";
 import PageTemplate from "../template/PageTemplate";
 import { useScreen } from "../Context/ScreenContext";
+import { useUser } from "../Context/UserContext";
 
 function Setting() {
   const { isMobile } = useScreen();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  const [userData, setUserData] = useState({
-    name: "",
-    email: "",
-    profilePicture: "",
-  });
+  const { userData, setUserData } = useUser(); // UserContext에서 userData와 setUserData 가져오기
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const token = sessionStorage.getItem("userToken");
-      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUserData(response.data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -133,7 +114,7 @@ function Setting() {
     >
       <div className="setting-content-area">
         <div className="settings-container component-container">
-          <h1 style={{textAlign: "center"}}>프로필 설정</h1>
+          <h1 style={{ textAlign: "center" }}>프로필 설정</h1>
 
           {/* 프로필 사진과 사용자 정보 수정 폼 */}
           <div className="profile-settings">
@@ -163,7 +144,7 @@ function Setting() {
                   type="text"
                   id="name"
                   name="name"
-                  value={userData.name}
+                  value={userData.name || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -173,7 +154,7 @@ function Setting() {
                   type="email"
                   id="email"
                   name="email"
-                  value={userData.email}
+                  value={userData.email || ""}
                   onChange={handleChange}
                 />
               </div>
