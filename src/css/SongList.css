@@ -31,6 +31,7 @@
   width: 4rem;
   height: 4rem;
   background-position: center;
+  border-radius: 4px;
 }
 
 .song-info {
@@ -58,6 +59,14 @@
   font-size: 2rem;
   flex-shrink: 0;
   margin-left: 0.5rem;
+  cursor: pointer;
+  color: var(--text-scheme);
+  transition: transform 0.2s ease, color 0.2s ease;
+  opacity: 0.8;
+}
+
+.play-button:hover {
+  opacity: 1;
 }
 
 /* 추가 배너 스타일 */

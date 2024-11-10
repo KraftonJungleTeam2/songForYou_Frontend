@@ -89,7 +89,7 @@ const AudioPlayer = forwardRef(
       setStarttime(null);
       setReservedSongs((prev) => prev.slice(1));
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
-      onPlaybackPositionChange(0);
+      onPlaybackPositionChange(-10);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }

@@ -106,7 +106,7 @@ function MultiPlay() {
   const [entireGraphData, setEntireGraphData] = useState([]);
   const [entireReferData, setEntireReferData] = useState([]);
   const entireReferDataRef = useRef([]);
-  const [dataPointCount, setDataPointCount] = useState(50);
+  const [dataPointCount, setDataPointCount] = useState(75);
 
   //채팅 관련
   const [messages, setMessages] = useState([]);
@@ -120,6 +120,7 @@ function MultiPlay() {
   const dataChannelsRef = useRef({}); // DataChannel 저장소 추가
   const latencyDataChannelsRef = useRef({}); // 레이턴시용 DataChannel 저장소 추가
   const pitchArraysRef = useRef({}); //  pitchArrays
+  const candidatesRef = useRef({}); // candidates before est
 
   const [useCorrection, setUseCorrection] = useState(true);
 
@@ -176,7 +177,10 @@ function MultiPlay() {
 
   // songContext에서 노래 정보를 불러옴
   useEffect(() => {
+    if(songLists.public.length === 0)
+    {
     fetchSongLists();
+    }
   }, []);
 
   useEffect(() => {
@@ -191,7 +195,6 @@ function MultiPlay() {
   }, [entireReferData]);
 
   useEffect(() => {
-    console.log('currentData', currentData);
     if (currentData !== null && currentData.ready == true) {
       setMrDataBlob(currentData.songData.mr); // Blob 데이터 저장
       setLyricsData(currentData.songData.lyrics);
@@ -200,10 +203,7 @@ function MultiPlay() {
         try {
           const processedPitchArray = doubleDataFrequency(pitchArray);
           setEntireReferData(processedPitchArray);
-
           setEntireGraphData(new Array(processedPitchArray.length).fill(null));
-
-          pitchArraysRef.current['myId'] = socketId.current;
 
           Object.keys(dataChannelsRef.current).forEach((key) => {
             pitchArraysRef.current[key] = new Array(processedPitchArray.length).fill(null);
@@ -219,7 +219,6 @@ function MultiPlay() {
   }, [currentData]);
 
   useEffect(() => {
-    console.log('reservedSongs', reservedSongs);
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
@@ -327,8 +326,11 @@ function MultiPlay() {
   };
 
   const updatePlayerMic = (userId, micBool) => {
-    console.log('update mic of', userId);
-    setPlayers((prevPlayers) => prevPlayers.map((player) => (player?.userId === userId ? { ...player, mic: micBool } : player)));
+    setPlayers((prevPlayers) =>
+      prevPlayers.map((player) =>
+        player?.userId === userId ? { ...player, mic: micBool } : player
+      )
+    );
     micStatRef.current[userId] = micBool;
   };
 
@@ -368,8 +370,8 @@ function MultiPlay() {
     const currentPlayingSong = songs.find((song) => song.playing);
     if (currentPlayingSong) {
       // 서버 시간과 클라이언트 시간 차이를 고려하여 시작 시간 설정
-      const clientStartTime = currentPlayingSong.startTime + serverTimeDiff.current;
-      console.log('clientStartTime', clientStartTime);
+      const clientStartTime =
+        currentPlayingSong.startTime + serverTimeDiff.current;
       startTimeRef.current = clientStartTime;
     }
     setReservedSongs(formattedSongs);
@@ -519,6 +521,13 @@ function MultiPlay() {
       };
       await peerConnection.setRemoteDescription(offer);
 
+      if (candidatesRef.current[callerId]) {
+        for (const candidate of candidatesRef.current[callerId]) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        delete candidatesRef.current[callerId];
+      }
+
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
@@ -534,26 +543,30 @@ function MultiPlay() {
     // Answer 처리
     socketRef.current.on('answer', async ({ answer, callerId }) => {
       const peerConnection = peerConnectionsRef.current[callerId];
-      console.log(callerId, '에서 answer 수신');
-
-      // peerConnection.onicecandidate = (event) => {
-      //   if (event.candidate) {
-      //     socketRef.current.emit('ice-candidate', {
-      //       targetId: callerId,
-      //       candidate: event.candidate,
-      //     });
-      //   }
-      // };
+      console.log(callerId, "에서 answer 수신");
+      
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
+      }
+
+      if (candidatesRef.current[callerId]) {
+        for (const candidate of candidatesRef.current[callerId]) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        delete candidatesRef.current[callerId];
       }
     });
 
     // ICE candidate 처리
     socketRef.current.on('ice-candidate', async ({ candidate, callerId }) => {
       const peerConnection = peerConnectionsRef.current[callerId];
-      if (peerConnection) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch((error) => console.error('Error adding received ICE candidate:', error));
+      if (peerConnection?.remoteDescription) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } else {
+        if (!candidatesRef.current[callerId])
+          candidatesRef.current[callerId] = new Array();
+
+        candidatesRef.current[callerId].push(candidate);
       }
     });
 
@@ -654,7 +667,13 @@ function MultiPlay() {
             return song; // 일치하지 않는 곡은 그대로 반환
           });
         });
-      } catch (error) {}
+      } catch (error) { }
+    });
+
+    socketRef.current.on("reservationCanceled", ({ songId }) => {
+      setReservedSongs((prevSongs) => {
+        return prevSongs.filter(reserved => reserved.song.id !== songId);
+      });
     });
 
     return () => {
@@ -919,6 +938,13 @@ function MultiPlay() {
           height: containerRef.current.offsetHeight * 0.7,
         });
       }
+
+      if (containerRef.current.offsetWidth < 1024) {
+        const newDataPointCount = 25 + ((containerRef.current.offsetWidth - 300) / (1024 - 300)) * (75 - 25);
+        setDataPointCount(Math.round(newDataPointCount));
+      } else {
+        setDataPointCount(75);
+      }
     }
 
     handleResize();
@@ -1035,16 +1061,30 @@ function MultiPlay() {
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
-    <PageTemplate isMobile={isMobile} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} current={'multi'}>
-      <div className='sing-area component-container-play' ref={containerRef}>
-        <div className='information-area'>
-          <p>현재곡</p>
-          <p>가수</p>
-          <p>곡번호</p>
+    <PageTemplate
+      isMobile={isMobile}
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      current={"multi"}
+    >
+      <div className="sing-area component-container-play" ref={containerRef}>
+        <div className="information-area">
+          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
+          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p>
         </div>
 
-        <div className='pitch-graph-multi'>
-          <PitchGraph dimensions={dimensions} realtimeData={entireGraphData} multiRealDatas={pitchArraysRef.current} referenceData={entireReferData} dataPointCount={dataPointCount} currentTimeIndex={playbackPosition * 40} songimageProps={reservedSongs[0]} score={instantScore} />
+        <div className="pitch-graph-multi">
+          <PitchGraph
+            dimensions={dimensions}
+            realtimeData={entireGraphData}
+            multiRealDatas={pitchArraysRef.current}
+            referenceData={entireReferData}
+            dataPointCount={dataPointCount}
+            currentTimeIndex={playbackPosition * 40}
+            songimageProps={reservedSongs[0]}
+            score={instantScore}
+            socketId={socketId.current}
+          />
         </div>
 
         {/* 오디오 플레이어 컨트롤 */}
@@ -1066,8 +1106,17 @@ function MultiPlay() {
 
         <div className='button-area'>
           {/* 시작 버튼 */}
-          <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
-            {audioLoaded ? (isPlaying ? '노래 멈추기' : '노래 시작') : '로딩 중...'}
+          <button
+            onClick={isPlaying ? handleStopClick : handleStartClick}
+            disabled={!audioLoaded || isWaiting}
+            className={`button start-button ${!audioLoaded || isWaiting ? "is-loading" : ""
+              }`}
+          >
+            {audioLoaded
+              ? isPlaying
+                ? "노래 멈추기"
+                : "노래 시작"
+              : "로딩 중..."}
           </button>
 
           {/* 마이크 토글 버튼 */}
@@ -1081,15 +1130,6 @@ function MultiPlay() {
             예약하기
           </button>
 
-          {/* <button className='button' onClick={() => setUseCorrection(!useCorrection)}>
-            {useCorrection ? '보정끄기' : '보정켜기'}
-          </button>
-          <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-          <h3>DEBUG playoutDelay: {playoutDelay.toFixed(2)}, jitterDelay: {jitterDelay.toFixed(2)}, listenerNetworkDelay: {listenerNetworkDelay.toFixed(2)}</h3>
-          <h3>audioDelay: {audioDelay.toFixed(2)}, singerNetworkDelay: {singerNetworkDelay.toFixed(2)}, optionDelay: {optionDelay.toFixed(2)}</h3>
-          <h3>latencyOffset: {latencyOffset.toFixed(2)}</h3>
-          <input type='number' value={optionDelay} onChange={(e) => setOptionDelay(parseFloat(e.target.value))}></input>
-           */}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
@@ -1100,20 +1140,30 @@ function MultiPlay() {
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
         </div>
 
-        <div className='chat-area'>
-          <div className='messages'>
-            {messages.map((msg, index) => (
-              <div key={index} className='message'>
-                <span className='text'>{msg.text}</span>
-                <div className='time'>{new Date(msg.timestamp).toLocaleTimeString()}</div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          <div className='input-area'>
-            <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />
-            <button onClick={sendMessage}>전송</button>
-          </div>
+        <div className="chat-area">
+          
+            <div className="messages">
+              {messages.map((msg, index) => (
+                <div key={index} className="message">
+                  <span className="text">{msg.text}</span>
+                  <div className="time">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className="input-area">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="메시지를 입력하세요"
+              />
+              <button onClick={sendMessage}><i className="fa-regular fa-paper-plane"></i></button>
+            </div>
+          
         </div>
       </div>
     </PageTemplate>
