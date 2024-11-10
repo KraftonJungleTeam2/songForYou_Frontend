@@ -86,6 +86,8 @@
   transition: border 0.2s ease;
   text-align: center;
   cursor: pointer;
+  color: var(--text-black);
+  
 }
 
 .room-card:hover {
@@ -95,7 +97,7 @@
 
 .room-card.empty {
   background-color: #e0e0e0;
-  color: #aaa;
+  color: var(--text-scheme);
 }
 
 /* 방 카드의 이미지와 정보 */
@@ -110,6 +112,7 @@
   font-size: 1.2rem;
   font-weight: bold;
   margin: 0;
+
 }
 
 .room-info p {
