@@ -61,7 +61,7 @@ function Sidebar({ isOpen, toggleSidebar, current }) {
             ></i>
             <p className="nav-caption">노래 추가</p>
           </button>
-          <DarkModeToggle />
+          {/* <DarkModeToggle /> */}
         </nav>
       </div>
 
