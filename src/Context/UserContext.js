@@ -6,6 +6,18 @@ const UserContext = createContext();
 
 export const useUser = () => useContext(UserContext);
 
+
+const arrayBufferToBase64 = (buffer) => {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
+
+
 export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState({}); // 초기 값을 빈 객체로 설정
 
@@ -28,8 +40,16 @@ export const UserProvider = ({ children }) => {
           },
         }
       );
+      
+      const { email, name, imageData } = response.data;
+      const imgurl = `data:image/png;base64,${arrayBufferToBase64(imageData)}`;
 
-      setUserData(response.data);
+      setUserData({
+        email,
+        name,
+        imgurl,
+      });
+      
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
