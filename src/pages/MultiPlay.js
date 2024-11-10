@@ -231,7 +231,7 @@ function MultiPlay() {
       setLyricsData(null);
       return;
     }
-
+    console.log("reserved song", reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
       if (
         reservedSongs[0].ready === false &&

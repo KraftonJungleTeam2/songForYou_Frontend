@@ -5,6 +5,28 @@ import "../css/TopBar.css";
 
 
 function TopBar() {
+  const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // Change handler
+    const handleChange = (e) => setIsDarkMode(e.matches);
+
+    // Add event listener
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const { setIsLoggedIn } = useAuth();
   const { userData } = useUser();
   const navigate = useNavigate();
 
@@ -14,6 +36,7 @@ function TopBar() {
 
   return (
     <div className="top-bar">
+      <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
       <div className="right-section">
         <div className="user-avatar">A</div>
         <div className="user-details">

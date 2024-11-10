@@ -51,6 +51,8 @@ const Play = () => {
 
   const [currSegment, setCurrSegment] = useState(" ");
 
+  const oldScore = useRef(0);
+
   // 재생 제어
   const [isPlaying, setIsPlaying] = useState(false);
   const onClickPlayPauseButton = () => {
@@ -287,6 +289,19 @@ const Play = () => {
     }
     getLocalStream();
   }, []);
+
+  useEffect(() => {
+    const old = oldScore.current;
+    oldScore.current = score;
+    if (score < old) return;
+
+    const scoreElement = document.getElementById('score');
+
+    // 애니메이션을 초기화하기 위해 클래스를 제거했다가 다시 추가
+    scoreElement.classList.remove('animate-shadow');
+    void scoreElement.offsetWidth; // 리플로우를 강제하여 애니메이션 재시작
+    scoreElement.classList.add('animate-shadow');
+  }, [score])
 
   // Use the custom hook and pass necessary parameters
   usePitchDetection(
