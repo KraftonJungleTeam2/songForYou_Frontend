@@ -67,14 +67,17 @@ function Register() {
               required
             />
           </div>
-          <button type="submit">가입하기</button>
+          <button type="submit" className="button is-highlight">가입하기</button>
         </form>
-        <p>
-          이미 계정이 있으신가요?
-          <button onClick={handleLoginClick} className="text-button">
+        <div>
+          <span style={{display: 'inline-block', margin: '1rem 0'}}>
+            이미 계정이 있으신가요?
+          </span>
+          <button onClick={handleLoginClick} className="text-button button is-highlight"
+          style={{display: 'inline-block', height: '2.5rem', margin: '0.5rem'}}>
             로그인
           </button>
-        </p>
+        </div>
       </div>
     </div>
   );
