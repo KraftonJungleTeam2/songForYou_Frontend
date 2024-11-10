@@ -7,8 +7,20 @@ import { useScreen } from "../Context/ScreenContext";
 import DarkModeToggle from "../components/DarkButton.js";
 
 function TopBar() {
-  const [error, setError] = useState("");
-  const { isMobile } = useScreen();
+  const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // Change handler
+    const handleChange = (e) => setIsDarkMode(e.matches);
+
+    // Add event listener
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   const [userData, setUserData] = useState({
     name: "",
@@ -52,7 +64,7 @@ function TopBar() {
 
   return (
     <div className="top-bar">
-      <img className="logo" src="logo_dark.png"></img>
+      <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
       <div className="right-section">
         <div className="user-avatar">A</div>
         <div className="user-details">
