@@ -25,6 +25,10 @@ code {
     monospace;
 }
 
+body {
+  color: var(--text-scheme); /* 원하는 색상을 여기 입력하세요 */
+}
+
 :root {
   color-scheme: light;
   /* 기본 레이아웃 */
@@ -97,6 +101,8 @@ code {
     --text-white: #ffffff;
     --text-black: #000000;
     --text-gray: #989fa0;
+    --text-scheme: #ffffff;
+
     --border-gray: #838383;
   }
 }
