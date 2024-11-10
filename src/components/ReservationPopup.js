@@ -27,9 +27,10 @@ const ReservationPopup = ({
   };
 
   const handleRemove = (id) => {
-    const updatedReservedSongs = reservedSongs.filter(reserved => reserved.song.id !== id);
-    // reservedSongs 상태 업데이트 - 필요에 따라 setState 함수를 사용하세요
-    // 예: setReservedSongs(updatedReservedSongs);
+    socket.emit("cancelReservation", {
+      roomId: roomid,
+      songId: id,
+    });
   };
 
   const isReserved = (id) => reservedSongs.some(reserved => reserved.songId === id);
@@ -53,7 +54,7 @@ const ReservationPopup = ({
   return (
     <div className="overlay">
       <div className="popup">
-        <div className="song-list-area" style={{borderRight: "2px solid var(--border-gray)", borderRadius: 0, paddingRight: '1vw'}}>
+        <div className="song-list-area">
           <div className="top-section">
             <div
               className="tabs"
@@ -135,9 +136,9 @@ const ReservationPopup = ({
             )}
           </div>
 
-          <button className="close-button-pop"onClick={onClose}>
+          {/* <button className="close-button-pop"onClick={onClose}>
             닫기
-          </button>
+          </button> */}
         </div>
 
         <div className="reserve-list-area">
@@ -185,6 +186,8 @@ const ReservationPopup = ({
             )}
           </div>
         </div>
+        
+        <div className="close-button-pop is-ghost" onClick={onClose}><i className="fa-solid fa-xmark"></i></div>
       </div>
     </div>
   );
