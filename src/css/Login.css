@@ -24,12 +24,13 @@
 }
 
 .login-container .logo {
-  margin: 3rem auto;
+  margin: 2rem auto;
   width: calc(90% - 3rem);
 }
 
 .login-form {
-  width: 85%;
+  padding: 0 2rem;
+  width: 100%;
 }
 
 .button-con {
@@ -47,7 +48,7 @@
   position: relative;
   height: 2rem;
   width: 100%;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 .input-container input {
   font-size: 1.2rem;
@@ -70,9 +71,10 @@
 }
 
 .login-button {
+  width: 6rem;
   border: none;
   border-radius: 4px;
-  background-color: var(--border-hover); /* 로그인 버튼 기본 색상 */
+  background-color: var(--text-highlight-bg); /* 로그인 버튼 기본 색상 */
   color: var(--text-sheme);
   cursor: pointer;
 }
@@ -82,8 +84,9 @@
 }
 
 .toregister{
+  width: 6rem;
   border-radius: 4px;
-  background-color: var(--border-hover); /* 로그인 버튼 기본 색상 */
+  background-color: var(--text-highlight-bg); /* 로그인 버튼 기본 색상 */
   color: var(--text-sheme);
   cursor: pointer;
 }

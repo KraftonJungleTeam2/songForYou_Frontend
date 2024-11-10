@@ -85,8 +85,8 @@ function Login() {
             />
           </div>
           <div className="button-con">
-            <button type="submit" className="login-button">로그인</button>
             <button className="toregister" onClick={() => navigate("/register")}>회원가입</button>
+            <button type="submit" className="login-button">로그인</button>
           </div>
           <div className="error-message">
             {error && <p>{error}</p>}
