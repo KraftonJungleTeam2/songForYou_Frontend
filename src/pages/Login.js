@@ -64,7 +64,7 @@ function Login() {
   return (
     <div className="background-container">
       <div className="login-container">
-        <img className="logo" src={`${isDarkMode ? "logo_dark.png" : "logo.png"}`}></img>
+        <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
         <form onSubmit={handleLogin} className="login-form">
           <div className="input-container">
             <i className="fa-solid fa-at input-icon"></i>
