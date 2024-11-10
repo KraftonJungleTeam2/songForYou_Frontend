@@ -52,8 +52,7 @@ function TopBar() {
 
   return (
     <div className="top-bar">
-      {isMobile ? <DarkModeToggle /> : ""}
-
+      <img className="logo" src="logo_dark.png"></img>
       <div className="right-section">
         <div className="user-avatar">A</div>
         <div className="user-details">
