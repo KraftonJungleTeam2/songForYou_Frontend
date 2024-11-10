@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import '../css/ReservationPopup.css';
 
 const ReservationPopup = ({
@@ -50,6 +50,13 @@ const ReservationPopup = ({
   ).filter((song) =>
     song.metadata.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+
+  useEffect(() => {
+
+    console.log(filteredSongs);
+
+  }, []);
 
   return (
     <div className="overlay">
@@ -153,19 +160,19 @@ const ReservationPopup = ({
                     className="song-icon"
                     style={{
                       backgroundImage: `url(data:image/jpeg;base64,${arrayBufferToBase64(
-                        reserved.song.image.data
+                        reserved.image.data
                       )})`,
                       backgroundSize: "cover",
                       backgroundRepeat: "no-repeat",
                       width: "4rem",
                       height: "4rem",
                     }}
-                    alt={reserved.song.metadata.title}
+                    alt={reserved.title}
                   />
 
                   <div className="song-info has-text-left">
-                    <h3>{reserved.song.metadata.title}</h3>
-                    <p>{reserved.song.metadata.description}</p>
+                    <h3>{reserved.title}</h3>
+                    <p>{reserved.description}</p>
                   </div>
 
                   <div
