@@ -1203,7 +1203,9 @@ function MultiPlay() {
           />
           <p className="next-lyrics">{nextLyric}</p>
         </div>
-
+        
+        <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+  
         {/* AudioPlayer 컴포넌트 */}
         <AudioPlayer
           ref={audioPlayerRef}
