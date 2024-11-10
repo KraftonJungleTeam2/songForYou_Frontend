@@ -231,7 +231,7 @@ function MultiPlay() {
       setLyricsData(null);
       return;
     }
-
+    console.log("reserved song", reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
       if (
         reservedSongs[0].ready === false &&
@@ -1165,8 +1165,8 @@ function MultiPlay() {
     >
       <div className="sing-area component-container-play" ref={containerRef}>
         <div className="information-area">
-          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
-          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p>
+          {/* <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
+          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p> */}
         </div>
 
         <div className="pitch-graph-multi">
