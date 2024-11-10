@@ -70,6 +70,7 @@
 
 .button-area .mic-button {
   background-color: var(--background-main);
+  color: var(--text-scheme);
   height: 33%;
 }
 
