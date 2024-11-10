@@ -1,18 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../Context/UserContext";
 import "../css/TopBar.css";
 
-
 function TopBar() {
-  const { setIsLoggedIn } = useAuth();
   const { userData } = useUser();
   const navigate = useNavigate();
 
   const GoSetting = () => {
     navigate("/setting");
   };
-  
+
   const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
   
   useEffect(() => {
