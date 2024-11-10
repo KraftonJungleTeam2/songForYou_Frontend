@@ -1,106 +1,131 @@
+
+/* PlayerCard component */
 .player-cards-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    width: 100%;
-    height: 50%;
-    border: 1px solid #ccc;
-  }
-  
-  .player-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    height: calc(100% / 4);
-    border-bottom: 1px solid #eee;
-    border: 2px solid #ddd; /* 기본 테두리 */
-    transition: border-color 0.3s ease; /* 부드러운 전환 효과 */
-    text-align: center;
-  }
-  
-  .player-card.active {
-    border-color: #4caf50; /* 음성 감지시 초록색 테두리 */
-  }
-  
-  .player-card:last-child {
-    border-bottom: none;
-  }
-  
-  .player-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px;
-  }
-  
-  .profile-picture {
-    flex: 0 0 50px;
-    height: 50px;
-    margin-right: 15px;
-  }
-  
-  .profile-picture img {
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 35%;
+
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+  margin-top: 1vh;
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+  color: var(--text-scheme);
+  height: calc(100% / 4);
+  border-bottom: 1px solid var(--border-gray);
+  padding: 10px;
+  background-color: var(--background-section);
+}
+
+.player-card.has-mic {
+  box-shadow: inset 0 0 1em #ffcc0088;
+}
+
+.player-card:last-child {
+  border-bottom: none;
+  border-right: none;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+  text-align: center;
+  height: 100%;
+  justify-content: space-around;
+}
+
+.details .player-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.details .player-details span {
+  margin: 2px 0;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.details .player-details .player-name {
+  color: var(--text-scheme);
+  font-weight: bold;
+}
+
+.details .player-details .score {
+  font-size: larger;
+}
+
+.details .range-slider {
+  margin: 0.3rem 0;
+}
+
+.color-display {
+  display: flex;
+  width: 20%;
+  max-width: 4dvh;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-circle {
+  width: 100%;
+  border-radius: 50%;
+  border: 1px solid var(--border-gray);
+}
+
+.color-circle:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+@media (max-width: 1023px) {
+  .player-cards-container {
+    flex-direction: row;
+    margin: 0 0.5rem;
+    width: calc(100% - 1rem);
     height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+    border-radius: 15px;
   }
-  
-  .color-display {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20%;
+
+  .player-info {
+    flex-direction: column;
   }
-  
-  .color-circle {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
+
+  .player-card {
+    width: 25%;
+    height: 100%;
+    border-bottom: none;
+    border-right: 1px solid var(--border-gray);;
   }
   
   .details {
-    width: 60%;
+    margin: 0px;
+  }
+
+  .details .player-details{
     display: flex;
     flex-direction: column;
   }
-  
-  .details p {
-    margin: 2px 0;
-    font-size: 14px;
-    color: #555;
+
+  .details .player-details .player-name {
+    margin: 0;
   }
-  
-  .range-slider {
-    width: 100%;
-    margin-top: 5px;
+
+  .details .player-details .score {
+    margin: 0;
+    font-size: medium;
   }
-  
-  .range-slider input[type='range'] {
-    width: 100%;
-  }
-  
-  /* 반응형 디자인 (선택 사항) */
-  @media (max-width: 600px) {
-    .player-info {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .profile-picture {
-      margin-right: 0;
-      margin-bottom: 10px;
-    }
-  
-    .color-display {
-      margin-right: 0;
-      margin-bottom: 10px;
-    }
-  
-    .details p {
-      font-size: 12px;
-    }
-  }
-  
+}

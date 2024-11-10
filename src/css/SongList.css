@@ -1,81 +1,116 @@
 .song-list {
-    height: 100%;
-    overflow-y: auto;
-    scrollbar-width: none;
-    background-color: var(--background-section);
-  }
-  
-  .song-item {
-    display: flex;
-    align-items: center;
-    padding: 0.8rem;
-    border-bottom: 1px solid var(--border-gray);
-    transition: background-color 0.3s;
-    height: 5rem;
-  }
-  
-  .song-item:hover {
-    background-color: var(--text-highlight-bg);
-  }
-  
-  .song-item:hover .song-info h3 {
-    color: var(--text-black);
-  }
-  
-  .song-info {
-    flex-grow: 1;
-    margin: 1rem;
-  }
-  
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background-color: var(--background-section);
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-gray);
+  transition: background-color 0.3s;
+  height: 5rem;
+}
+
+.song-item:hover {
+  background-color: var(--text-highlight-bg);
+}
+
+.song-item:hover .song-info h3 {
+  color: var(--text-black);
+}
+
+.song-icon {
+  flex-shrink: 0; /* 아이콘 크기 고정 */
+  margin-right: 0.5rem;
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 4rem;
+  height: 4rem;
+  background-position: center;
+  border-radius: 4px;
+}
+
+.song-info {
+  width: calc(100% - 7.5rem);
+  flex-grow: 1;
+  overflow: hidden;
+  /* white-space: nowrap; */
+  text-overflow: ellipsis; /* 넘치는 텍스트를 생략(...) 처리 */
+  margin: 0;
+}
+
+.song-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 20px;
+  color: var(--text-scheme);
+}
+
+.song-info p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+.play-button {
+  width: 2rem;
+  font-size: 2rem;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  color: var(--text-scheme);
+  transition: transform 0.2s ease, color 0.2s ease;
+  opacity: 0.8;
+}
+
+.play-button:hover {
+  opacity: 1;
+}
+
+/* 추가 배너 스타일 */
+.add-song-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  border: 2px dashed var(--border-gray);
+  border-radius: 8px;
+  background-color: var(--background-selected);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-song-banner:hover {
+  background-color: var(--background-selected);
+}
+
+.add-song-icon {
+  font-size: 50px;
+  color: var(--text-highlight-bg);
+}
+
+.add-song-text {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.add-song-text h4 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-scheme);
+}
+
+.add-song-text p {
+  margin-top: 5px;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+@media (max-width: 1023px) {
   .song-info h3 {
-    margin: 0 0 5px 0;
-    font-size: 20px;
-    color: var(--text-scheme);
+    font-size: 1rem;
   }
-  
-  .song-info p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-gray);
-  }
-  
-  /* 추가 배너 스타일 */
-  .add-song-banner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 50px 20px;
-    border: 2px dashed var(--border-gray);
-    border-radius: 8px;
-    background-color: var(--background-selected);
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .add-song-banner:hover {
-    background-color: var(--background-selected);
-  }
-  
-  .add-song-icon {
-    font-size: 50px;
-    color: var(--text-highlight-bg);
-  }
-  
-  .add-song-text {
-    text-align: center;
-    margin-top: 15px;
-  }
-  
-  .add-song-text h4 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--text-scheme);
-  }
-  
-  .add-song-text p {
-    margin-top: 5px;
-    font-size: 14px;
-    color: var(--text-gray);
-  }
-  
+}

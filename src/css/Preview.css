@@ -15,9 +15,10 @@
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
-  gap: 2rem;
+  padding: 0.5rem;
+  gap: 3%;
 }
 
 /* 플레이스홀더 스타일 */
@@ -34,7 +35,7 @@
 .preview-image-container {
   margin-top: 1rem;
   width: 19vw;
-  height: 19vw;
+  min-height: 19vw;
   background-color: var(--background-selected); /* 선택된 컴포넌트 배경색 */
   border-radius: 10px;
   overflow: hidden;
@@ -46,15 +47,15 @@
 .preview-image-container img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* 이미지 비율 유지 */
+  object-fit: cover; /* 이미지 비율 유지 */
 }
 
 /* 정보 컨테이너 스타일 */
 .preview-info-container {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 19vw;
-  gap: 2rem;
 }
 
 /* 제목 스타일 */
@@ -114,34 +115,46 @@
   color: var(--text-black); /* 검은색 텍스트 */
 }
 
+.preview-lyrics {
+  width: 19vw;
+  color: var(--text-gray);
+  overflow-y: auto;
+}
+
 /* 반응형 스타일 */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .preview-image-container {
-    width: 21vh;
-    height: 21vh;
-    margin-left: 1rem;
+    width: 17vh;
+    height: 17vh;
+    min-height: 17vh;
     margin-top: 0;
   }
-  .preview-info-container{
-    width: 21vh;
+  .preview-info-container {
+    width: 22vh;
+    height: 17vh;
   }
   .preview-title {
     font-size: 1.2rem;
   }
 
   .preview-subtitle {
+    margin-bottom: auto;
     font-size: 0.9rem;
   }
 
   .preview-buttons {
+    max-height: 2.2rem;
     display: flex;
     gap: 5px;
-    margin-right: 1rem;
   }
 
   .preview-play-button,
   .preview-sing-button {
     font-size: 0.9rem;
     padding: 8px 16px;
+  }
+
+  .preview-lyrics {
+    display: none;
   }
 }
