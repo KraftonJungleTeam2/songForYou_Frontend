@@ -34,9 +34,22 @@
 .score-area #score {
   height: 70%;
   font-size: 4em;
-  color: var(--text-highlight-bg);
   font-weight: bold;
-  margin: 0;
+  margin: 0px auto;
+}
+
+.score-area #score.animate-shadow {
+  animation: shadow-fade 1s ease forwards;
+}
+
+@keyframes shadow-fade {
+  0% {
+    color: var(--text-highlight-bg);
+    box-shadow: inset 0px -50px 45px -35px rgba(255, 204, 0, 0.5);
+  }
+  100% {
+    box-shadow: inset 0px -50px 45px -35px rgba(255, 204, 0, 0);
+  }
 }
 
 /* Play Info Area 스타일링 */
