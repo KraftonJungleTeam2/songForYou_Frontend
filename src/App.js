@@ -35,53 +35,81 @@ function App() {
   return (
     <AuthProvider>
       <ScreenProvider>
-        <UserProvider>
-          <Router>
-            <div className="App">
-              <SongProvider>
-                <ToastContainer />
-                <Routes>
-                  <Route
-                    path="/login"
-                    element={<CheckLoggedIn element={<Login />} />}
-                  />
-                  <Route
-                    path="/register"
-                    element={<CheckLoggedIn element={<Register />} />}
-                  />
-                  <Route
-                    path="/single"
-                    element={<ProtectedRoute element={<Single />} />}
-                  />
-                  <Route
-                    path="/multi"
-                    element={<ProtectedRoute element={<Multi />} />}
-                  />
-                  <Route
-                    path="/setting"
-                    element={<ProtectedRoute element={<Setting />} />}
-                  />
-                  <Route
-                    path="/play/:id"
-                    element={<ProtectedRoute element={<Play />} />}
-                  />
-                  <Route
-                    path="/add"
-                    element={<ProtectedRoute element={<Add />} />}
-                  />
-                  <Route
-                    path="/multiplay/:roomId"
-                    element={<ProtectedRoute element={<MultiPlay />} />}
-                  />
-                  <Route path="/" element={<Navigate to="/login" replace />} />
-                </Routes>
-              </SongProvider>
-            </div>
-          </Router>
-        </UserProvider>
+        <Router>
+          <div className="App">
+            <SongProvider>
+              <ToastContainer />
+              <Routes>
+                {/* 로그인과 회원가입 라우트는 UserProvider 미적용 */}
+                <Route
+                  path="/login"
+                  element={<CheckLoggedIn element={<Login />} />}
+                />
+                <Route
+                  path="/register"
+                  element={<CheckLoggedIn element={<Register />} />}
+                />
+
+                {/* 로그인된 경우에만 접근 가능한 라우트들에 UserProvider 적용 */}
+                <Route
+                  path="/single"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<Single />} />
+                    </UserProvider>
+                  }
+                />
+                <Route
+                  path="/multi"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<Multi />} />
+                    </UserProvider>
+                  }
+                />
+                <Route
+                  path="/setting"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<Setting />} />
+                    </UserProvider>
+                  }
+                />
+                <Route
+                  path="/play/:id"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<Play />} />
+                    </UserProvider>
+                  }
+                />
+                <Route
+                  path="/add"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<Add />} />
+                    </UserProvider>
+                  }
+                />
+                <Route
+                  path="/multiplay/:roomId"
+                  element={
+                    <UserProvider>
+                      <ProtectedRoute element={<MultiPlay />} />
+                    </UserProvider>
+                  }
+                />
+
+                {/* 기본 경로는 로그인 페이지로 이동 */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </SongProvider>
+          </div>
+        </Router>
       </ScreenProvider>
     </AuthProvider>
   );
 }
+
 
 export default App;
