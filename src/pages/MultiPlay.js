@@ -145,7 +145,7 @@ function MultiPlay() {
   const latencyCalcRef = useRef({});
 
   // 볼륨 조절 용. 0.0-1.0의 값
-  const [musicGain, setMusicGain] = useState(1);
+  const [musicGain, setMusicGain] = useState(0.5);
 
   // 점수 확인 용
   const [score, setScore] = useState(0);
@@ -225,7 +225,7 @@ function MultiPlay() {
       setLyricsData(null);
       return;
     }
-
+    console.log("reserved song", reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
       if (reservedSongs[0].ready === false && reservedSongs[0].songData !== null) {
         socketRef.current.emit('songReady', {
@@ -341,6 +341,8 @@ function MultiPlay() {
       ready: song.readyBool,
       songData: null, // 데이터는 나중에 로드
       image: song.image,
+      title: song.title,
+      description: song.description,
     }));
 
     if (songs[0] && songs[0].readyBool) {
@@ -638,13 +640,15 @@ function MultiPlay() {
 
     socketRef.current.on('songAdded', (data) => {
       try {
+        console.log(data);
+
         const reserved = {
           ready: false,
           songId: data.song.id,
           image: data.song.image,
           songData: null,
-          // 예약 리스트를 위한 song state저장
-          song: data.song,
+          title: data.song.metadata.title,
+          description: data.song.metadata.description,
         };
         setReservedSongs((prev) => [...prev, reserved]);
       } catch (error) {
@@ -1039,6 +1043,7 @@ function MultiPlay() {
   };
 
   const OnPopup = () => {
+    console.log(songLists);
     setshowPopup(true);
   };
 
@@ -1069,8 +1074,8 @@ function MultiPlay() {
     >
       <div className="sing-area component-container-play" ref={containerRef}>
         <div className="information-area">
-          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].song.metadata.title+' - '+reservedSongs[0].song.metadata.description : '없음'}`}</p>
-          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].song.metadata.title+' - '+reservedSongs[1].song.metadata.description : '없음'}`}</p>
+          <p><span>현재곡: </span>{`${reservedSongs[0] ? reservedSongs[0].title+' - '+reservedSongs[0].description : '없음'}`}</p>
+          <p><span>다음곡: </span>{`${reservedSongs[1] ? reservedSongs[1].title+' - '+reservedSongs[1].description : '없음'}`}</p>
         </div>
 
         <div className="pitch-graph-multi">
@@ -1096,7 +1101,9 @@ function MultiPlay() {
           <NowPlayingLyrics segment={currSegment} playbackPosition={playbackPositionRef.current} />
           <p className='next-lyrics'>{nextLyric}</p>
         </div>
-
+        
+        <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+  
         {/* AudioPlayer 컴포넌트 */}
         <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
       </div>

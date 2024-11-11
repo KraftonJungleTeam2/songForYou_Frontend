@@ -25,6 +25,10 @@ code {
     monospace;
 }
 
+body {
+  color: var(--text-scheme); /* 원하는 색상을 여기 입력하세요 */
+}
+
 :root {
   color-scheme: light;
   /* 기본 레이아웃 */
@@ -85,6 +89,25 @@ code {
 
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-main: #000000;
+    --background-section: #2e2b2b;
+    --background-selected: #525151;
+    --text-highlight-bg: #ffcc00;
+    --border-hover: #ffbf0b;
+    --gradient-end: #fea42c;
+    --text-neutral-bg: #989fa0;
+    --text-white: #ffffff;
+    --text-black: #000000;
+    --text-gray: #989fa0;
+    --text-scheme: #ffffff;
+    --input-color: #4d4d4d;
+
+    --border-gray: #838383;
+  }
+}
+
 /* 모바일 화면일 때 --sidebar-width를 0%로 설정 */
 @media (max-width: 1023px) {
   :root {
@@ -103,12 +126,9 @@ code {
 .button.is-highlight {
   border: none;
   font-size: 16px;
-  cursor: pointer;
   border-radius: 8px;
   background-color: var(--text-highlight-bg);
   color: var(--text-black);
-  display: flex;
-  align-items: center;
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -120,12 +140,9 @@ code {
 .button.is-normal {
   border: none;
   font-size: 16px;
-  cursor: pointer;
   border-radius: 8px;
   background-color: var(--text-white);
   color: var(--text-black);
-  display: flex;
-  align-items: center;
   transition: background-color 0.3s, color 0.3s;
 }
 

@@ -117,6 +117,7 @@
 
 .preview-lyrics {
   width: 19vw;
+  color: var(--text-gray);
   overflow-y: auto;
 }
 

@@ -1,15 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/Login.css";
 
 function Login() {
+  const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // Change handler
+    const handleChange = (e) => setIsDarkMode(e.matches);
+
+    // Add event listener
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -50,7 +64,7 @@ function Login() {
   return (
     <div className="background-container">
       <div className="login-container">
-        <h1 className="title">Login</h1>
+        <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
         <form onSubmit={handleLogin} className="login-form">
           <div className="input-container">
             <i className="fa-solid fa-at input-icon"></i>
