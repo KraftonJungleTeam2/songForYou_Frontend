@@ -257,7 +257,6 @@ function Add() {
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  required
                   style={{width: "20%"}}
                 />
               </label>
