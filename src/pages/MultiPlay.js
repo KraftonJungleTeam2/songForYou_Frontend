@@ -85,8 +85,8 @@ function MultiPlay() {
   //
   const audioPlayerRef = useRef();
   // 지연시간 ping을 위한 state
-  const serverTimeDiff = useRef(null);
-
+  const [serverTimeDiff, setServerTimeDiff] = useState(null);
+  const serverTimeDiffRef = useRef(null);
   //오디오 조절을 위한 state
   const [starttime, setStarttime] = useState(null);
   const [isMicOn, setIsMicOn] = useState(true);
@@ -183,11 +183,12 @@ function MultiPlay() {
   }, []);
 
   useEffect(() => {
-    if (audioLoaded && startTimeRef.current) {
-      setStarttime(startTimeRef.current);
+    serverTimeDiffRef.current = serverTimeDiff;
+    if (audioLoaded && startTimeRef.current && serverTimeDiffRef.current) {
+      setStarttime(startTimeRef.current + serverTimeDiffRef.current);
       startTimeRef.current = null;
     }
-  }, [audioLoaded]);
+  }, [audioLoaded, serverTimeDiff]);
 
   useEffect(() => {
     entireReferDataRef.current = entireReferData;
@@ -368,7 +369,7 @@ function MultiPlay() {
     const currentPlayingSong = songs.find((song) => song.playing);
     if (currentPlayingSong) {
       // 서버 시간과 클라이언트 시간 차이를 고려하여 시작 시간 설정
-      const clientStartTime = currentPlayingSong.startTime + serverTimeDiff.current;
+      const clientStartTime = currentPlayingSong.startTime;
       startTimeRef.current = clientStartTime;
     }
     setReservedSongs(formattedSongs);
@@ -434,12 +435,6 @@ function MultiPlay() {
       });
 
       const nickname = response.data.name;
-      const sendTime = performance.now();
-      await socketRef.current.emit('ping', {
-        sendTime,
-      });
-
-      timeDiffSamplesRef.current = []; // 초기화
 
       await socketRef.current.emit('joinRoom', {
         roomId: roomId,
@@ -447,6 +442,8 @@ function MultiPlay() {
         mic: isMicOn,
       });
       // 연결되면 바로 서버시간 측정
+      timeDiffSamplesRef.current = []; // 초기화
+      sendPing(); // 첫 번째 ping 전송
     });
 
     // 클라이언트 측
@@ -611,7 +608,7 @@ function MultiPlay() {
 
       // 이미 구해진 지연시간을 가지고 클라이언트에서 시작되어야할 시간을 구함.
       const serverStartTime = data.startTime;
-      const clientStartTime = serverStartTime + serverTimeDiff.current;
+      const clientStartTime = serverStartTime + serverTimeDiffRef.current;
 
       // 클라이언트 시작시간을 starttime으로 정하면 audio내에서 delay 작동 시작
       setScore(0);
@@ -1001,7 +998,7 @@ function MultiPlay() {
     if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
       // 측정 완료시 서버시간차이를 저장 하고 종료
       const estTimeDiff = timeDiffSamplesRef.current[2 * q];
-      serverTimeDiff.current = estTimeDiff;
+      setServerTimeDiff(estTimeDiff);
     } else {
       // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
       sendPing();
