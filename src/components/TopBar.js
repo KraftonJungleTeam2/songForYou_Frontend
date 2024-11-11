@@ -32,7 +32,18 @@ function TopBar() {
     <div className="top-bar">
       <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
       <div className="right-section">
-        <div className="user-avatar">A</div>
+        <div className="user-avatar">
+          {userData?.imgurl ? (
+            <img
+              src={userData.imgurl}
+              alt={`${userData.name}'s avatar`}
+              className="avatar-image"
+            />
+          ) : (
+            <i className="fa-solid fa-user"></i>
+          )}
+        </div>
+
         <div className="user-details">
           <h3>{userData?.name}</h3>
           <p>{userData?.email}</p>
