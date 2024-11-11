@@ -1,4 +1,7 @@
 export function stringToColor(str) {
+  if (str === "colorForSinglePlayyy")
+    return "#ffcc00"
+  
   let hash = 0;
   // 문자열의 각 문자를 해시값으로 변환
   for (let i = 0; i < str.length; i++) {

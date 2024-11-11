@@ -78,7 +78,9 @@ function Multi() {
   };
 
   useEffect(() => {
-    const temp = rooms.filter((room) => room.roomTitle.toLowerCase().includes(searchTerm.toLowerCase()));
+    const temp = rooms.filter((room) =>
+      room.roomTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     while (temp.length < 1) {
       temp.push({ roomId: `empty-${temp.length}`, empty: true });
     }
@@ -102,44 +104,58 @@ function Multi() {
                 <i className='fa-solid fa-magnifying-glass'></i>
               </button>
             </div>
-            <div className='buttons-room'>
-              <button className='button is-normal button-refresh' onClick={fetchRooms}>
-                <i className='fa-solid fa-rotate-right'></i>
+            <div className="buttons-room">
+              <button
+                className="button is-normal button-refresh"
+                onClick={fetchRooms}
+              >
+                <i className="fa-solid fa-rotate-right"></i>
               </button>
-              <button className='button is-highlight button-create' onClick={() => setIsCreatingRoom(true)}>
+              <button
+                className="button is-highlight button-create"
+                onClick={() => setIsCreatingRoom(true)}
+              >
                 <i className={`fa-solid fa-plus`}></i> 방 만들기
               </button>
             </div>
           </div>
-          <div className='room-list'>
-            {roomCards.map((room, index) => (
-              <div className={`room-card ${room.empty ? 'empty' : ''}`} key={room.empty ? `empty-${index}` : room.id}>
-                {room.empty ? (
-                  <div className='room-info-empty'>방 없음</div>
-                ) : (
-                  <div className='room-content' onClick={(e) => handlePlay(e, room.id, room.password)}>
-                    <div className='room-info'>
+          <div className="room-list">
+            {roomCards.map((room, index) =>
+              room.empty ? (
+                <div
+                  className={`room-card empty`}
+                  key={room.empty ? `empty-${index}` : room.id}
+                >
+                  <div className="room-content">
+                    <h3>방 없음</h3>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`room-card ${room.empty ? "empty" : ""}`}
+                  key={room.empty ? `empty-${index}` : room.id}
+                  onClick={(e) => handlePlay(e, room.id, room.password)}
+                >
+                  <div className="room-content">
+                    <div className="room-info">
                       <h3>{room.roomTitle}</h3>
-                      <span>{Array.from({ length: room.max_user }, (_, index) => (index < room.users.length ? <i className='fa-solid fa-user'></i> : <i className='fa-regular fa-user'></i>))}</span>
+                      <span>
+                        {Array.from({ length: room.max_user }, (_, index) =>
+                          index < room.users.length ? (
+                            <i className="fa-solid fa-user"></i>
+                          ) : (
+                            <i className="fa-regular fa-user"></i>
+                          )
+                        )}
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              )
+            )}
           </div>
         </div>
       </div>
-
-      {/* <div className={`bottom-buttons`}>
-        <button className="quick-join">빠른 입장</button>
-        <button className="sort-by">정렬 조건</button>
-        <button className="create-room" onClick={() => setIsCreatingRoom(true)}>
-          방 생성
-        </button>
-        <button className="refresh" onClick={fetchRooms}>
-          새로고침
-        </button>
-      </div> */}
     </PageTemplate>
   );
 }

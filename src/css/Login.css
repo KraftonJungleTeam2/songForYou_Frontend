@@ -12,44 +12,56 @@
 /* 로그인 컨테이너 스타일 */
 .login-container {
   background-color: var(--background-section);
-  border-radius: 8px;
+  border-radius: 15px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 450px;
-  height: 450px;
+  width: 400px;
+  max-width: calc(100%-1rem);
+  /* height: 400px; */
+}
+
+.login-container .logo {
+  margin: 2rem auto;
+  width: calc(90% - 3rem);
 }
 
 .login-form {
-  width: 85%;
+  padding: 0 2rem;
+  width: 100%;
 }
 
 .button-con {
   display: flex;
+  flex-direction: row-reverse;
   justify-content: space-around;
 }
 
 .title {
   margin-top: 2rem;
-  font-size: 1.5rem;
+  font-size: 3rem;
   font-weight: bold;
 }
 
 .input-container {
   position: relative;
+  height: 2rem;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+.input-container input {
+  font-size: 1.2rem;
 }
 
 .input-icon {
   position: absolute;
-  top: 50%;
+  top: 70%;
   left: 10px;
   transform: translateY(-50%);
   color: var(--text-gray);
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 .input-container input {
@@ -60,17 +72,29 @@
 }
 
 .login-button {
+  width: 6rem;
   border: none;
   border-radius: 4px;
-  background-color: var(--text-black); /* 로그인 버튼 기본 색상 */
-  color: var(--text-white);
+  background-color: var(--text-highlight-bg); /* 로그인 버튼 기본 색상 */
+  color: var(--text-sheme);
   cursor: pointer;
 }
 
 .login-button:hover {
-  background-color: var(--action-green-hover); /* 기존의 초록 호버 색상 사용 */
+  background-color: var(--gradient-end); /* 기존의 초록 호버 색상 사용 */
 }
 
+.toregister{
+  width: 6rem;
+  border-radius: 4px;
+  background-color: var(--text-highlight-bg); /* 로그인 버튼 기본 색상 */
+  color: var(--text-sheme);
+  cursor: pointer;
+}
+
+.toregister:hover {
+  background-color: var(--gradient-end); /* 기존의 초록 호버 색상 사용 */
+}
 .error-message {
   height: 1.5rem;
   margin-top: 0.5rem;

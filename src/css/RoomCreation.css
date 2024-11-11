@@ -14,7 +14,7 @@
 }
 
 .room-creation-window {
-  background-color: white;
+  background-color: var(--background-section);
   padding: 2rem;
   border-radius: 8px;
   width: 300px;
@@ -79,16 +79,6 @@
   font-size: 1em;
   cursor: pointer;
 }
-
-/* .room-creation-window button[type="submit"] {
-  background-color: #4caf50;
-  color: white;
-}
-
-.room-creation-window button[type="button"] {
-  background-color: #f44336;
-  color: white;
-} */
 
 .room-creation-window button:hover {
   opacity: 0.9;
