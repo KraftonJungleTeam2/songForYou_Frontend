@@ -428,15 +428,24 @@ function MultiPlay() {
       await getLocalStream();
       const token = sessionStorage.getItem('userToken');
 
-      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_ENDPOINT}/users/info`,
+        {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${token}`, // 토큰을 Authorization 헤더에 추가
+          },
+        }
+      );
 
-      const nickname = response.data.name;
+      const formData = await response.formData();
+    
+      const result = Object.fromEntries(formData.entries());
+      
+      const info = JSON.parse(result.info);
 
-      await socketRef.current.emit('joinRoom', {
+      const nickname = info.name;
+      await socketRef.current.emit("joinRoom", {
         roomId: roomId,
         nickname: nickname,
         mic: isMicOn,
