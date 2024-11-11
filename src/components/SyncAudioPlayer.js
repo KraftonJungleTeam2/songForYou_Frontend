@@ -1,9 +1,4 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useRef,
-  useImperativeHandle,
-} from "react";
+import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
 
 const AudioPlayer = forwardRef(
   (
@@ -51,23 +46,21 @@ const AudioPlayer = forwardRef(
     // 오디오 파일을 로드하고 AudioBuffer에 저장
     useEffect(() => {
       if (!audioBlob) return;
-      console.log("audioBlob", audioBlob);
+      console.log('audioBlob', audioBlob);
       const loadAudio = async () => {
         try {
           // Blob 데이터를 ArrayBuffer로 변환
           const arrayBuffer = await audioBlob.arrayBuffer();
           // 웹에서 오디오를 재생하기 위한 Context를 생성 (구버전 호환 포함)
-          audioContextRef.current = new (window.AudioContext ||
-            window.webkitAudioContext)();
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
           // 오디오 데이터를 디코딩하여 AudioBuffer로 변환
-          audioBufferRef.current =
-            await audioContextRef.current.decodeAudioData(arrayBuffer);
+          audioBufferRef.current = await audioContextRef.current.decodeAudioData(arrayBuffer);
           // 오디오 버퍼가 완전히 로드된 후 duration과 로드 상태 설정
           setDuration(audioBufferRef.current.duration);
 
           setAudioLoaded(true);
         } catch (error) {
-          console.error("오디오 로딩 오류:", error);
+          console.error('오디오 로딩 오류:', error);
         }
       };
       loadAudio();
@@ -82,8 +75,7 @@ const AudioPlayer = forwardRef(
         sourceRef.current.stop();
       }
       playbackPositionRef.current = 0; // 재생 위치를 초기화. isPlaying을 바꾸기 전 먼저 해주어야 함.
-      if (currentData && currentData.songId)
-        socketRef.emit("songEnd", { roomId, songId: currentData.songId });
+      if (currentData && currentData.songId) socketRef.emit('songEnd', { roomId, songId: currentData.songId });
 
       setAudioLoaded(false);
       setStarttime(null);
@@ -165,18 +157,13 @@ const AudioPlayer = forwardRef(
       const targetTime = performance.now() - (starttime + latencyOffset);
       const overrun = getPlaybackTime() * 1000 - targetTime; // 실제보다 앞서나간 시간
       if (-TOLERANCE < overrun && overrun < TOLERANCE) return;
-      console.log("target: " + targetTime + " overrun:" + overrun);
+      console.log('target: ' + targetTime + ' overrun:' + overrun);
 
       clearTimeout(rateTimeoutRef.current);
       const transitionSpeed = overrun < 0 ? SPEEDFORWARD : SPEEDBACKWARD;
       setPlaybackRate(transitionSpeed);
       rateTimeoutRef.current = setTimeout(() => {
-        console.log(
-          "default rate!, overrun: " +
-            (performance.now() -
-              (starttime + latencyOffset) -
-              getPlaybackTime() * 1000)
-        );
+        console.log('default rate!, overrun: ' + (performance.now() - (starttime + latencyOffset) - getPlaybackTime() * 1000));
         setPlaybackRate(1);
       }, overrun / (1 - transitionSpeed));
     }, [latencyOffset]);
@@ -185,7 +172,6 @@ const AudioPlayer = forwardRef(
     useEffect(() => {
       if (!audioBufferRef.current || !audioContextRef.current) return;
 
-      console.log("starttime", starttime);
       if (starttime) {
         if (!isPlaying) {
           playSyncAudio(starttime); // 재생 위치와 속도로 재생
