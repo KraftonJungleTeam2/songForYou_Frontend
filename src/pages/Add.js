@@ -195,7 +195,7 @@ function Add() {
         <div className="add-content-area">
           <div className="component-container add-container">
             <p style={{color: "var(--text-scheme)", fontWeight: "bold"}}>유튜브 URL 또는 파일을 업로드하여 노래를 추가할 수 있습니다.</p>
-            <form className="add-form" onSubmit={handleSubmit} style={{ margin: "auto" }}>
+            <form className="add-form" onSubmit={handleSubmit}>
             
               <label style={{display: "flex"}}>
                 파일로 업로드하기:
@@ -257,7 +257,6 @@ function Add() {
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  required
                   style={{width: "20%"}}
                 />
               </label>

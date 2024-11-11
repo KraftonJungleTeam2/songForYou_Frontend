@@ -17,7 +17,9 @@
   width: 100%;
   max-width: 35rem;
   overflow-y: auto;
-  margin-bottom: 1.5dvh;
+  margin-top: auto;
+  margin-bottom: auto;
+  max-height: calc(100% - 2rem);
 }
 
 .has-text-info {
