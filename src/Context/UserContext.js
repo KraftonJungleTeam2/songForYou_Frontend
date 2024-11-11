@@ -50,14 +50,16 @@ export const UserProvider = ({ children }) => {
       const formData = await response.formData();
     
       const result = Object.fromEntries(formData.entries());
+
       console.log(result.image);
+      
       const info = JSON.parse(result.info);
       const email = info.email;
       const name = info.name;
       const imgurl = null;
       
-      if(result.image !== '1'){
-        imgurl = `data:image/png;base64,${arrayBufferToBase64(result.image)}`;
+      if (result.image && typeof result.image === 'object') {
+        imgurl = URL.createObjectURL(result.image);
       }
 
       setUserData({
