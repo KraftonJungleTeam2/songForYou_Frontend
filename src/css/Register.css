@@ -1,6 +1,6 @@
 /* 회원가입 컨테이너 스타일 */
 .register-container {
-  background-color: rgba(255, 255, 255, 0.9); /* 반투명 배경 */
+  background-color: var(--background-section); /* 반투명 배경 */
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
