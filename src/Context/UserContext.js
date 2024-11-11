@@ -1,21 +1,9 @@
 // Context/UserContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
 
 const UserContext = createContext();
 
 export const useUser = () => useContext(UserContext);
-
-
-const arrayBufferToBase64 = (buffer) => {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-};
 
 
 export const UserProvider = ({ children }) => {
