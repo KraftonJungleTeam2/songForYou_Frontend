@@ -56,18 +56,18 @@ export const UserProvider = ({ children }) => {
       const info = JSON.parse(result.info);
       const email = info.email;
       const name = info.name;
-      const imgurl = null;
+      let imgurl = null;
       
-      if (result.image && typeof result.image === 'object') {
+      if(result.image !== '1'){
         imgurl = URL.createObjectURL(result.image);
       }
 
-      setUserData({
-        email,
-        name,
-        imgurl,
-      });
-      
+    setUserData({
+      email,
+      name,
+      imgurl,
+    });
+
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
