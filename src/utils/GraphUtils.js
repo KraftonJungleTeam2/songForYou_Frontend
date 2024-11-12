@@ -68,3 +68,10 @@ export const logScale = (value, dimensions, frequencies) => {
   // 픽셀 값으로 변환
   return minPixel - ((logValue - logMin) / (logMax - logMin)) * (minPixel - maxPixel);
 };
+
+
+export const getCFrequencies = () => {
+  const octaves = Array.from({ length: 6 }, (_, i) => i);
+  return octaves.map(octave => 65.40639 * Math.pow(2, octave));
+};
+
