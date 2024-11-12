@@ -1064,6 +1064,14 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
+  useEffect(() => {
+    if (inputMessage === "__no__") {
+      setUseCorrection(false);
+    } else {
+      setUseCorrection(true);
+    }
+  }, [inputMessage])
+  
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
