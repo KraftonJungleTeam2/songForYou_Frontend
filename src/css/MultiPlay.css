@@ -93,17 +93,19 @@
 .mr-range{
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  margin-right: 0.5rem;
+  gap: 0px;
 }
 
 .mr-range label {
-  width: 1.5em;
+  width: 2em;
 }
 
 @media (max-width: 1023px) {
   .mr-range{
-    width: calc(100% - 2rem);
-    margin-left: 1rem;
+    width: calc(100% - 1.2rem);
+    margin-left: 0.6rem;
+    margin-right: 0.6rem;
   }
 }
 

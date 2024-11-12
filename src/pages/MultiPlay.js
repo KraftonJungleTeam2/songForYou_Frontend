@@ -1100,13 +1100,6 @@ function MultiPlay() {
       <div className='players-chat'>
         
         <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
-        {isMobile && (
-              <div className='mr-range'>
-                <label>Mr 조절</label>
-                <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-                
-              </div>
-            )}
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1123,13 +1116,6 @@ function MultiPlay() {
           <button className='button reservation-button' onClick={OnPopup}>
             예약하기
           </button>
-          {!isMobile && (
-            <div className='mr-range'>
-              <label><i class={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              
-            </div>
-          )}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
@@ -1138,6 +1124,11 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
+        </div>
+        <div className='mr-range'>
+          <label><i class={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
+          <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+          
         </div>
 
         <div className='chat-area'>
