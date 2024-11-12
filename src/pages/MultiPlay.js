@@ -126,13 +126,13 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const audioConstant = 150;
+  const audioConstant = 190;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
   const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
   const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
-  const [playoutDelay, setPlayoutDelay] = useState(0);
+  const [playoutDelay, setPlayoutDelay] = useState(40);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
   const RTTRef = useRef({});
