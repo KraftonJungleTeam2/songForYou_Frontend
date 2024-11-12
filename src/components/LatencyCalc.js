@@ -68,8 +68,10 @@ async function MeasureLatency(
       });
     }
   }
-  setJitterDelay(average(jitters));
-
+  const avgJitter = average(jitters);
+  if (jitters > 0)
+    setJitterDelay(avgJitter);
+  
   const singerDelay = average(RTTs);
   if (singerDelay > 0) {
     const newSingerDelay = singerNetworkDelay * 0.5 + singerDelay * 0.5;
