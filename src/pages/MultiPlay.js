@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
-import Sidebar from '../components/SideBar';
-import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
 // import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
@@ -9,7 +7,6 @@ import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
-import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
@@ -18,7 +15,6 @@ import '../css/slider.css';
 import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
 import { useScreen } from '../Context/ScreenContext';
-import MobileNav from '../components/MobileNav';
 import PageTemplate from '../template/PageTemplate';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
@@ -1102,8 +1098,15 @@ function MultiPlay() {
       </div>
 
       <div className='players-chat'>
+        
         <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
-
+        {isMobile && (
+              <div className='mr-range'>
+                <label>Mr 조절</label>
+                <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+                
+              </div>
+            )}
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1120,11 +1123,13 @@ function MultiPlay() {
           <button className='button reservation-button' onClick={OnPopup}>
             예약하기
           </button>
-          <div className='mr-section'>
-            <li>Mr 소리 조절</li>
-            <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-          </div>
-
+          {!isMobile && (
+            <div className='mr-range'>
+              <label>Mr 조절</label>
+              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+              
+            </div>
+          )}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
@@ -1153,6 +1158,7 @@ function MultiPlay() {
           </div>
         </div>
       </div>
+      
     </PageTemplate>
   );
 }

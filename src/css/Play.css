@@ -164,7 +164,6 @@
 
 .range-slider {
   width: 100%;
-  background: #ffbf0b;
 }
 .range-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
