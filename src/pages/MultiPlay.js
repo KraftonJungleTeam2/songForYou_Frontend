@@ -389,7 +389,7 @@ function MultiPlay() {
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false,
+          autoGainControl: true,
         },
         video: false,
       });
