@@ -1097,8 +1097,6 @@ function MultiPlay() {
           <p className='next-lyrics'>{nextLyric}</p>
         </div>
 
-        <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-
         {/* AudioPlayer 컴포넌트 */}
         <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
       </div>
@@ -1122,6 +1120,10 @@ function MultiPlay() {
           <button className='button reservation-button' onClick={OnPopup}>
             예약하기
           </button>
+          <div className='mr-section'>
+            <li>Mr 소리 조절</li>
+            <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+          </div>
 
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
