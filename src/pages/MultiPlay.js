@@ -1141,6 +1141,7 @@ function MultiPlay() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, option: {optionDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}</p>
           <div className='input-area'>
             <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />
             <button onClick={sendMessage}>
