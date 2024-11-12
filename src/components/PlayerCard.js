@@ -35,7 +35,7 @@ function PlayerCard({ players, socketId, score, playerVolumeChange }) {
                 <div className="details">
                   <p className="player-details">
                     <span className="player-name">
-                      {players[index].name} {players[index].mic ? "🎤" : "  "}
+                      {players[index].name} {players[index].mic ? "🎤" : ""}
                     </span>
                     <span className="score">
                       {players[index].userId === socketId.current

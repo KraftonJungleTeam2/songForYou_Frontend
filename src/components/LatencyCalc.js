@@ -54,12 +54,19 @@ async function MeasureLatency(
         if (report.type === "remote-inbound-rtp" && report.kind === "audio") {
           let RTT = report.roundTripTime * 1000;
           if (RTT >= 0) {
+            if (RTTRef.key.length > 0) {
+              const max = Math.max(...RTTRef.key);
+              if (RTT > max + 500) {// 이 함수 interval보다 길면 제한
+                RTT = max+500;
+                RTTRef.key.push(RTT);
+                if (RTTRef.key.length > 5) RTTRef.key.shift();
+                return;
+              }
+            }
             RTTRef.key.push(RTT);
-            if (RTTRef.key.length > 7) RTTRef.key.shift();
+            if (RTTRef.key.length > 5) RTTRef.key.shift();
 
-            RTT = RTTRef.key.slice().sort((a, b) => a - b)[
-              Math.floor(RTTRef.key.length / 2)
-            ];
+            RTT = Math.min(...RTTRef.key);
             // console.log(key, "의 RTTs: ", RTTRef.key.slice(), "선택된 RTT: ", RTT);
             RTTs.push(RTT);
             listeners.push({ userId: key, value: RTT });
@@ -68,21 +75,21 @@ async function MeasureLatency(
       });
     }
   }
+  
   const avgJitter = average(jitters);
   if (jitters > 0)
-    setJitterDelay(avgJitter);
+    setJitterDelay(Math.floor(avgJitter));
   
   const singerDelay = average(RTTs);
   if (singerDelay > 0) {
     const newSingerDelay = singerNetworkDelay * 0.5 + singerDelay * 0.5;
-    setSingerNetworkDelay(newSingerDelay);
+    setSingerNetworkDelay(Math.floor(newSingerDelay));
     if (micStatRef.current[socketId]) {
       listeners.forEach((listener) => {
         const dataToSend = {
           type: "listenerLatency",
           singer: socketId,
-          setAs:
-            ((listener.value - singerDelay) * newSingerDelay) / singerDelay,
+          setAs: (listener.value - newSingerDelay),
         };
         const channel = dataChannels[listener.userId];
 
