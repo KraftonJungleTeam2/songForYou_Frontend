@@ -1126,7 +1126,7 @@ function MultiPlay() {
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
         </div>
         <div className='mr-range'>
-          <label><i class={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
+          <label><i className={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
           <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
           
         </div>
