@@ -132,6 +132,7 @@ function MultiPlay() {
   const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
+  const [realJitterDelay, setRealJitterDelay] = useState(0);
   const [playoutDelay, setPlayoutDelay] = useState(40);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
@@ -928,7 +929,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current, setRealJitterDelay), 500);
 
     return () => clearInterval(interval);
   }, []);
@@ -1141,7 +1142,7 @@ function MultiPlay() {
             ))}
             <div ref={messagesEndRef} />
           </div>
-          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, option: {optionDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}</p>
+          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, realJitterDelay: {realJitterDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}</p>
           <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>latencyOffset: {latencyOffset}</p>
           <div className='input-area'>
             <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />

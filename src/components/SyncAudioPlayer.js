@@ -106,12 +106,12 @@ const AudioPlayer = forwardRef(
       source.playbackRate.value = playbackSpeed; // 재생 속도 설정
       source.connect(gainControlRef.current).connect(audioContext.destination);
       sourceRef.current = source;
-      // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-      const offset = (performance.now() - starttime) / 1000;
       // 볼륨 설정
       gainControlRef.current.gain.value = musicGain;
+      
+      // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
+      const offset = (performance.now() - starttime) / 1000;
       //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
-
       if (offset < 0) {
         source.start(audioContext.currentTime - offset);
       } else {
@@ -193,22 +193,13 @@ const AudioPlayer = forwardRef(
     useEffect(() => {
       if (!isPlaying) return;
 
-      let lastUpdateTime = performance.now();
-
       const updatePosition = () => {
         if (!isPlaying) return;
 
-        const now = performance.now();
-        const elapsed = now - lastUpdateTime;
-
-        if (elapsed >= FRAME_RATE * 1000) {
-          // 25ms 이상 경과 시 업데이트
-          const currentTime = getPlaybackTime();
-          const roundedTime = roundToFrame(currentTime);
-          if (onPlaybackPositionChange) {
-            onPlaybackPositionChange(roundedTime);
-          }
-          lastUpdateTime = now;
+        const currentTime = getPlaybackTime();
+        const roundedTime = roundToFrame(currentTime);
+        if (onPlaybackPositionChange) {
+          onPlaybackPositionChange(roundedTime);
         }
 
         animationFrameRef.current = requestAnimationFrame(updatePosition);
@@ -235,7 +226,8 @@ const AudioPlayer = forwardRef(
       const interval = setInterval((audioContext = audioContextRef.current) => {
         if (audioContext) {
           const playoutDelay = audioContext.outputLatency;
-          setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay * 1000);
+          if (playoutDelay > 40)
+            setPlayoutDelay(playoutDelay);
         }
       }, 1000);
 

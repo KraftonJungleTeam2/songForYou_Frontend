@@ -11,9 +11,11 @@ async function MeasureLatency(
   setJitterDelay,
   dataChannels,
   socketId,
-  RTTRef
+  RTTRef,
+  setRealJitterDelay,
 ) {
   const jitters = [];
+  const realjitters = [];
   const RTTs = [];
   const listeners = [];
 
@@ -22,7 +24,7 @@ async function MeasureLatency(
     const stats = await peerConnection.getStats();
     if (!(key in ref.current))
       ref.current[key] = {
-        jitter: { count: 0, delay: 0, last: null },
+        jitter: { count: 0, delay: 0, real:0, last: null },
       };
     const peerData = ref.current[key];
     if (!RTTRef.key) RTTRef.key = [];
@@ -33,14 +35,20 @@ async function MeasureLatency(
         if (report.type === "inbound-rtp") {
           const newCount = report.jitterBufferEmittedCount; // cumulative
           const newDelay = report.jitterBufferTargetDelay; // cumulative
+          const newRealDelay = report.jitterBufferDelay; // cumulative
           const jitterDelay =
             ((newDelay - peerData.jitter.delay) /
+              (newCount - peerData.jitter.count)) *
+            1000;
+          const realJitterDelay = 
+            ((newRealDelay - peerData.jitter.delay) /
               (newCount - peerData.jitter.count)) *
             1000;
 
           if (jitterDelay > 0) {
             // console.log(key, " JitterDelay: ", jitterDelay);
             jitters.push(jitterDelay);
+            realjitters.push(realJitterDelay);
           } else if (report.type === "media-source") {
             // console.log(report.totalAudioEnergy);
           }
@@ -75,10 +83,11 @@ async function MeasureLatency(
       });
     }
   }
-  
+
   const avgJitter = average(jitters);
   if (jitters > 0)
     setJitterDelay(Math.floor(avgJitter));
+  setRealJitterDelay(Math.floor(average(realjitters)));
   
   const singerDelay = average(RTTs);
   if (singerDelay > 0) {
