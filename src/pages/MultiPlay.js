@@ -1125,7 +1125,7 @@ function MultiPlay() {
           </button>
           {!isMobile && (
             <div className='mr-range'>
-              <label>Mr 조절</label>
+              <label><i class={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
               
             </div>
