@@ -68,17 +68,44 @@
   height: 33%;
 }
 
+.button-area .start-button:hover{
+  background-color: #cca300;
+}
+
 .button-area .mic-button {
-  background-color: var(--background-section);
-  color: var(--text-scheme);
+  background-color: #ebff78;
+  color: var(--text-black);
   height: 33%;
+}
+
+.button-area .mic-button:hover{
+  background-color: #b5c55b;
 }
 
 .button-area .reservation-button {
   background-color: var(--gradient-end);
   height: 33%;
 }
+.button-area .reservation-button:hover {
+  background-color: #cc8323;
+  height: 33%;
+}
+.mr-range{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
 
+@media (max-width: 1023px) {
+  .mr-range{
+    width: calc(100% - 2rem);
+    margin-left: 1rem;
+  }
+}
+
+.mr-range label{
+  white-space: nowrap; /* 줄 바꿈 없이 한 줄로 표시 */
+}
 /* Chat area */
 
 .chat-area {
@@ -165,7 +192,8 @@
     display: none;
   } */
 
-  .pitch-graph-play {
+  .pitch-graph-multi {
+    border: 2px solid var(--border-gray);
     min-height: 60%;
     height: 60%;
   }
