@@ -305,7 +305,6 @@ function Add() {
                 className={`add-button is-highlight button ${isWaiting ? "is-loading" : ""}`}
                 disabled={isWaiting}
                 type="submit"
-                style={{marginTop: '2em'}}
               >
                 추가하기
               </button>
