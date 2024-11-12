@@ -10,11 +10,13 @@ export function stringToColor(str) {
 
   // 해시값을 6자리 HEX 코드로 변환
   let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).slice(-2);
-  }
-
+  const value1 = (hash >> (0 * 8)) & 0xFF;
+  const value2 = (hash >> (1 * 8)) & 0xFF;
+  const value3 = 0xFF - Math.min(value1, value2);
+  color += ('00' + value1.toString(16)).slice(-2);
+  color += ('00' + value3.toString(16)).slice(-2);
+  color += ('00' + value2.toString(16)).slice(-2);
+  
   return color;
 }
 // 주파수 범위 생성 함수
