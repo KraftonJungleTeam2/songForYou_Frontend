@@ -101,14 +101,6 @@
   width: 2em;
 }
 
-@media (max-width: 1023px) {
-  .mr-range{
-    width: calc(100% - 1.2rem);
-    margin-left: 0.6rem;
-    margin-right: 0.6rem;
-  }
-}
-
 .mr-range label{
   white-space: nowrap; /* 줄 바꿈 없이 한 줄로 표시 */
 }
@@ -215,7 +207,7 @@
 
   .players-chat {
     flex-direction: column-reverse;
-    height: 13rem;
+    height: 15rem;
     max-height: 40%;
     /* flex-direction: row; */
     min-width: 0;
@@ -234,6 +226,12 @@
 
   .button-area .button {
     height: 100%;
+  }
+
+  .mr-range{
+    width: calc(100% - 1.2rem);
+    margin-left: 0.6rem;
+    margin-right: 0.6rem;
   }
 
   .chat-area {
