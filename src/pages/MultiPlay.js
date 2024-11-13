@@ -119,7 +119,7 @@ function MultiPlay() {
   const pitchArraysRef = useRef({}); //  pitchArrays
   const candidatesRef = useRef({}); // candidates before est
 
-  const [useCorrection, setUseCorrection] = useState(true);
+  const [useCorrection, setUseCorrection] = useState(false);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -127,13 +127,14 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const audioConstant = 150;
+  const audioConstant = 160;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
   const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
   const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
-  const [playoutDelay, setPlayoutDelay] = useState(0);
+  const [realJitterDelay, setRealJitterDelay] = useState(0);
+  const [playoutDelay, setPlayoutDelay] = useState(40);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
   const RTTRef = useRef({});
@@ -912,7 +913,7 @@ function MultiPlay() {
         }
       });
       if (i > 0) {
-        setListenerNetworkDelay((old) => old * 0.7 + (sum / i) * 0.3);
+        setListenerNetworkDelay((old) => Math.floor(old * 0.7 + (sum / i) * 0.3));
       }
     }
   };
@@ -940,7 +941,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current, setRealJitterDelay), 500);
 
     return () => clearInterval(interval);
   }, []);
@@ -1068,7 +1069,7 @@ function MultiPlay() {
       if (isMicOn) {
         setLatencyOffset(-audioDelay - singerNetworkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterDelay + listenerNetworkDelay);
+        setLatencyOffset(realJitterDelay + listenerNetworkDelay);
       }
     } else {
       setLatencyOffset(0);
@@ -1106,17 +1107,11 @@ function MultiPlay() {
         </div>
 
         {/* AudioPlayer 컴포넌트 */}
-        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
+        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} setUseCorrection={setUseCorrection}/>
       </div>
 
       <div className='players-chat'>
         <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
-        {isMobile && (
-          <div className='mr-range'>
-            <label>Mr 조절</label>
-            <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-          </div>
-        )}
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1133,12 +1128,6 @@ function MultiPlay() {
           <button className='button reservation-button' onClick={OnPopup}>
             예약하기
           </button>
-          {!isMobile && (
-            <div className='mr-range'>
-              <label>Mr 조절</label>
-              <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-            </div>
-          )}
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
@@ -1147,6 +1136,11 @@ function MultiPlay() {
 
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
+        </div>
+        <div className='mr-range'>
+          <label><i className={`fa-solid ${musicGain > 0 ? musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low' : 'fa-volume-off'}`}></i></label>
+          <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+          
         </div>
 
         <div className='chat-area'>
@@ -1159,6 +1153,8 @@ function MultiPlay() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, realJitterDelay: {realJitterDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}</p>
+          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>latencyOffset: {latencyOffset}, useCorrection: {useCorrection?'T':'F'}</p>
           <div className='input-area'>
             <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />
             <button onClick={sendMessage}>
