@@ -16,6 +16,7 @@ import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
 import { useScreen } from '../Context/ScreenContext';
 import PageTemplate from '../template/PageTemplate';
+import { toast } from 'react-toastify';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -191,7 +192,10 @@ function MultiPlay() {
   }, [entireReferData]);
 
   useEffect(() => {
-    if (currentData !== null && currentData.ready == true) {
+    if (currentData?.ready === true) {
+      setIsWaiting(false);
+    }
+    if (currentData?.songData && currentData.ready === false) {
       setMrDataBlob(currentData.songData.mr); // Blob 데이터 저장
       setLyricsData(currentData.songData.lyrics);
       const pitchArray = currentData.songData.pitch;
@@ -210,12 +214,16 @@ function MultiPlay() {
       } else {
         console.error('Error: Expected pitch data to be an array');
       }
-      setIsWaiting(false);
+      socketRef.current.emit('songReady', {
+        roomId,
+        songId: reservedSongs[0].songId,
+      });
     }
   }, [currentData]);
 
   useEffect(() => {
     console.log('reserved song');
+
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
@@ -224,12 +232,6 @@ function MultiPlay() {
     }
     console.log('reserved song', reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
-      if (reservedSongs[0].ready === false && reservedSongs[0].songData !== null) {
-        socketRef.current.emit('songReady', {
-          roomId,
-          songId: reservedSongs[0].songId,
-        });
-      }
       setcurrentData(reservedSongs[0]);
     }
 
@@ -331,7 +333,7 @@ function MultiPlay() {
   const setReserved = async (songs) => {
     const formattedSongs = songs.map((song) => ({
       songId: song.songId,
-      ready: song.readyBool,
+      ready: false,
       songData: null, // 데이터는 나중에 로드
       image: song.image,
       title: song.title,
@@ -424,24 +426,21 @@ function MultiPlay() {
       await getLocalStream();
       const token = sessionStorage.getItem('userToken');
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_ENDPOINT}/users/info`,
-        {
-          method: "GET",
-          headers: {
-            'Authorization': `Bearer ${token}`, // 토큰을 Authorization 헤더에 추가
-          },
-        }
-      );
+      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`, // 토큰을 Authorization 헤더에 추가
+        },
+      });
 
       const formData = await response.formData();
-    
+
       const result = Object.fromEntries(formData.entries());
-      
+
       const info = JSON.parse(result.info);
 
       const nickname = info.name;
-      await socketRef.current.emit("joinRoom", {
+      await socketRef.current.emit('joinRoom', {
         roomId: roomId,
         nickname: nickname,
         mic: isMicOn,
@@ -620,6 +619,19 @@ function MultiPlay() {
       micOff();
       console.log('starts at', clientStartTime);
       setStarttime(clientStartTime);
+    });
+
+    socketRef.current.on('waitReady', (data) => {
+      toast.info('아직 모든 유저가 준비되지 않았습니다.', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: 'light',
+      });
+      return;
     });
 
     socketRef.current.on('stopMusic', (data) => {
@@ -1098,15 +1110,13 @@ function MultiPlay() {
       </div>
 
       <div className='players-chat'>
-        
         <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
         {isMobile && (
-              <div className='mr-range'>
-                <label>Mr 조절</label>
-                <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-                
-              </div>
-            )}
+          <div className='mr-range'>
+            <label>Mr 조절</label>
+            <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
+          </div>
+        )}
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1127,7 +1137,6 @@ function MultiPlay() {
             <div className='mr-range'>
               <label>Mr 조절</label>
               <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-              
             </div>
           )}
           <div className='remote-audios' style={{ display: 'none' }}>
@@ -1158,7 +1167,6 @@ function MultiPlay() {
           </div>
         </div>
       </div>
-      
     </PageTemplate>
   );
 }
