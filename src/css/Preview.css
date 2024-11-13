@@ -130,7 +130,7 @@
     margin-top: 0;
   }
   .preview-info-container {
-    width: 22vh;
+    width: calc(100% - 17vh);
     height: 17vh;
   }
   .preview-title {

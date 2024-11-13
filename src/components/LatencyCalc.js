@@ -11,9 +11,11 @@ async function MeasureLatency(
   setJitterDelay,
   dataChannels,
   socketId,
-  RTTRef
+  RTTRef,
+  setRealJitterDelay,
 ) {
   const jitters = [];
+  const realjitters = [];
   const RTTs = [];
   const listeners = [];
 
@@ -22,7 +24,7 @@ async function MeasureLatency(
     const stats = await peerConnection.getStats();
     if (!(key in ref.current))
       ref.current[key] = {
-        jitter: { count: 0, delay: 0, last: null },
+        jitter: { count: 0, delay: 0, real:0, last: null },
       };
     const peerData = ref.current[key];
     if (!RTTRef.key) RTTRef.key = [];
@@ -33,14 +35,20 @@ async function MeasureLatency(
         if (report.type === "inbound-rtp") {
           const newCount = report.jitterBufferEmittedCount; // cumulative
           const newDelay = report.jitterBufferTargetDelay; // cumulative
+          const newRealDelay = report.jitterBufferDelay; // cumulative
           const jitterDelay =
             ((newDelay - peerData.jitter.delay) /
+              (newCount - peerData.jitter.count)) *
+            1000;
+          const realJitterDelay = 
+            ((newRealDelay - peerData.jitter.delay) /
               (newCount - peerData.jitter.count)) *
             1000;
 
           if (jitterDelay > 0) {
             // console.log(key, " JitterDelay: ", jitterDelay);
             jitters.push(jitterDelay);
+            realjitters.push(realJitterDelay);
           } else if (report.type === "media-source") {
             // console.log(report.totalAudioEnergy);
           }
@@ -54,12 +62,19 @@ async function MeasureLatency(
         if (report.type === "remote-inbound-rtp" && report.kind === "audio") {
           let RTT = report.roundTripTime * 1000;
           if (RTT >= 0) {
+            if (RTTRef.key.length > 0) {
+              const max = Math.max(...RTTRef.key);
+              if (RTT > max + 500) {// 이 함수 interval보다 길면 제한
+                RTT = max+500;
+                RTTRef.key.push(RTT);
+                if (RTTRef.key.length > 5) RTTRef.key.shift();
+                return;
+              }
+            }
             RTTRef.key.push(RTT);
-            if (RTTRef.key.length > 7) RTTRef.key.shift();
+            if (RTTRef.key.length > 5) RTTRef.key.shift();
 
-            RTT = RTTRef.key.slice().sort((a, b) => a - b)[
-              Math.floor(RTTRef.key.length / 2)
-            ];
+            RTT = Math.min(...RTTRef.key);
             // console.log(key, "의 RTTs: ", RTTRef.key.slice(), "선택된 RTT: ", RTT);
             RTTs.push(RTT);
             listeners.push({ userId: key, value: RTT });
@@ -68,19 +83,22 @@ async function MeasureLatency(
       });
     }
   }
-  setJitterDelay(average(jitters));
 
+  const avgJitter = average(jitters);
+  if (jitters > 0)
+    setJitterDelay(Math.floor(avgJitter));
+  setRealJitterDelay(Math.floor(average(realjitters)));
+  
   const singerDelay = average(RTTs);
   if (singerDelay > 0) {
     const newSingerDelay = singerNetworkDelay * 0.5 + singerDelay * 0.5;
-    setSingerNetworkDelay(newSingerDelay);
+    setSingerNetworkDelay(Math.floor(newSingerDelay));
     if (micStatRef.current[socketId]) {
       listeners.forEach((listener) => {
         const dataToSend = {
           type: "listenerLatency",
           singer: socketId,
-          setAs:
-            ((listener.value - singerDelay) * newSingerDelay) / singerDelay,
+          setAs: (listener.value - singerDelay),
         };
         const channel = dataChannels[listener.userId];
 
