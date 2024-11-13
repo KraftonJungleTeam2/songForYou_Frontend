@@ -1057,7 +1057,7 @@ function MultiPlay() {
       if (isMicOn) {
         setLatencyOffset(-audioDelay - singerNetworkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterDelay + listenerNetworkDelay);
+        setLatencyOffset(realJitterDelay + listenerNetworkDelay);
       }
     } else {
       setLatencyOffset(0);
