@@ -1143,9 +1143,9 @@ function MultiPlay() {
             ))}
           </div>
 
+        </div>
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
-        </div>
         <div className='mr-range'>
           <label>
             <i className={`fa-solid ${musicGain > 0 ? (musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low') : 'fa-volume-off'}`}></i>
