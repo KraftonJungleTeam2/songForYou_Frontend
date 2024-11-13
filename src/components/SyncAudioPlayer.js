@@ -117,11 +117,11 @@ const AudioPlayer = forwardRef(
       } else {
         source.start(0, offset);
       }
+      resumeTimeRef.current = audioContext.currentTime - offset;
 
       setIsPlaying(true);
       setIsWaiting(false);
 
-      resumeTimeRef.current = audioContext.currentTime - offset;
 
       // 재생 완료 시 호출되는 콜백 설정
       source.onended = handleStopAudio;
@@ -133,10 +133,10 @@ const AudioPlayer = forwardRef(
       const source = sourceRef.current;
       const prevRate = source.playbackRate.value;
       const timePassed = audioContext.currentTime - resumeTimeRef.current;
-
+      
+      source.playbackRate.value = rate;
       playbackPositionRef.current += timePassed * prevRate;
       resumeTimeRef.current += timePassed;
-      source.playbackRate.value = rate;
     };
 
     // 현재 재생시간을 초단위로 가져옴 예: getPlaybackTime() == 36.1 -> 현재 36.1초 플레이 중
@@ -196,9 +196,9 @@ const AudioPlayer = forwardRef(
       const updatePosition = () => {
         if (!isPlaying) return;
 
-        const currentTime = getPlaybackTime();
-        const roundedTime = roundToFrame(currentTime);
         if (onPlaybackPositionChange) {
+          const currentTime = getPlaybackTime();
+          const roundedTime = roundToFrame(currentTime);
           onPlaybackPositionChange(roundedTime);
         }
 
