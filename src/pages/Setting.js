@@ -13,12 +13,16 @@ function Setting() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const { userData, setUserData } = useUser(); // UserContext에서 userData와 setUserData 가져오기
+  const [localData, setLocalData] = useState({
+    name: userData.name,
+    email: userData.email,
+  }); // 로컬 상태 추가
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData((prevState) => ({ ...prevState, [name]: value }));
+    setLocalData((prevState) => ({ ...prevState, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -29,12 +33,13 @@ function Setting() {
         console.error("No JWT token found");
         return;
       }
-      await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/users/update`, userData, {
+      await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/users/update`, localData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
+      setUserData((prevState) => ({ ...prevState, ...localData })); // 프로필 변경 시 userData에 localData 적용
       alert("프로필 정보가 성공적으로 업데이트되었습니다.");
     } catch (error) {
       console.error("Error updating user information:", error);
@@ -48,7 +53,7 @@ function Setting() {
       const formData = new FormData();
       formData.append("profilePicture", file);
       const token = sessionStorage.getItem("userToken");
-  
+
       try {
         const response = await axios.put(
           `${process.env.REACT_APP_API_ENDPOINT}/users/updateProfilePicture`,
@@ -60,9 +65,8 @@ function Setting() {
             },
           }
         );
-  
+
         if (response.status === 200) {
-          // 파일을 data URL로 변환
           const reader = new FileReader();
           reader.onloadend = () => {
             const dataURL = reader.result;
@@ -167,7 +171,7 @@ function Setting() {
                   type="text"
                   id="name"
                   name="name"
-                  value={userData.name || ""}
+                  value={localData.name || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -177,7 +181,7 @@ function Setting() {
                   type="email"
                   id="email"
                   name="email"
-                  value={userData.email || ""}
+                  value={localData.email || ""}
                   onChange={handleChange}
                 />
               </div>
