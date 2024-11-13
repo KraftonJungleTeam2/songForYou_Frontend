@@ -98,7 +98,7 @@ async function MeasureLatency(
         const dataToSend = {
           type: "listenerLatency",
           singer: socketId,
-          setAs: (listener.value - newSingerDelay),
+          setAs: (listener.value - singerDelay),
         };
         const channel = dataChannels[listener.userId];
 
