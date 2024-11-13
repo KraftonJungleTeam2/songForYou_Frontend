@@ -193,13 +193,14 @@ function MultiPlay() {
   }, [entireReferData]);
 
   useEffect(() => {
-    if (mrDataBlob !== null && lyricsData !== null && currentData?.songData?.mr === mrDataBlob && currentData?.songData?.lyrics === lyricsData) {
+    if (mrDataBlob !== null && lyricsData !== null && currentData?.songData?.mr === mrDataBlob && currentData?.songData?.lyrics === lyricsData && serverTimeDiff) {
+      console.log('serverTimeDiff', serverTimeDiff);
       socketRef.current.emit('songReady', {
         roomId,
         songId: reservedSongs[0].songId,
       });
     }
-  }, [mrDataBlob, lyricsData]);
+  }, [mrDataBlob, lyricsData, serverTimeDiff]);
 
   useEffect(() => {
     if (currentData?.ready === true) {
