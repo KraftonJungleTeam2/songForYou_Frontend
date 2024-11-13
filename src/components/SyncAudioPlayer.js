@@ -123,11 +123,11 @@ const AudioPlayer = forwardRef(
       
       setIsPlaying(true);
       setIsWaiting(false);
-      setTimeout(() => setUseCorrection(true), -offset*1000+20);
-
 
       // 재생 완료 시 호출되는 콜백 설정
       source.onended = handleStopAudio;
+      
+      setTimeout(() => setUseCorrection(true), -offset*1000+20);
     };
 
     // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
