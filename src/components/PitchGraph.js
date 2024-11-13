@@ -27,7 +27,7 @@ const PitchGraph = ({
 
   // 이미지 데이터를 처리하여 src 생성
   useEffect(() => {
-    console.log("안녕", songimageProps);
+    // console.log("안녕", songimageProps);
     if (songimageProps?.image?.data) {
       // ArrayBuffer를 Base64 문자열로 변환
       const base64String = arrayBufferToBase64(songimageProps.image.data);
