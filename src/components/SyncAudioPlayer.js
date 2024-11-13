@@ -22,6 +22,7 @@ const AudioPlayer = forwardRef(
       currentData,
       roomId,
       setAudioLoaded,
+      setUseCorrection,
     },
     ref
   ) => {
@@ -80,6 +81,7 @@ const AudioPlayer = forwardRef(
       setAudioLoaded(false);
       setStarttime(null);
       setReservedSongs((prev) => prev.slice(1));
+      setUseCorrection(false);
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       onPlaybackPositionChange(-10);
       if (animationFrameRef.current) {
@@ -118,9 +120,10 @@ const AudioPlayer = forwardRef(
         source.start(0, offset);
       }
       resumeTimeRef.current = audioContext.currentTime - offset;
-
+      
       setIsPlaying(true);
       setIsWaiting(false);
+      setTimeout(() => setUseCorrection(true), -offset*1000+20);
 
 
       // 재생 완료 시 호출되는 콜백 설정

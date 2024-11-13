@@ -118,7 +118,7 @@ function MultiPlay() {
   const pitchArraysRef = useRef({}); //  pitchArrays
   const candidatesRef = useRef({}); // candidates before est
 
-  const [useCorrection, setUseCorrection] = useState(true);
+  const [useCorrection, setUseCorrection] = useState(false);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -126,7 +126,7 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const audioConstant = 190;
+  const audioConstant = 160;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
   const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
   const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
@@ -1064,14 +1064,6 @@ function MultiPlay() {
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
 
-  useEffect(() => {
-    if (inputMessage === "__no__") {
-      setUseCorrection(false);
-    } else {
-      setUseCorrection(true);
-    }
-  }, [inputMessage])
-  
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 
   return (
@@ -1103,7 +1095,7 @@ function MultiPlay() {
         </div>
 
         {/* AudioPlayer 컴포넌트 */}
-        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
+        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} setUseCorrection={setUseCorrection}/>
       </div>
 
       <div className='players-chat'>
@@ -1151,7 +1143,7 @@ function MultiPlay() {
             <div ref={messagesEndRef} />
           </div>
           <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, realJitterDelay: {realJitterDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}</p>
-          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>latencyOffset: {latencyOffset}</p>
+          <p style={{display: inputMessage === '__hidden__'? 'block' : 'none'}}>latencyOffset: {latencyOffset}, useCorrection: {useCorrection?'T':'F'}</p>
           <div className='input-area'>
             <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />
             <button onClick={sendMessage}>
