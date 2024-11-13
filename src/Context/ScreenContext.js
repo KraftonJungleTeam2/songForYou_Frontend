@@ -5,7 +5,7 @@ const ScreenContext = createContext();
 
 export const ScreenProvider = ({ children }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 1023px)' });
-  const isPhone = useMediaQuery({ query: '(max-width: 768px)' });
+  const isPhone = useMediaQuery({ query: '(max-width: 767px)' });
   const [screenSize, setScreenSize] = useState({
     widthScreen: window.innerWidth,
     heightScreen: window.innerHeight,
