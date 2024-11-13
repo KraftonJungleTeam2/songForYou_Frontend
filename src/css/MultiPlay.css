@@ -13,7 +13,6 @@
   min-width: 10rem;
   width: 17%; /* 좌측 영역 너비 설정 */
   background-color: var(--background-main);
-  gap: 1rem;
 }
 
 
@@ -44,6 +43,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 10px;
   margin-bottom: 10px;
   margin-right: 0.5em;
 }
@@ -57,6 +57,7 @@
   cursor: pointer;
   width: 100%;
   font-size: 14px;
+  max-height: 5dvh;
 }
 
 .button-area .button:hover {
@@ -93,14 +94,12 @@
 .mr-range{
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  margin-right: 0.5rem;
+  gap: 0px;
 }
 
-@media (max-width: 1023px) {
-  .mr-range{
-    width: calc(100% - 2rem);
-    margin-left: 1rem;
-  }
+.mr-range label {
+  width: 2em;
 }
 
 .mr-range label{
@@ -209,7 +208,7 @@
 
   .players-chat {
     flex-direction: column-reverse;
-    height: 13rem;
+    height: 15rem;
     max-height: 40%;
     /* flex-direction: row; */
     min-width: 0;
@@ -228,6 +227,12 @@
 
   .button-area .button {
     height: 100%;
+  }
+
+  .mr-range{
+    width: calc(100% - 1.2rem);
+    margin-left: 0.6rem;
+    margin-right: 0.6rem;
   }
 
   .chat-area {
