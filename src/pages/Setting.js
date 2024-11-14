@@ -150,7 +150,7 @@ function Setting() {
                   className="profile-picture"
                 />
               ) : (
-                <i className="fa-solid fa-user profile-picture"></i>
+                <i className="fa-solid fa-user profile-picture-none"></i>
               )}
               <input
                 type="file"
