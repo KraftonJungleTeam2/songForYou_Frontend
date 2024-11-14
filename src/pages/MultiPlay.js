@@ -229,15 +229,12 @@ function MultiPlay() {
   }, [currentData]);
 
   useEffect(() => {
-    console.log('reserved song');
-
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
       setLyricsData(null);
       return;
     }
-    console.log('reserved song', reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
       setcurrentData(reservedSongs[0]);
     }
@@ -677,9 +674,6 @@ function MultiPlay() {
 
     socketRef.current.on('songReady', (data) => {
       try {
-        console.log('fuck');
-        console.log('mrDataBlob', mrDataBlob);
-        console.log('mrDataBlob', lyricsData);
         const { songId } = data;
         setReservedSongs((prevSongs) => {
           return prevSongs.map((song) => {
@@ -1021,6 +1015,7 @@ function MultiPlay() {
     const nSamples = timeDiffSamplesRef.current.length;
     const q = Math.floor(nSamples / 4);
     const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples - 1 - q];
+    console.log("ping ", nSamples, " received")
     // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
     if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
       // 측정 완료시 서버시간차이를 저장 하고 종료
@@ -1065,7 +1060,6 @@ function MultiPlay() {
   };
 
   const OnPopup = () => {
-    console.log(songLists);
     setshowPopup(true);
   };
 
