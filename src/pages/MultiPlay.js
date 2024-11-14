@@ -1015,25 +1015,24 @@ function MultiPlay() {
     const nSamples = timeDiffSamplesRef.current.length;
     const idxRange = 5; // MINPING보다 작아야함
     let optimalIdx = -1;
-    let range = 10000;
-    console.log(timeDiffSamplesRef.current);
-    if (nSamples > MINPING) {
+    let range = MAXERROR+1;
+
+    if (nSamples >= MINPING) {
       for (let i = 0; i < nSamples-idxRange; i++) {
         const tempRange = timeDiffSamplesRef.current[i] - timeDiffSamplesRef.current[i+idxRange-1];
-        if (tempRange <= MAXERROR && tempRange < range) {
+        if (nSamples >= MAXPING || (tempRange <= MAXERROR && tempRange < range)) {
           range = tempRange;
           optimalIdx = i;
         }
       }
-    }
-    // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
-    if (nSamples >= MAXPING || (nSamples >= MINPING && range <= MAXERROR)) {
-      // 측정 완료시 서버시간차이를 저장 하고 종료
-      const estTimeDiff = timeDiffSamplesRef.current[optimalIdx+2];
-      console.log("servertimediff ", estTimeDiff);
-      setServerTimeDiff(estTimeDiff);
+      if (optimalIdx >= 0) {
+        const estTimeDiff = timeDiffSamplesRef.current[optimalIdx+2];
+        console.log("servertimediff ", estTimeDiff);
+        setServerTimeDiff(estTimeDiff);
+      } else {
+        sendPing();
+      }
     } else {
-      // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
       sendPing();
     }
   };
