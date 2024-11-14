@@ -1015,7 +1015,7 @@ function MultiPlay() {
     const nSamples = timeDiffSamplesRef.current.length;
     const q = Math.floor(nSamples / 4);
     const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples - 1 - q];
-    console.log("ping ", nSamples, " received")
+    console.log("ping ", timeDiffSamplesRef.current);
     // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
     if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
       // 측정 완료시 서버시간차이를 저장 하고 종료
