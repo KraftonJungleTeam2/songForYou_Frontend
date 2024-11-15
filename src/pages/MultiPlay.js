@@ -316,7 +316,7 @@ function MultiPlay() {
       mic: mic,
       isAudioActive: false,
       score: null,
-      volume: 50,
+      volume: 100,
     };
     setPlayers((prevPlayers) => [...prevPlayers, newPlayer]);
     micStatRef.current[userId] = mic;
@@ -881,7 +881,7 @@ function MultiPlay() {
       const audioElement = document.getElementById(`remoteAudio_${userId}`);
       if (audioElement && event.streams[0]) {
         audioElement.srcObject = event.streams[0];
-        audioElement.volume = 0.5;
+        audioElement.volume = 1;
       }
       peerConnection.addEventListener('connectionstatechange', (event) => {
         console.log('Connection State:', peerConnection.connectionState);
@@ -1090,6 +1090,14 @@ function MultiPlay() {
       setLatencyOffset(0);
     }
   }, [audioDelay, singerNetworkDelay, optionDelay, jitterDelay, playoutDelay, listenerNetworkDelay, isMicOn, useCorrection]);
+
+  //for debug
+  useEffect(() => {
+    if (inputMessage === "__no__")
+      setUseCorrection(false);
+    else
+      setUseCorrection(true);
+  }, [inputMessage])
 
   usePitchDetection(localStreamRef.current, isPlaying, isMicOn, playbackPositionRef, setEntireGraphData, entireReferData, dataChannelsRef.current, setScore, setInstantScore, socketId.current);
 

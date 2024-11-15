@@ -45,7 +45,6 @@ function Multi() {
           },
         }
       );
-      console.log('response.data.rooms', response.data.rooms);
       setRooms(response.data.rooms);
     } catch (error) {
       alert('Error fetching rooms:');
