@@ -129,7 +129,9 @@ function Add() {
       );
 
       if (response.status === 200) {
-        toast.success(`배경음악을 추출합니다. 약 3 ~ 5분이 소요됩니다.`, {
+
+        toast.success(`배경음악을 추출합니다. 약 5분 소요됩니다.`, {
+
           position: "bottom-right",
           autoClose: 5000,
           hideProgressBar: false,
@@ -257,7 +259,6 @@ function Add() {
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  required
                   style={{width: "20%"}}
                 />
               </label>
@@ -306,7 +307,6 @@ function Add() {
                 className={`add-button is-highlight button ${isWaiting ? "is-loading" : ""}`}
                 disabled={isWaiting}
                 type="submit"
-                style={{marginTop: '2em'}}
               >
                 추가하기
               </button>

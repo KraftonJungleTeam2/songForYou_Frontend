@@ -106,7 +106,7 @@
   min-height: 65%;
   height: 65%;
   width: 100%;
-  border-radius: 0 15px 0 0;
+  /* border-radius: 0 15px 0 0; */
   border-top: 2px solid var(--border-gray); /* 실선 추가 */
   border-right: 2px solid var(--border-gray); /* 실선 추가 */
 }
@@ -165,34 +165,22 @@
 .range-slider {
   width: 100%;
 }
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; /* 썸 크기 */
+  height: 16px;
+  background: #ffbf0b; /* 원하는 색상 */
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -5px; /* 트랙에 맞추기 위해 조정 */
+}
+
+
 
 .playback-info {
   margin-top: 10px;
   color: var(--text-black);
-}
-
-/* Speed Control 스타일 */
-.speed-control {
-  /* display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 15px 0; */
-}
-
-.speed-control label {
-  /* margin-bottom: 5px;
-  color: var(--text-scheme); */
-}
-
-.speed-control-value {
-  /* margin-top: 5px;
-  color: var(--text-gray); */
-}
-
-/* Loading */
-.loading-text {
-  /* color: var(--text-gray);
-  margin-top: 10px; */
 }
 
 /* Play Navigation Button */

@@ -52,6 +52,7 @@ const Play = () => {
   const [currSegment, setCurrSegment] = useState(" ");
 
   const oldScore = useRef(0);
+  const [metadata, setMetadata] = useState({});
 
   // 재생 제어
   const [isPlaying, setIsPlaying] = useState(false);
@@ -242,7 +243,6 @@ const Play = () => {
           try {
             const lyrics = JSON.parse(lyricsString);
             setLyricsData(lyrics);
-            console.log(lyrics);
             setLyricsLoaded(true);
           } catch (parseError) {
             console.error("Error parsing lyrics data:", parseError);
@@ -253,6 +253,21 @@ const Play = () => {
             "Warning: lyrics data not found or invalid in the response"
           );
           setLyricsLoaded(true);
+        }
+        const metadataString = result.metadata;
+        if (typeof metadataString === "string") {
+          try {
+            const metadata = JSON.parse(metadataString);
+            setMetadata(metadata);
+          } catch (parseError) {
+            console.error("Error parsing metadata:", parseError);
+            setMetadata({});
+          }
+        } else {
+          console.warn(
+            "Warning: lyrics data not found or invalid in the response"
+          );
+          setMetadata({});
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -328,6 +343,11 @@ const Play = () => {
         className="play-content-container component-container-play"
         ref={containerRef}
       >
+        <div className='information-area'>
+          <p>
+            {`${metadata?.title + ' - ' + metadata?.description}`}
+          </p>
+        </div>
         {/* Pitch Graph */}
         <div
           className="pitch-graph-play"
