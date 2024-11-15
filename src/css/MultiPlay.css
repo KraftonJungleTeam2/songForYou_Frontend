@@ -13,7 +13,6 @@
   min-width: 10rem;
   width: 17%; /* 좌측 영역 너비 설정 */
   background-color: var(--background-main);
-  gap: 1rem;
 }
 
 
@@ -21,7 +20,7 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 0;
+  padding: 0.3rem 0;
   align-self: stretch; /* 상단에 고정되도록 설정 */
   white-space: nowrap;
 }
@@ -44,6 +43,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 10px;
   margin-bottom: 10px;
   margin-right: 0.5em;
 }
@@ -57,6 +57,7 @@
   cursor: pointer;
   width: 100%;
   font-size: 14px;
+  max-height: 5dvh;
 }
 
 .button-area .button:hover {
@@ -68,17 +69,42 @@
   height: 33%;
 }
 
+.button-area .start-button:hover{
+  background-color: #cca300;
+}
+
 .button-area .mic-button {
-  background-color: var(--background-section);
-  color: var(--text-scheme);
+  background-color: #ebff78;
+  color: var(--text-black);
   height: 33%;
+}
+
+.button-area .mic-button:hover{
+  background-color: #b5c55b;
 }
 
 .button-area .reservation-button {
   background-color: var(--gradient-end);
   height: 33%;
 }
+.button-area .reservation-button:hover {
+  background-color: #cc8323;
+  height: 33%;
+}
+.mr-range{
+  display: flex;
+  flex-direction: row;
+  margin-right: 0.5rem;
+  gap: 0px;
+}
 
+.mr-range label {
+  width: 2em;
+}
+
+.mr-range label{
+  white-space: nowrap; /* 줄 바꿈 없이 한 줄로 표시 */
+}
 /* Chat area */
 
 .chat-area {
@@ -158,14 +184,15 @@
 
   .information-area {
     padding: 0.1rem;
-    font-size: smaller;
+    /* font-size: smaller; */
   }
 
   /* .information-area p:last-child {
     display: none;
   } */
 
-  .pitch-graph-play {
+  .pitch-graph-multi {
+    border: 2px solid var(--border-gray);
     min-height: 60%;
     height: 60%;
   }
@@ -181,7 +208,7 @@
 
   .players-chat {
     flex-direction: column-reverse;
-    height: 13rem;
+    height: 15rem;
     max-height: 40%;
     /* flex-direction: row; */
     min-width: 0;
@@ -200,6 +227,12 @@
 
   .button-area .button {
     height: 100%;
+  }
+
+  .mr-range{
+    width: calc(100% - 1.2rem);
+    margin-left: 0.6rem;
+    margin-right: 0.6rem;
   }
 
   .chat-area {

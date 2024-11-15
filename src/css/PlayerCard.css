@@ -3,7 +3,7 @@
 .player-cards-container {
   display: flex;
   flex-direction: column;
-  height: 35%;
+  min-height: 35%;
 
   border-radius: 8px 0 0 8px;
   overflow: hidden;
@@ -16,7 +16,7 @@
   color: var(--text-scheme);
   height: calc(100% / 4);
   border-bottom: 1px solid var(--border-gray);
-  padding: 10px;
+  padding: 5px;
   background-color: var(--background-section);
 }
 
@@ -50,6 +50,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* height: 100%; */
 }
 
 .details .player-details span {
@@ -61,10 +62,12 @@
 .details .player-details .player-name {
   color: var(--text-scheme);
   font-weight: bold;
+  font-size: 2.6dvh;
 }
 
 .details .player-details .score {
-  font-size: larger;
+  margin: 0;
+  font-size: 2.6dvh;
 }
 
 .details .range-slider {

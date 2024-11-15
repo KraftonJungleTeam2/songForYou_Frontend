@@ -22,6 +22,7 @@ const AudioPlayer = forwardRef(
       currentData,
       roomId,
       setAudioLoaded,
+      setUseCorrection,
     },
     ref
   ) => {
@@ -80,6 +81,7 @@ const AudioPlayer = forwardRef(
       setAudioLoaded(false);
       setStarttime(null);
       setReservedSongs((prev) => prev.slice(1));
+      setUseCorrection(false);
       setIsPlaying(false); // 재생이 끝나면 일시정지 상태로 변경
       onPlaybackPositionChange(-10);
       if (animationFrameRef.current) {
@@ -106,25 +108,26 @@ const AudioPlayer = forwardRef(
       source.playbackRate.value = playbackSpeed; // 재생 속도 설정
       source.connect(gainControlRef.current).connect(audioContext.destination);
       sourceRef.current = source;
-      // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
-      const offset = (performance.now() - starttime) / 1000;
       // 볼륨 설정
       gainControlRef.current.gain.value = musicGain;
+      
+      // 시작 시간 설정 (오프셋을 반영하여 재생 위치 조정)
+      const offset = (performance.now() - starttime) / 1000;
       //offset이 음수면 정상작동 > So 오디오context기준 몇초 current.time이 0초(취급)임
-
       if (offset < 0) {
         source.start(audioContext.currentTime - offset);
       } else {
         source.start(0, offset);
       }
-
+      resumeTimeRef.current = audioContext.currentTime - offset;
+      
       setIsPlaying(true);
       setIsWaiting(false);
 
-      resumeTimeRef.current = audioContext.currentTime - offset;
-
       // 재생 완료 시 호출되는 콜백 설정
       source.onended = handleStopAudio;
+      
+      setTimeout(() => setUseCorrection(true), -offset*1000+20);
     };
 
     // 재생속도를 설정 예: setPlaybackRate(1.1); -> 1.1배속으로 설정
@@ -133,10 +136,10 @@ const AudioPlayer = forwardRef(
       const source = sourceRef.current;
       const prevRate = source.playbackRate.value;
       const timePassed = audioContext.currentTime - resumeTimeRef.current;
-
+      
+      source.playbackRate.value = rate;
       playbackPositionRef.current += timePassed * prevRate;
       resumeTimeRef.current += timePassed;
-      source.playbackRate.value = rate;
     };
 
     // 현재 재생시간을 초단위로 가져옴 예: getPlaybackTime() == 36.1 -> 현재 36.1초 플레이 중
@@ -193,22 +196,13 @@ const AudioPlayer = forwardRef(
     useEffect(() => {
       if (!isPlaying) return;
 
-      let lastUpdateTime = performance.now();
-
       const updatePosition = () => {
         if (!isPlaying) return;
 
-        const now = performance.now();
-        const elapsed = now - lastUpdateTime;
-
-        if (elapsed >= FRAME_RATE * 1000) {
-          // 25ms 이상 경과 시 업데이트
+        if (onPlaybackPositionChange) {
           const currentTime = getPlaybackTime();
           const roundedTime = roundToFrame(currentTime);
-          if (onPlaybackPositionChange) {
-            onPlaybackPositionChange(roundedTime);
-          }
-          lastUpdateTime = now;
+          onPlaybackPositionChange(roundedTime);
         }
 
         animationFrameRef.current = requestAnimationFrame(updatePosition);
@@ -235,7 +229,8 @@ const AudioPlayer = forwardRef(
       const interval = setInterval((audioContext = audioContextRef.current) => {
         if (audioContext) {
           const playoutDelay = audioContext.outputLatency;
-          setPlayoutDelay(isNaN(playoutDelay) ? 40 : playoutDelay * 1000);
+          if (playoutDelay > 40)
+            setPlayoutDelay(playoutDelay);
         }
       }, 1000);
 

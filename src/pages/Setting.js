@@ -13,12 +13,16 @@ function Setting() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const { userData, setUserData } = useUser(); // UserContext에서 userData와 setUserData 가져오기
+  const [localData, setLocalData] = useState({
+    name: userData.name,
+    email: userData.email,
+  }); // 로컬 상태 추가
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData((prevState) => ({ ...prevState, [name]: value }));
+    setLocalData((prevState) => ({ ...prevState, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -29,12 +33,13 @@ function Setting() {
         console.error("No JWT token found");
         return;
       }
-      await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/users/update`, userData, {
+      await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/users/update`, localData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
+      setUserData((prevState) => ({ ...prevState, ...localData })); // 프로필 변경 시 userData에 localData 적용
       alert("프로필 정보가 성공적으로 업데이트되었습니다.");
     } catch (error) {
       console.error("Error updating user information:", error);
@@ -48,6 +53,7 @@ function Setting() {
       const formData = new FormData();
       formData.append("profilePicture", file);
       const token = sessionStorage.getItem("userToken");
+
       try {
         const response = await axios.put(
           `${process.env.REACT_APP_API_ENDPOINT}/users/updateProfilePicture`,
@@ -59,10 +65,27 @@ function Setting() {
             },
           }
         );
-        setUserData((prevState) => ({ ...prevState, profilePicture: response.data.profilePicture }));
-        alert("프로필 사진이 성공적으로 업데이트되었습니다.");
+
+        if (response.status === 200) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataURL = reader.result;
+            setUserData((prevState) => ({
+              ...prevState,
+              imgurl: dataURL, // imgurl 필드 업데이트
+            }));
+            alert("프로필 사진이 성공적으로 업데이트되었습니다.");
+          };
+          reader.onerror = () => {
+            console.error("파일을 data URL로 변환하는 중 오류가 발생했습니다.");
+            alert("이미지 처리 중 오류가 발생했습니다.");
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert("프로필 사진 업데이트에 실패했습니다.");
+        }
       } catch (error) {
-        console.error("Error updating profile picture:", error);
+        console.error("프로필 사진 업데이트 중 오류 발생:", error);
         alert("프로필 사진 업데이트에 실패했습니다.");
       }
     }
@@ -120,11 +143,15 @@ function Setting() {
           <div className="profile-settings">
             {/* 프로필 사진 섹션 */}
             <div className="profile-picture-section">
-              <img
-                src={userData.profilePicture || "https://via.placeholder.com/100"}
-                alt="Profile"
-                className="profile-picture"
-              />
+                {userData?.imgurl ? (
+                <img
+                  src={userData.imgurl}
+                  alt={`${userData.name}'s avatar`}
+                  className="profile-picture"
+                />
+              ) : (
+                <i className="fa-solid fa-user profile-picture-none"></i>
+              )}
               <input
                 type="file"
                 accept="image/*"
@@ -144,7 +171,7 @@ function Setting() {
                   type="text"
                   id="name"
                   name="name"
-                  value={userData.name || ""}
+                  value={localData.name || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -154,7 +181,7 @@ function Setting() {
                   type="email"
                   id="email"
                   name="email"
-                  value={userData.email || ""}
+                  value={localData.email || ""}
                   onChange={handleChange}
                 />
               </div>

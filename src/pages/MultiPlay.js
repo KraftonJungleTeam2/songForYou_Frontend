@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom'; // URL에서 곡 ID 가져오기
-import Sidebar from '../components/SideBar';
-import TopBar from '../components/TopBar';
 import '../css/MultiPlay.css';
 import AudioPlayer from '../components/SyncAudioPlayer';
 // import audioFile from '../sample3.mp3'; // 임시 MP3 파일 경로 가져오기
@@ -9,7 +7,6 @@ import PitchGraph from '../components/PitchGraph';
 import io from 'socket.io-client'; // 시그널링 용 웹소켓 io라고함
 import ReservationPopup from '../components/ReservationPopup';
 import { useSongs } from '../Context/SongContext';
-import axios from 'axios';
 import { usePitchDetection } from '../components/usePitchDetection';
 import { useNavigate } from 'react-router-dom';
 // 콘솔로그 그만
@@ -18,8 +15,8 @@ import '../css/slider.css';
 import PlayerCard from '../components/PlayerCard';
 import NowPlayingLyrics from '../components/nowPlayingLyrics';
 import { useScreen } from '../Context/ScreenContext';
-import MobileNav from '../components/MobileNav';
 import PageTemplate from '../template/PageTemplate';
+import { toast } from 'react-toastify';
 
 // 50ms 단위인 음정 데이터를 맞춰주는 함수 + 음정 타이밍 0.175s 미룸.
 function doubleDataFrequency(dataArray) {
@@ -122,7 +119,7 @@ function MultiPlay() {
   const pitchArraysRef = useRef({}); //  pitchArrays
   const candidatesRef = useRef({}); // candidates before est
 
-  const [useCorrection, setUseCorrection] = useState(true);
+  const [useCorrection, setUseCorrection] = useState(false);
 
   // 서버시간 측정을 위해
   // 최소/최대 핑 요청 횟수
@@ -130,13 +127,14 @@ function MultiPlay() {
   const MINPING = 10;
   // 최대 허용 오차(ms)
   const MAXERROR = 7;
-  const audioConstant = 150;
+  const audioConstant = 160;
   const [audioDelay, setAudioDelay] = useState(audioConstant);
   const [singerNetworkDelay, setSingerNetworkDelay] = useState(0.0);
   const [listenerNetworkDelay, setListenerNetworkDelay] = useState(0.0);
   const [optionDelay, setOptionDelay] = useState(0);
   const [jitterDelay, setJitterDelay] = useState(0);
-  const [playoutDelay, setPlayoutDelay] = useState(0);
+  const [realJitterDelay, setRealJitterDelay] = useState(0);
+  const [playoutDelay, setPlayoutDelay] = useState(40);
   const [latencyOffset, setLatencyOffset] = useState(0);
   const singersDelay = useRef({});
   const RTTRef = useRef({});
@@ -195,7 +193,20 @@ function MultiPlay() {
   }, [entireReferData]);
 
   useEffect(() => {
-    if (currentData !== null && currentData.ready == true) {
+    if (mrDataBlob !== null && lyricsData !== null && currentData?.songData?.mr === mrDataBlob && currentData?.songData?.lyrics === lyricsData && serverTimeDiff && audioLoaded) {
+      console.log('serverTimeDiff', serverTimeDiff);
+      socketRef.current.emit('songReady', {
+        roomId,
+        songId: reservedSongs[0].songId,
+      });
+    }
+  }, [mrDataBlob, lyricsData, serverTimeDiff, audioLoaded]);
+
+  useEffect(() => {
+    if (currentData?.ready === true) {
+      setIsWaiting(false);
+    }
+    if (currentData?.songData && currentData.ready === false) {
       setMrDataBlob(currentData.songData.mr); // Blob 데이터 저장
       setLyricsData(currentData.songData.lyrics);
       const pitchArray = currentData.songData.pitch;
@@ -214,26 +225,17 @@ function MultiPlay() {
       } else {
         console.error('Error: Expected pitch data to be an array');
       }
-      setIsWaiting(false);
     }
   }, [currentData]);
 
   useEffect(() => {
-    console.log('reserved song');
     if (reservedSongs.length === 0) {
       setEntireGraphData([]);
       setEntireReferData([]);
       setLyricsData(null);
       return;
     }
-    console.log('reserved song', reservedSongs);
     if (currentData !== reservedSongs?.[0]) {
-      if (reservedSongs[0].ready === false && reservedSongs[0].songData !== null) {
-        socketRef.current.emit('songReady', {
-          roomId,
-          songId: reservedSongs[0].songId,
-        });
-      }
       setcurrentData(reservedSongs[0]);
     }
 
@@ -335,7 +337,7 @@ function MultiPlay() {
   const setReserved = async (songs) => {
     const formattedSongs = songs.map((song) => ({
       songId: song.songId,
-      ready: song.readyBool,
+      ready: false,
       songData: null, // 데이터는 나중에 로드
       image: song.image,
       title: song.title,
@@ -389,7 +391,7 @@ function MultiPlay() {
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false,
+          autoGainControl: true,
         },
         video: false,
       });
@@ -428,14 +430,20 @@ function MultiPlay() {
       await getLocalStream();
       const token = sessionStorage.getItem('userToken');
 
-      const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
+      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/users/info`, {
+        method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // 토큰을 Authorization 헤더에 추가
         },
       });
 
-      const nickname = response.data.name;
+      const formData = await response.formData();
 
+      const result = Object.fromEntries(formData.entries());
+
+      const info = JSON.parse(result.info);
+
+      const nickname = info.name;
       await socketRef.current.emit('joinRoom', {
         roomId: roomId,
         nickname: nickname,
@@ -615,6 +623,19 @@ function MultiPlay() {
       micOff();
       console.log('starts at', clientStartTime);
       setStarttime(clientStartTime);
+    });
+
+    socketRef.current.on('waitReady', (data) => {
+      toast.info('아직 모든 유저가 준비되지 않았습니다.', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: 'light',
+      });
+      return;
     });
 
     socketRef.current.on('stopMusic', (data) => {
@@ -897,7 +918,7 @@ function MultiPlay() {
         }
       });
       if (i > 0) {
-        setListenerNetworkDelay((old) => old * 0.7 + (sum / i) * 0.3);
+        setListenerNetworkDelay((old) => Math.floor(old * 0.7 + (sum / i) * 0.3));
       }
     }
   };
@@ -925,7 +946,7 @@ function MultiPlay() {
 
   // 이거 지우지 마세요
   useEffect(() => {
-    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current), 500);
+    const interval = setInterval(() => measureLatency(peerConnectionsRef, latencyCalcRef, micStatRef, singerNetworkDelay, setSingerNetworkDelay, listenerNetworkDelay, setListenerNetworkDelay, jitterDelay, setJitterDelay, latencyDataChannelsRef.current, socketId.current, RTTRef.current, setRealJitterDelay), 500);
 
     return () => clearInterval(interval);
   }, []);
@@ -994,15 +1015,26 @@ function MultiPlay() {
     timeDiffSamplesRef.current.push(receiveTime - serverTimeAdjusted);
     timeDiffSamplesRef.current.sort();
     const nSamples = timeDiffSamplesRef.current.length;
-    const q = Math.floor(nSamples / 4);
-    const IQR = timeDiffSamplesRef.current[q] - timeDiffSamplesRef.current[nSamples - 1 - q];
-    // 최대 핑 횟수가 되었거나 | 최소 핑 횟수 이상이면서 편차가 최대허용오차보다 작으면 성공
-    if (nSamples >= MAXPING || (nSamples >= MINPING && IQR <= MAXERROR)) {
-      // 측정 완료시 서버시간차이를 저장 하고 종료
-      const estTimeDiff = timeDiffSamplesRef.current[2 * q];
-      setServerTimeDiff(estTimeDiff);
+    const idxRange = 5; // MINPING보다 작아야함
+    let optimalIdx = -1;
+    let range = MAXERROR+1;
+
+    if (nSamples >= MINPING) {
+      for (let i = 0; i < nSamples-idxRange; i++) {
+        const tempRange = timeDiffSamplesRef.current[i] - timeDiffSamplesRef.current[i+idxRange-1];
+        if (nSamples >= MAXPING || (tempRange <= MAXERROR && tempRange < range)) {
+          range = tempRange;
+          optimalIdx = i;
+        }
+      }
+      if (optimalIdx >= 0) {
+        const estTimeDiff = timeDiffSamplesRef.current[optimalIdx+2];
+        console.log("servertimediff ", estTimeDiff);
+        setServerTimeDiff(estTimeDiff);
+      } else {
+        sendPing();
+      }
     } else {
-      // 측정이 더 필요한 경우 최대횟수까지 서버에 ping 요청
       sendPing();
     }
   };
@@ -1040,7 +1072,6 @@ function MultiPlay() {
   };
 
   const OnPopup = () => {
-    console.log(songLists);
     setshowPopup(true);
   };
 
@@ -1053,7 +1084,7 @@ function MultiPlay() {
       if (isMicOn) {
         setLatencyOffset(-audioDelay - singerNetworkDelay - optionDelay - playoutDelay);
       } else {
-        setLatencyOffset(jitterDelay + listenerNetworkDelay);
+        setLatencyOffset(realJitterDelay + listenerNetworkDelay);
       }
     } else {
       setLatencyOffset(0);
@@ -1090,15 +1121,12 @@ function MultiPlay() {
           <p className='next-lyrics'>{nextLyric}</p>
         </div>
 
-        <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
-
         {/* AudioPlayer 컴포넌트 */}
-        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} />
+        <AudioPlayer ref={audioPlayerRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} audioBlob={mrDataBlob} setReservedSongs={setReservedSongs} setDuration={setDuration} onPlaybackPositionChange={setPlaybackPosition} starttime={starttime} setStarttime={setStarttime} setIsWaiting={setIsWaiting} setIsMicOn={setIsMicOn} latencyOffset={latencyOffset} musicGain={musicGain} playoutDelay={playoutDelay} setPlayoutDelay={setPlayoutDelay} socketRef={socketRef.current} currentData={currentData} roomId={roomId} setAudioLoaded={setAudioLoaded} setUseCorrection={setUseCorrection} />
       </div>
 
       <div className='players-chat'>
         <PlayerCard players={players} socketId={socketId} score={score} playerVolumeChange={playerVolumeChange} />
-
         <div className='button-area'>
           {/* 시작 버튼 */}
           <button onClick={isPlaying ? handleStopClick : handleStartClick} disabled={!audioLoaded || isWaiting} className={`button start-button ${!audioLoaded || isWaiting ? 'is-loading' : ''}`}>
@@ -1115,15 +1143,20 @@ function MultiPlay() {
           <button className='button reservation-button' onClick={OnPopup}>
             예약하기
           </button>
-
           <div className='remote-audios' style={{ display: 'none' }}>
             {players.map((player) => (
               <audio key={player.userId} id={`remoteAudio_${player.userId}`} autoPlay />
             ))}
           </div>
 
+        </div>
           {/* 조건부 렌더링 부분 popup */}
           {showPopup && <ReservationPopup roomid={roomId} socket={socketRef.current} onClose={closePopup} reservedSongs={reservedSongs} songLists={songLists} isPlaying={isPlaying} />}
+        <div className='mr-range'>
+          <label>
+            <i className={`fa-solid ${musicGain > 0 ? (musicGain >= 0.5 ? 'fa-volume-high' : 'fa-volume-low') : 'fa-volume-off'}`}></i>
+          </label>
+          <input type='range' className='range-slider' min={0} max={1} step={0.01} defaultValue={0.5} onChange={handleVolumeChange} aria-labelledby='volume-slider' />
         </div>
 
         <div className='chat-area'>
@@ -1136,6 +1169,12 @@ function MultiPlay() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+          <p style={{ display: inputMessage === '__hidden__' ? 'block' : 'none' }}>
+            audio: {audioDelay}, singerNetwork: {singerNetworkDelay}, realJitterDelay: {realJitterDelay}, jitter: {jitterDelay}, playout: {playoutDelay}, listenerNetwork: {listenerNetworkDelay}
+          </p>
+          <p style={{ display: inputMessage === '__hidden__' ? 'block' : 'none' }}>
+            latencyOffset: {latencyOffset}, useCorrection: {useCorrection ? 'T' : 'F'}
+          </p>
           <div className='input-area'>
             <input type='text' value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder='메시지를 입력하세요' />
             <button onClick={sendMessage}>
