@@ -666,11 +666,13 @@ function MultiPlay() {
             return song; // 일치하지 않는 곡은 그대로 반환
           });
         });
-      } catch (error) {}
+      } catch (error) { }
     });
 
     socketRef.current.on('reservationCanceled', ({ songId }) => {
       setReservedSongs((prevSongs) => {
+        if (songId === prevSongs[0].songId)
+          setAudioLoaded(false);
         return prevSongs.filter((reserved) => reserved.songId !== songId);
       });
     });
