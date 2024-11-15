@@ -129,7 +129,9 @@ function Add() {
       );
 
       if (response.status === 200) {
+
         toast.success(`배경음악을 추출합니다. 약 5분 소요됩니다.`, {
+
           position: "bottom-right",
           autoClose: 5000,
           hideProgressBar: false,
