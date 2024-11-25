@@ -1,0 +1,33 @@
+/* MobileNav.css */
+.mobilenav {
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: var(--background-selected);
+  width: 100%;
+  height: var(--nav-height);
+  z-index: 100;
+}
+
+.nav-button-mobile {
+  display: block;
+  background-color: #ffffff00;
+  color: var(--text-scheme);
+  border: none;
+  /* height: 100%; */
+  /* width: 7rem; */
+}
+
+.nav-button-mobile i {
+  font-size: 1.5rem;
+}
+
+.nav-button-mobile.active i {
+  color: var(--text-highlight-bg); /* 활성화된 아이콘의 색상 변경 */
+}
+
+.nav-caption {
+  font-weight: 600;
+}

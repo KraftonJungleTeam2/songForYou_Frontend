@@ -1,43 +1,74 @@
-/* 사이드바 스타일 */
 .sidebar {
-    width: 200px;
-    height: 100%;
-    background-color: #333;
-    color: white;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 1000;
-    /* display: flex; */
-    flex-direction: column;
-    align-items: center;
-    padding-top: 60px; /* 네비게이션 버튼을 아래로 내리기 위한 패딩 */
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: var(--background-selected);
+  color: var(--text-scheme);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-nav {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  padding: 0;
+  padding-top: 1em;
 }
 
-.sidebar-nav button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px;
-    margin: 5px 0;
-    cursor: pointer;
-    width: 80%;
-    text-align: center;
+.sidebar-nav .nav-button {
+  display: block;
+  margin-bottom: 10px;
+  width: 100%;
+  margin: 0em 0;
+  padding: 0;
+  height: calc(var(--sidebar-width) * 0.9);
+  background-color: #ffffff00;
+  color: var(--text-scheme);
+  border: none;
+  cursor: pointer;
 }
 
 .sidebar-nav button:hover {
-    background-color: #0056b3;
+  opacity: 50%;
 }
 
-@media (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-    }
+.nav-button .selected {
+  color: var(--text-highlight-bg);
+}
+
+.nav-caption {
+  margin-top: 0.5em;
+  font-size: 0.8em;
+}
+
+/* 토글 버튼 스타일 */
+.toggle-button {
+  position: fixed;
+  background-color: var(--background-selected);
+  color: var(--text-scheme);
+  border: none;
+  cursor: pointer;
+  z-index: 200;
+  transform: translateX(0%);
+  transition: transform 0.3s ease;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.toggle-button.open {
+  transform: translateX(var(--sidebar-width-px));
+}
+
+.toggle-button.closed {
+  transform: translateX(0%);
+}
+
+.close-button {
+  margin-left: calc(var(--sidebar-width));
+  margin-bottom: 0.5rem;
 }

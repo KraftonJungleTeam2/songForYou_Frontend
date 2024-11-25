@@ -1,41 +1,97 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../css/Login.css';  // CSS 파일 import
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../Context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import "../css/Login.css";
 
 function Login() {
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { setIsLoggedIn } = useAuth();
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // Change handler
+    const handleChange = (e) => setIsDarkMode(e.matches);
+
+    // Add event listener
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // 여기에 로그인 로직을 구현합니다.
-    // 예를 들어, API 호출을 통한 인증 등
-    console.log('Login attempt:', id, password);
-    // 로그인 성공 시 Single 페이지로 이동
-    navigate('/single');
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_ENDPOINT}/users/login`,
+        { email, password }
+      );
+
+      if (response.status === 200) {
+        const jwtToken = response.headers["authorization"]?.split(" ")[1];
+        if (jwtToken) {
+          sessionStorage.setItem("userToken", jwtToken);
+        }
+        setError("");
+        setIsLoggedIn(true);
+        navigate("/single");
+      } else {
+        setError("로그인에 실패하였습니다.");
+      }
+    } catch (err) {
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError("비밀번호가 유효하지 않습니다.");
+        } else if (err.response.status === 404) {
+          setError("이메일이 유효하지 않습니다.");
+        } else {
+          setError("로그인에 실패하였습니다.");
+        }
+      } else if (err.request) {
+        setError("서버로부터 응답을 받지 못했습니다.");
+      } else {
+        setError("요청 설정 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
     <div className="background-container">
       <div className="login-container">
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-          <input
-            type="text"
-            placeholder="ID"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit">Login</button>
+        <img className="logo" src={`${isDarkMode ? "/logo_dark.png" : "/logo.png"}`}></img>
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="input-container">
+            <i className="fa-solid fa-at input-icon"></i>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="input-container">
+            <i className="fa-solid fa-lock input-icon"></i>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className="button-con">
+            <button type="submit" className="login-button">로그인</button>
+            <button className="toregister" onClick={() => navigate("/register")}>회원가입</button>
+          </div>
+          <div className="error-message">
+            {error && <p>{error}</p>}
+          </div>
         </form>
-        <button onClick={() => navigate('/register')}>Register</button>
       </div>
     </div>
   );

@@ -1,0 +1,241 @@
+.sing-area {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 15px 15px 0;
+  width: 85%;
+  margin-right: 0.5vw;
+}
+
+.players-chat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 10rem;
+  width: 17%; /* 좌측 영역 너비 설정 */
+  background-color: var(--background-main);
+}
+
+
+.information-area {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.3rem 0;
+  align-self: stretch; /* 상단에 고정되도록 설정 */
+  white-space: nowrap;
+}
+
+.information-area p {
+  flex: 1; /* 각 <p> 요소가 같은 너비를 차지하도록 설정 */
+  text-align: center;
+  margin: 0;
+}
+
+.pitch-graph-multi {
+  height: 70%;
+  border-top: 2px solid var(--border-gray);
+  border-bottom: 2px solid var(--border-gray);
+  border-right: 2px solid var(--border-gray);
+}
+
+/* Button area */
+.button-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 0.5em;
+}
+
+.button-area .button {
+  padding: 10px;
+  background-color: var(--text-neutral-bg);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-black);
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  max-height: 5dvh;
+}
+
+.button-area .button:hover {
+  background-color: var(--background-selected);
+}
+
+.button-area .start-button {
+  background-color: var(--text-highlight-bg);
+  height: 33%;
+}
+
+.button-area .start-button:hover{
+  background-color: #cca300;
+}
+
+.button-area .mic-button {
+  background-color: #ebff78;
+  color: var(--text-black);
+  height: 33%;
+}
+
+.button-area .mic-button:hover{
+  background-color: #b5c55b;
+}
+
+.button-area .reservation-button {
+  background-color: var(--gradient-end);
+  height: 33%;
+}
+.button-area .reservation-button:hover {
+  background-color: #cc8323;
+  height: 33%;
+}
+.mr-range{
+  display: flex;
+  flex-direction: row;
+  margin-right: 0.5rem;
+  gap: 0px;
+}
+
+.mr-range label {
+  width: 2em;
+}
+
+.mr-range label{
+  white-space: nowrap; /* 줄 바꿈 없이 한 줄로 표시 */
+}
+/* Chat area */
+
+.chat-area {
+  height: 40%;
+  background-color: var(--background-section);
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 2vh;
+}
+
+.chat-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px;
+}
+.messages::-webkit-scrollbar {
+  display: none;
+}
+
+.message {
+  padding: 3px;
+  background: var(--background-selected);
+  border-radius: 8px;
+}
+
+.text {
+  color: var(--text-scheme);
+}
+
+.time {
+  text-align: right;
+  color: var(--text-gray);
+  font-size: 10px;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid var(--border-gray);
+  padding: 10px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 8px;
+  width: 100%;
+  border: 1px solid var(--border-gray);
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.input-area button {
+  padding: 8px 12px;
+  background-color: var(--text-highlight-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-black);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+@media (max-width: 1023px) {
+  .sing-area {
+    width: calc(100% - 1em);
+    height: 100%;
+    margin: 0.5em;
+    border-radius: 15px;
+  }
+
+  .information-area {
+    padding: 0.1rem;
+    /* font-size: smaller; */
+  }
+
+  /* .information-area p:last-child {
+    display: none;
+  } */
+
+  .pitch-graph-multi {
+    border: 2px solid var(--border-gray);
+    min-height: 60%;
+    height: 60%;
+  }
+  
+  .prev-lyrics,
+  .next-lyrics {
+    font-size: clamp(0rem, 5vmin, 100rem);
+  }
+
+  .curr-lyrics {
+    font-size: clamp(0rem, 8vmin, 100rem);
+  }
+
+  .players-chat {
+    flex-direction: column-reverse;
+    height: 15rem;
+    max-height: 40%;
+    /* flex-direction: row; */
+    min-width: 0;
+    width: 100%;
+    padding-bottom: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .button-area {
+    /* display: none; */
+    flex-direction: row;
+    max-height: 2rem;
+    gap: 0.5rem;
+    margin: 0 0.5rem;
+  }
+
+  .button-area .button {
+    height: 100%;
+  }
+
+  .mr-range{
+    width: calc(100% - 1.2rem);
+    margin-left: 0.6rem;
+    margin-right: 0.6rem;
+  }
+
+  .chat-area {
+    display: none;
+  }
+}

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import SongList from './SongList';
-import '../css/SongListArea.css';
-import SongUploadPopup from './SongUploadPopup';
+import React, { useState } from "react";
+import SongList from "./SongList";
+import "../css/SongListArea.css";
+import { useNavigate } from "react-router-dom";
+import { useScreen } from "../Context/ScreenContext";
 
-function SongListArea({ onSongSelect }) {
-  const [viewType, setViewType] = useState('private');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [hasSongs, setHasSongs] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  
+function SongListArea({ onSongSelect, publicSongs, privateSongs }) {
+  const navigate = useNavigate();
+  const [viewType, setViewType] = useState("public");
+  const [searchTerm, setSearchTerm] = useState("");
+  const { isPhone } = useScreen();
+
   const handleTabClick = (view) => {
     setViewType(view);
   };
@@ -17,65 +18,89 @@ function SongListArea({ onSongSelect }) {
     setSearchTerm(event.target.value);
   };
 
-  const handleSongDataStatus = (status) => {
-    setHasSongs(status);
-  };
-
-  const handleOpenPopup = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
-
-  const handleFileUpload = (file) => {
-    // 여기에 파일 업로드 로직을 구현합니다.
-    console.log('File uploaded:', file.name);
-    // 예를 들어, API 호출을 통해 서버에 파일을 업로드할 수 있습니다.
-  };
-
   return (
     <div className="song-list-area">
-      <div className="top-section">
-        <div className="tabs">
-          <button
-            className={viewType === 'private' ? 'active' : ''}
-            onClick={() => handleTabClick('private')}
-          >
-            Private
-          </button>
-          <button
-            className={viewType === 'public' ? 'active' : ''}
-            onClick={() => handleTabClick('public')}
-          >
-            Public
+      {isPhone ? (
+        <div className="top-section-mobile">
+          <div className="tabs-upload">
+            <div className="custom-tabs">
+              <button
+                className={`tab-button ${
+                  viewType === "public" ? "is-active" : ""
+                }`}
+                onClick={() => handleTabClick("public")}
+              >
+                공개 노래
+              </button>
+              <button
+                className={`tab-button ${
+                  viewType === "private" ? "is-active" : ""
+                }`}
+                onClick={() => handleTabClick("private")}
+              >
+                내 노래
+              </button>
+            </div>
+            <button
+              className="add-song-button"
+              onClick={() => navigate("/add")}
+            >
+              <i className="fa-solid fa-upload"></i> 노래 올리기
+            </button>
+          </div>
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="노래 검색"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <button className="search-button">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="top-section">
+          <div className="custom-tabs">
+            <button
+              className={`tab-button ${
+                viewType === "public" ? "is-active" : ""
+              }`}
+              onClick={() => handleTabClick("public")}
+            >
+              공개 노래
+            </button>
+            <button
+              className={`tab-button ${
+                viewType === "private" ? "is-active" : ""
+              }`}
+              onClick={() => handleTabClick("private")}
+            >
+              내 노래
+            </button>
+          </div>
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="노래 검색"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <button className="search-button">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+          <button className="add-song-button" onClick={() => navigate("/add")}>
+            <i className="fa-solid fa-upload"></i> 노래 올리기
           </button>
         </div>
-        <div className="search-bar">
-          <input 
-            type="text" 
-            placeholder="Hinted search text" 
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-          <button>🔍</button>
-        </div>
-        <button className="add-song-button" onClick={handleOpenPopup}>+ 곡 추가</button>
-      </div>
-      <SongList 
-        viewType={viewType} 
-        searchTerm={searchTerm} 
-        onSongSelect={onSongSelect} 
-        onSongDataStatus={handleSongDataStatus}
-        onOpenPopup={handleOpenPopup} // 팝업 열기 함수 전달
-      />
-      {isPopupOpen && (
-        <SongUploadPopup
-          onClose={handleClosePopup}
-          onFileUpload={handleFileUpload}
-        />
       )}
+      <SongList
+        searchTerm={searchTerm}
+        onSongSelect={onSongSelect}
+        songs={viewType === "public" ? publicSongs : privateSongs}
+      />
     </div>
   );
 }
